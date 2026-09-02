@@ -27,11 +27,6 @@
             'desc' => 'Setiap soal dilengkapi pembahasan langkah demi langkah yang mudah dipahami.',
         ],
         [
-            'icon' => '🎬', 'color' => '#ec4899',
-            'title' => 'Video Pembahasan',
-            'desc' => 'Belajar lewat video pembahasan soal yang interaktif. Akses fleksibel sesuai masa aktif paket.',
-        ],
-        [
             'icon' => '📝', 'color' => '#27438D',
             'title' => 'Latihan Mandiri',
             'desc' => 'Kerjakan soal kapan saja, ulangi sebanyak yang kamu mau sampai benar-benar paham.',
@@ -40,11 +35,6 @@
             'icon' => '📊', 'color' => '#b58900',
             'title' => 'Statistik Belajar',
             'desc' => 'Pantau perkembanganmu: nilai terbaik, rata-rata, dan riwayat latihan dalam dashboard yang mudah dibaca.',
-        ],
-        [
-            'icon' => '💳', 'color' => '#f97316',
-            'title' => 'Pembayaran Aman',
-            'desc' => 'Bayar dengan transfer bank, e-wallet, QRIS, hingga minimarket — semua melalui Midtrans yang terenkripsi.',
         ],
         [
             'icon' => '💬', 'color' => '#7c3aed',
@@ -68,12 +58,12 @@
     <div class="relative z-10 px-5 sm:px-8 py-12 sm:py-16 md:py-20 text-center max-w-3xl mx-auto">
         <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur border border-white/15 text-xs font-semibold text-white/85 mb-5">✨ Fitur Unggulan</span>
         <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight">Semua yang Kamu Butuhkan untuk <span class="text-gold-400">Belajar Lebih Baik</span></h1>
-        <p class="mt-4 text-sm sm:text-base text-white/70 leading-relaxed">KPM Belajar Online menyediakan soal, pembahasan, video, dan statistik belajar dalam satu platform yang mudah digunakan.</p>
+        <p class="mt-4 text-sm sm:text-base text-white/70 leading-relaxed">KPM Belajar Online menyediakan soal, pembahasan, dan statistik belajar dalam satu platform yang mudah digunakan.</p>
     </div>
 </div>
 
 <!-- Grid Fitur -->
-<div class="mt-8 md:mt-10 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5">
+<div class="mt-8 md:mt-10 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
     @foreach($features as $feature)
         <div class="group bg-card rounded-lg border border-border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-5 md:p-6" style="--feat: {{ $feature['color'] }}">
             <div class="w-[52px] h-[52px] rounded-lg flex items-center justify-center text-2xl mb-4 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300"
@@ -87,15 +77,14 @@
 <!-- Cara Kerja Singkat -->
 <div class="mt-10 md:mt-14 bg-card rounded-lg border border-border shadow-sm p-5 sm:p-7 md:p-9">
     <div class="text-center mb-7 md:mb-9">
-        <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-foreground">🚀 Mulai dalam 4 Langkah Mudah</h2>
+        <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-foreground">🚀 Mulai dalam 3 Langkah Mudah</h2>
         <p class="text-xs sm:text-sm text-muted-foreground mt-1">Cepat dan tanpa ribet</p>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
         @foreach([
             ['01', 'Daftar Akun', 'Registrasi gratis dengan email aktif'],
-            ['02', 'Pilih Paket', 'Bank soal atau video pembahasan'],
-            ['03', 'Selesaikan Bayar', 'Via Midtrans, semua metode tersedia'],
-            ['04', 'Mulai Belajar', 'Akses langsung setelah pembayaran'],
+            ['02', 'Pilih Paket', 'Pilih bank soal yang sesuai kebutuhanmu'],
+            ['03', 'Mulai Belajar', 'Akses langsung dan kerjakan soal'],
         ] as $step)
             <div class="relative bg-muted/70 rounded-lg p-5 border border-border hover:border-primary/30 transition-colors">
                 <span class="text-3xl font-extrabold text-primary/20 absolute top-3 right-4 select-none">{{ $step[0] }}</span>
@@ -113,12 +102,12 @@
     </div>
     <div class="relative z-10">
         <h2 class="text-xl sm:text-2xl md:text-3xl font-extrabold">Siap Merasakan Semua Fiturnya?</h2>
-        <p class="mt-3 text-white/70 text-sm sm:text-base max-w-lg mx-auto">Bergabung sekarang dan jelajahi ribuan soal plus video pembahasan.</p>
+        <p class="mt-3 text-white/70 text-sm sm:text-base max-w-lg mx-auto">Bergabung sekarang dan jelajahi ribuan soal latihan.</p>
         <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
             @auth
                 <a href="{{ route('packages.index') }}" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gold-400 text-foreground px-8 py-3.5 rounded-lg font-bold text-sm hover:bg-gold-500 hover:-translate-y-0.5 transition-all duration-300">🚀 Mulai Belajar</a>
             @else
-                <a href="{{ route('register') }}" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gold-400 text-foreground px-8 py-3.5 rounded-lg font-bold text-sm hover:bg-gold-500 hover:-translate-y-0.5 transition-all duration-300">🚀 Daftar Gratis</a>
+                <a href="{{ route('login') }}" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gold-400 text-foreground px-8 py-3.5 rounded-lg font-bold text-sm hover:bg-gold-500 hover:-translate-y-0.5 transition-all duration-300">🔑 Masuk</a>
             @endauth
             <a href="{{ route('pages.guide') }}" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur border border-white/15 text-white px-8 py-3.5 rounded-lg font-semibold text-sm hover:bg-white/15 transition-all duration-300">📖 Baca Panduan</a>
         </div>

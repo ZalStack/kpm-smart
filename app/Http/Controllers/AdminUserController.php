@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Order;
 use App\Support\SearchHelper;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AdminUserController extends Controller
 {
@@ -42,24 +44,143 @@ class AdminUserController extends Controller
     }
 
     /**
+     * Form tambah user baru.
+     */
+    public function create()
+    {
+        return view('admin.users.create');
+    }
+
+    /**
+     * Simpan user baru.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:8|confirmed',
+            'phone' => 'nullable|string|max:20',
+            'student_class' => 'nullable|string|max:50',
+            'bidang' => 'nullable|string|max:100',
+            'level' => 'nullable|string|max:50',
+            'school_name' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
+            'gender' => 'nullable|string|in:Laki-laki,Perempuan',
+            'religion' => 'nullable|string|max:50',
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => $validated['password'],
+            'phone' => $validated['phone'] ?? null,
+            'student_name' => $validated['name'],
+            'student_class' => $validated['student_class'] ?? null,
+            'bidang' => $validated['bidang'] ?? null,
+            'level' => $validated['level'] ?? null,
+            'school_name' => $validated['school_name'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'gender' => $validated['gender'] ?? null,
+            'religion' => $validated['religion'] ?? null,
+        ]);
+
+        $user->role = 'user';
+        $user->is_verified = true;
+        $user->is_active = true;
+        $user->save();
+
+        if ($request->hasFile('profile_photo')) {
+            $path = $request->file('profile_photo')->store('profile_photos', 'public');
+            $user->update(['profile_photo' => $path]);
+        }
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'User "' . $user->name . '" berhasil ditambahkan. Email: ' . $user->email);
+    }
+
+    /**
      * Detail satu user, termasuk ringkasan pesanan/aktivitasnya.
      */
     public function show(User $user)
     {
-        $stats = [
-            'total_orders' => Order::where('user_id', $user->id)->count(),
-            'paid_orders' => Order::where('user_id', $user->id)->where('payment_status', 'paid')->count(),
-            'total_spent' => Order::where('user_id', $user->id)->where('payment_status', 'paid')->sum('total_price') ?? 0,
+        return view('admin.users.show', compact('user'));
+    }
+
+    /**
+     * Form edit user.
+     */
+    public function edit(User $user)
+    {
+        return view('admin.users.edit', compact('user'));
+    }
+
+    /**
+     * Update data user.
+     */
+    public function update(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|min:8|confirmed',
+            'phone' => 'nullable|string|max:20',
+            'student_class' => 'nullable|string|max:50',
+            'bidang' => 'nullable|string|max:100',
+            'level' => 'nullable|string|max:50',
+            'school_name' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
+            'gender' => 'nullable|string|in:Laki-laki,Perempuan',
+            'religion' => 'nullable|string|max:50',
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $data = [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'student_name' => $validated['name'],
+            'student_class' => $validated['student_class'] ?? null,
+            'bidang' => $validated['bidang'] ?? null,
+            'level' => $validated['level'] ?? null,
+            'school_name' => $validated['school_name'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'gender' => $validated['gender'] ?? null,
+            'religion' => $validated['religion'] ?? null,
         ];
 
-        $user->load(['orders' => function ($query) {
-            $query->latest()->with(['package', 'videoOrder.video'])->limit(20);
-        }]);
+        if (!empty($validated['password'])) {
+            $data['password'] = $validated['password'];
+        }
 
-        return view('admin.users.show', [
-            'user' => $user,
-            'stats' => $stats,
-        ]);
+        if ($request->hasFile('profile_photo')) {
+            if ($user->profile_photo) {
+                Storage::disk('public')->delete($user->profile_photo);
+            }
+            $data['profile_photo'] = $request->file('profile_photo')->store('profile_photos', 'public');
+        }
+
+        $user->update($data);
+
+        return redirect()->route('admin.users.show', $user->id)
+            ->with('success', 'Data user "' . $user->name . '" berhasil diperbarui.');
+    }
+
+    /**
+     * Hapus user.
+     */
+    public function destroy(User $user)
+    {
+        if ($user->profile_photo) {
+            Storage::disk('public')->delete($user->profile_photo);
+        }
+
+        $userName = $user->name;
+        $user->delete();
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'User "' . $userName . '" berhasil dihapus.');
     }
 
     /**
@@ -67,7 +188,6 @@ class AdminUserController extends Controller
      */
     public function toggleActive(User $user)
     {
-        // is_active tidak mass-assignable — tulis langsung ke properti.
         $user->is_active = !$user->is_active;
         $user->save();
 

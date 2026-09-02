@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
 use App\Models\Package;
 use App\Models\PracticeSession;
 use Illuminate\Http\Request;
@@ -18,16 +17,39 @@ class PracticeController extends Controller
 
     public function start(Request $request, Package $package)
     {
-        // Check if user has access to this package
-        $hasAccess = Order::where('user_id', Auth::id())
-            ->where('package_id', $package->id)
-            ->where('payment_status', 'paid')
-            ->whereJsonContains('enrollment->activated', true)
-            ->exists();
-
-        if (!$hasAccess) {
+        if (!$package->is_active) {
             return redirect()->route('packages.index')
-                ->with('error', 'Anda belum memiliki akses ke paket ini!');
+                ->with('error', 'Paket ini belum aktif!');
+        }
+
+        // Cek jadwal pengerjaan
+        if ($package->schedule_status === 'expired') {
+            return redirect()->route('packages.show', $package->id)
+                ->with('error', 'Jadwal pengerjaan paket ini telah berakhir!');
+        }
+
+        if ($package->schedule_status === 'upcoming') {
+            return redirect()->route('packages.show', $package->id)
+                ->with('error', 'Paket ini belum bisa dikerjakan. Silakan tunggu jadwal mulai.');
+        }
+
+        $existingSession = PracticeSession::where('user_id', Auth::id())
+            ->where('package_id', $package->id)
+            ->where('status', 'completed')
+            ->first();
+
+        if ($existingSession) {
+            return redirect()->route('practice.show', $existingSession->id)
+                ->with('info', 'Kamu sudah mengerjakan paket ini. Hasil latihan hanya bisa dikerjakan 1 kali.');
+        }
+
+        $inProgress = PracticeSession::where('user_id', Auth::id())
+            ->where('package_id', $package->id)
+            ->where('status', 'in_progress')
+            ->first();
+
+        if ($inProgress) {
+            return view('practice.start', compact('package', 'inProgress'));
         }
 
         $cardId = $request->card_id;
@@ -41,15 +63,9 @@ class PracticeController extends Controller
                 ->with('error', 'Tidak ada soal pada card ini!');
         }
 
-        $order = Order::where('user_id', Auth::id())
-            ->where('package_id', $package->id)
-            ->where('payment_status', 'paid')
-            ->first();
-
         $session = PracticeSession::create([
             'user_id' => Auth::id(),
             'package_id' => $package->id,
-            'order_id' => $order ? $order->id : null,
             'card_id' => $cardId,
             'total_question' => count($questions),
             'started_at' => now(),
@@ -57,9 +73,7 @@ class PracticeController extends Controller
             'answers' => [],
         ]);
 
-        $timeLimitMinutes = $package->time_limit_minutes ?? 0;
-
-        return view('practice.start', compact('package', 'questions', 'session', 'timeLimitMinutes'));
+        return view('practice.start', compact('package', 'questions', 'session'));
     }
 
     public function submit(Request $request, PracticeSession $session)
@@ -99,11 +113,9 @@ class PracticeController extends Controller
                 'user_answer' => $userAnswer,
                 'is_correct' => $isCorrect,
                 'image' => $question['image'] ?? null,
+                // Selalu simpan explanation di DB supaya bisa ditampilkan nanti jika admin ubah setting
+                'explanation' => $question['explanation'] ?? '',
             ];
-
-            if (!$package->hide_explanation) {
-                $resultItem['explanation'] = $question['explanation'] ?? 'Tidak ada pembahasan';
-            }
 
             $results[] = $resultItem;
         }
@@ -121,9 +133,15 @@ class PracticeController extends Controller
             'answers' => $results,
         ]);
 
-        $hideExplanation = $package->hide_explanation;
+        // Ambil pengaturan dari package (realtime)
+        $showAnswerKey  = $package->canShowAnswerKey();
+        $showExplanation = $package->canShowExplanation();
+        $showScore      = $package->canShowScore();
 
-        return view('practice.result', compact('session', 'results', 'correct', 'wrong', 'unanswered', 'totalScore', 'hideExplanation'));
+        return view('practice.result', compact(
+            'session', 'results', 'correct', 'wrong', 'unanswered', 'totalScore',
+            'showAnswerKey', 'showExplanation', 'showScore'
+        ));
     }
 
     public function history()
@@ -144,9 +162,13 @@ class PracticeController extends Controller
 
         $results = $session->answers ?? [];
         $package = $session->package;
-        $hideExplanation = $package->hide_explanation ?? false;
 
-        return view('practice.show', compact('session', 'results', 'hideExplanation'));
+        // Ambil pengaturan realtime dari package (bisa berubah oleh admin kapan saja)
+        $showAnswerKey   = $package->canShowAnswerKey();
+        $showExplanation = $package->canShowExplanation();
+        $showScore       = $package->canShowScore();
+
+        return view('practice.show', compact('session', 'results', 'showAnswerKey', 'showExplanation', 'showScore'));
     }
 
     public function statistics()

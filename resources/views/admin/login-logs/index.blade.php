@@ -91,8 +91,14 @@
             <div class="md:hidden divide-y divide-border">
                 @foreach($logs as $log)
                     <div class="p-4 flex items-start gap-3 hover:bg-muted/50 transition-all duration-200">
-                        <div class="w-10 h-10 rounded-md bg-gradient-to-br from-brand-900 to-accent-400 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                            {{ strtoupper(substr($log->user->name ?? '?', 0, 1)) }}
+                        <div class="w-10 h-10 rounded-md overflow-hidden flex-shrink-0 border border-border">
+                            @if($log->user && $log->user->profile_photo)
+                                <img src="{{ asset('storage/' . $log->user->profile_photo) }}" alt="{{ $log->user->name }}" class="w-full h-full object-cover">
+                            @else
+                                <div class="w-full h-full bg-gradient-to-br from-brand-900 to-accent-400 flex items-center justify-center text-white font-bold text-sm">
+                                    {{ strtoupper(substr($log->user->name ?? '?', 0, 1)) }}
+                                </div>
+                            @endif
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="font-semibold text-brand-900 truncate text-sm">{{ $log->user->name ?? 'User Dihapus' }}</p>
@@ -133,8 +139,14 @@
                             <tr class="hover:shadow-sm transition-all duration-200">
                                 <td class="px-5 py-4">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-md bg-gradient-to-br from-brand-900 to-accent-400 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
-                                            {{ strtoupper(substr($log->user->name ?? '?', 0, 1)) }}
+                                        <div class="w-9 h-9 rounded-md overflow-hidden flex-shrink-0 border border-border">
+                                            @if($log->user && $log->user->profile_photo)
+                                                <img src="{{ asset('storage/' . $log->user->profile_photo) }}" alt="{{ $log->user->name }}" class="w-full h-full object-cover">
+                                            @else
+                                                <div class="w-full h-full bg-gradient-to-br from-brand-900 to-accent-400 flex items-center justify-center text-white font-bold text-xs">
+                                                    {{ strtoupper(substr($log->user->name ?? '?', 0, 1)) }}
+                                                </div>
+                                            @endif
                                         </div>
                                         <div class="min-w-0">
                                             <p class="font-semibold text-brand-900 truncate text-xs">{{ $log->user->name ?? 'User Dihapus' }}</p>

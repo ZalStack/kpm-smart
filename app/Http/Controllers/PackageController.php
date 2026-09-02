@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Package;
-use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -20,15 +19,15 @@ class PackageController extends Controller
         if (request('kelas')) {
             $query->where('kelas', request('kelas'));
         }
-        if (request('jenjang')) {
-            $query->where('jenjang', request('jenjang'));
+        if (request('bidang')) {
+            $query->where('bidang', request('bidang'));
         }
 
         $packages = $query->paginate(12);
         $allKelas = Package::where('is_active', true)->whereNotNull('kelas')->where('kelas', '!=', '')->distinct()->pluck('kelas')->sort()->values();
-        $allJenjang = Package::where('is_active', true)->whereNotNull('jenjang')->where('jenjang', '!=', '')->distinct()->pluck('jenjang')->sort()->values();
+        $allBidang = Package::where('is_active', true)->whereNotNull('bidang')->where('bidang', '!=', '')->distinct()->pluck('bidang')->sort()->values();
 
-        return view('packages.index', compact('packages', 'allKelas', 'allJenjang'));
+        return view('packages.index', compact('packages', 'allKelas', 'allBidang'));
     }
 
     public function adminIndex(Request $request)
@@ -52,15 +51,15 @@ class PackageController extends Controller
             $query->where('kelas', $request->kelas);
         }
 
-        if ($request->filled('jenjang')) {
-            $query->where('jenjang', $request->jenjang);
+        if ($request->filled('bidang')) {
+            $query->where('bidang', $request->bidang);
         }
 
         $packages = $query->latest()->paginate(10)->withQueryString();
         $allKelas = Package::whereNotNull('kelas')->where('kelas', '!=', '')->distinct()->pluck('kelas')->sort()->values();
-        $allJenjang = Package::whereNotNull('jenjang')->where('jenjang', '!=', '')->distinct()->pluck('jenjang')->sort()->values();
+        $allBidang = Package::whereNotNull('bidang')->where('bidang', '!=', '')->distinct()->pluck('bidang')->sort()->values();
 
-        return view('admin.packages.index', compact('packages', 'allKelas', 'allJenjang'));
+        return view('admin.packages.index', compact('packages', 'allKelas', 'allBidang'));
     }
 
     public function adminShow(Package $package)
@@ -70,15 +69,11 @@ class PackageController extends Controller
         $questionsByCard = collect($allQuestions)->groupBy('card_id');
         $totalCards = count($cards);
         $totalQuestions = count($allQuestions);
-        $totalOrders = $package->orders()->count();
-        $paidOrders = $package->orders()->where('payment_status', 'paid')->count();
-        $totalRevenue = $package->orders()->where('payment_status', 'paid')->sum('total_price');
         $totalPracticeSessions = $package->practiceSessions()->count();
 
         return view('admin.packages.show', compact(
             'package', 'cards', 'allQuestions', 'questionsByCard',
-            'totalCards', 'totalQuestions', 'totalOrders', 'paidOrders',
-            'totalRevenue', 'totalPracticeSessions'
+            'totalCards', 'totalQuestions', 'totalPracticeSessions'
         ));
     }
 
@@ -93,23 +88,20 @@ class PackageController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'kelas' => 'nullable|string|max:255',
-            'jenjang' => 'nullable|string|max:255',
+            'bidang' => 'nullable|string|max:100',
+            'level' => 'nullable|string|max:50',
             'price' => 'required|numeric|min:0',
             'is_active' => 'boolean',
-            'hide_explanation' => 'nullable|boolean',
-            'time_limit_minutes' => 'nullable|integer|min:0|max:480',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i',
+            'show_answer_key' => 'nullable|boolean',
+            'show_explanation' => 'nullable|boolean',
+            'show_score' => 'nullable|boolean',
             'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'is_discount_active' => 'nullable|boolean',
-            'discount_price' => 'nullable|required_if:is_discount_active,1|numeric|min:0|lt:price',
-            'is_pay_what_you_want' => 'nullable|boolean',
-            'min_pay_amount' => 'nullable|numeric|min:0',
-            'membership_duration_days' => 'required|integer|min:1|max:3650',
         ], [
-            'discount_price.lt' => 'Harga diskon harus lebih murah dari harga normal.',
-            'discount_price.required_if' => 'Harga diskon wajib diisi jika diskon diaktifkan.',
-            'membership_duration_days.required' => 'Durasi membership wajib diisi.',
-            'membership_duration_days.min' => 'Durasi membership minimal 1 hari.',
-            'time_limit_minutes.max' => 'Batas waktu pengerjaan maksimal 480 menit (8 jam).',
+            'end_date.after_or_equal' => 'Tanggal berakhir harus sama atau setelah tanggal mulai.',
         ]);
 
         if ($validator->fails()) {
@@ -120,16 +112,17 @@ class PackageController extends Controller
             'title' => $request->title,
             'description' => $request->description,
             'kelas' => $request->kelas,
-            'jenjang' => $request->jenjang,
+            'bidang' => $request->bidang,
+            'level' => $request->level,
             'price' => $request->price,
-            'discount_price' => $request->boolean('is_discount_active') ? $request->discount_price : null,
-            'is_discount_active' => $request->boolean('is_discount_active'),
-            'is_pay_what_you_want' => $request->boolean('is_pay_what_you_want'),
-            'min_pay_amount' => $request->min_pay_amount ?? 0,
-            'membership_duration_days' => $request->membership_duration_days,
             'is_active' => $request->is_active ?? true,
-            'hide_explanation' => $request->boolean('hide_explanation'),
-            'time_limit_minutes' => $request->time_limit_minutes ?: null,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
+            'show_answer_key' => $request->boolean('show_answer_key'),
+            'show_explanation' => $request->boolean('show_explanation', true),
+            'show_score' => $request->boolean('show_score', true),
             'cards' => [],
             'questions' => [],
             'reviews' => [],
@@ -183,23 +176,20 @@ class PackageController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'kelas' => 'nullable|string|max:255',
-            'jenjang' => 'nullable|string|max:255',
+            'bidang' => 'nullable|string|max:100',
+            'level' => 'nullable|string|max:50',
             'price' => 'required|numeric|min:0',
             'is_active' => 'boolean',
-            'hide_explanation' => 'nullable|boolean',
-            'time_limit_minutes' => 'nullable|integer|min:0|max:480',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i',
+            'show_answer_key' => 'nullable|boolean',
+            'show_explanation' => 'nullable|boolean',
+            'show_score' => 'nullable|boolean',
             'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'is_discount_active' => 'nullable|boolean',
-            'discount_price' => 'nullable|required_if:is_discount_active,1|numeric|min:0|lt:price',
-            'is_pay_what_you_want' => 'nullable|boolean',
-            'min_pay_amount' => 'nullable|numeric|min:0',
-            'membership_duration_days' => 'required|integer|min:1|max:3650',
         ], [
-            'discount_price.lt' => 'Harga diskon harus lebih murah dari harga normal.',
-            'discount_price.required_if' => 'Harga diskon wajib diisi jika diskon diaktifkan.',
-            'membership_duration_days.required' => 'Durasi membership wajib diisi.',
-            'membership_duration_days.min' => 'Durasi membership minimal 1 hari.',
-            'time_limit_minutes.max' => 'Batas waktu pengerjaan maksimal 480 menit (8 jam).',
+            'end_date.after_or_equal' => 'Tanggal berakhir harus sama atau setelah tanggal mulai.',
         ]);
 
         if ($validator->fails()) {
@@ -210,16 +200,17 @@ class PackageController extends Controller
             'title' => $request->title,
             'description' => $request->description,
             'kelas' => $request->kelas,
-            'jenjang' => $request->jenjang,
+            'bidang' => $request->bidang,
+            'level' => $request->level,
             'price' => $request->price,
-            'discount_price' => $request->boolean('is_discount_active') ? $request->discount_price : null,
-            'is_discount_active' => $request->boolean('is_discount_active'),
-            'is_pay_what_you_want' => $request->boolean('is_pay_what_you_want'),
-            'min_pay_amount' => $request->min_pay_amount ?? 0,
-            'membership_duration_days' => $request->membership_duration_days,
             'is_active' => $request->is_active ?? true,
-            'hide_explanation' => $request->boolean('hide_explanation'),
-            'time_limit_minutes' => $request->time_limit_minutes ?: null,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
+            'show_answer_key' => $request->boolean('show_answer_key'),
+            'show_explanation' => $request->boolean('show_explanation', true),
+            'show_score' => $request->boolean('show_score', true),
         ]);
 
         if ($request->hasFile('thumbnail')) {
@@ -230,30 +221,83 @@ class PackageController extends Controller
         return redirect()->route('admin.packages.edit.informasi', $package)->with('success', 'Informasi paket berhasil diperbarui!');
     }
 
+    // ===================== AJAX REALTIME TOGGLE =====================
+
+    /**
+     * Toggle pengaturan paket secara AJAX (realtime).
+     * Field yang didukung: show_answer_key, show_explanation, show_score, is_active
+     */
+    public function ajaxToggleSetting(Request $request, Package $package)
+    {
+        $validator = Validator::make($request->all(), [
+            'field' => 'required|in:show_answer_key,show_explanation,show_score,is_active',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => 'Field tidak valid.'], 422);
+        }
+
+        $field = $request->field;
+        $newValue = !$package->{$field};
+        $package->update([$field => $newValue]);
+
+        return response()->json([
+            'success' => true,
+            'field' => $field,
+            'value' => $newValue,
+            'message' => 'Pengaturan berhasil diperbarui.',
+        ]);
+    }
+
+    /**
+     * Update jadwal pengerjaan secara AJAX (realtime).
+     */
+    public function ajaxUpdateSchedule(Request $request, Package $package)
+    {
+        $validator = Validator::make($request->all(), [
+            'start_date' => 'nullable|date',
+            'end_date'   => 'nullable|date|after_or_equal:start_date',
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time'   => 'nullable|date_format:H:i',
+        ], [
+            'end_date.after_or_equal' => 'Tanggal berakhir harus sama atau setelah tanggal mulai.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
+        }
+
+        $package->update([
+            'start_date' => $request->start_date ?: null,
+            'end_date'   => $request->end_date   ?: null,
+            'start_time' => $request->start_time ?: null,
+            'end_time'   => $request->end_time   ?: null,
+        ]);
+
+        // Refresh model
+        $package->refresh();
+
+        return response()->json([
+            'success'         => true,
+            'schedule_status' => $package->schedule_status,
+            'schedule_label'  => $package->schedule_label,
+            'message'         => 'Jadwal berhasil diperbarui.',
+        ]);
+    }
+
     public function confirmDelete(Package $package)
     {
         $totalCards = count($package->cards ?? []);
         $totalQuestions = count($package->questions ?? []);
-        $totalOrders = $package->orders()->count();
         $totalPracticeSessions = $package->practiceSessions()->count();
 
         return view('admin.packages.confirm-delete', compact(
-            'package', 'totalCards', 'totalQuestions', 'totalOrders', 'totalPracticeSessions'
+            'package', 'totalCards', 'totalQuestions', 'totalPracticeSessions'
         ));
     }
 
     public function destroy(Package $package)
     {
-        $hasActiveMembership = $package->orders()
-            ->where('payment_status', 'paid')
-            ->where('membership_end', '>=', now())
-            ->exists();
-
-        if ($hasActiveMembership) {
-            return redirect()->route('admin.packages.show', $package)
-                ->with('error', 'Tidak dapat menghapus paket karena masih ada user dengan membership aktif!');
-        }
-
         $package->delete();
         return redirect()->route('admin.packages.index')->with('success', 'Paket berhasil dihapus!');
     }
@@ -264,37 +308,13 @@ class PackageController extends Controller
             return redirect()->route('packages.index')->with('error', 'Paket tidak tersedia!');
         }
 
-        $order = null;
-        $enrollmentReady = false;
-        $hasAccess = false;
-        $membershipActive = false;
-        $membershipExpired = false;
-
-        if (auth()->check()) {
-            $order = Order::latestPaidFor(auth()->id(), $package->id);
-
-            if ($order) {
-                $enrollmentReady = $order->enrollmentIsReady();
-                $membershipActive = $order->isMembershipActive();
-                $membershipExpired = $order->membershipStatus() === 'expired';
-                $hasAccess = $order->enrollmentIsUnlocked() && $membershipActive;
-            }
-        }
-
         $totalCards = count($package->cards ?? []);
         $totalQuestions = count($package->questions ?? []);
-        $videos = $package->videos()->where('is_active', true)->get();
 
         return view('packages.show', [
             'package' => $package,
-            'order' => $order,
-            'enrollmentReady' => $enrollmentReady,
-            'hasAccess' => $hasAccess,
-            'membershipActive' => $membershipActive,
-            'membershipExpired' => $membershipExpired,
             'totalCards' => $totalCards,
             'totalQuestions' => $totalQuestions,
-            'videos' => $videos,
         ]);
     }
 

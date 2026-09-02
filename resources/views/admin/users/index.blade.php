@@ -62,24 +62,30 @@
 
     <!-- Search & Filter -->
     <div class="admin-card p-4 sm:p-5 stagger-item">
-        <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-col sm:flex-row gap-3">
-            <div class="relative flex-1">
-                <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-                <input type="text" name="search" value="{{ $search }}" placeholder="Cari nama, email, siswa, atau sekolah..."
-                       class="form-input pl-10">
-            </div>
-            <div class="flex gap-3">
-                <select name="status" class="form-select sm:w-44">
-                    <option value="">Semua Status</option>
-                    <option value="active" {{ $status === 'active' ? 'selected' : '' }}>Aktif</option>
-                    <option value="inactive" {{ $status === 'inactive' ? 'selected' : '' }}>Nonaktif</option>
-                </select>
-                <button type="submit" class="btn-primary px-6">Cari</button>
-                @if($search || $status)
-                    <a href="{{ route('admin.users.index') }}" class="btn-secondary px-5">Reset</a>
-                @endif
-            </div>
-        </form>
+        <div class="flex flex-col sm:flex-row gap-3">
+            <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-col sm:flex-row gap-3 flex-1">
+                <div class="relative flex-1">
+                    <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                    <input type="text" name="search" value="{{ $search }}" placeholder="Cari nama, email, siswa, atau sekolah..."
+                           class="form-input pl-10">
+                </div>
+                <div class="flex gap-3">
+                    <select name="status" class="form-select sm:w-44">
+                        <option value="">Semua Status</option>
+                        <option value="active" {{ $status === 'active' ? 'selected' : '' }}>Aktif</option>
+                        <option value="inactive" {{ $status === 'inactive' ? 'selected' : '' }}>Nonaktif</option>
+                    </select>
+                    <button type="submit" class="btn-primary px-6">Cari</button>
+                    @if($search || $status)
+                        <a href="{{ route('admin.users.index') }}" class="btn-secondary px-5">Reset</a>
+                    @endif
+                </div>
+            </form>
+            <a href="{{ route('admin.users.create') }}" class="btn-primary inline-flex items-center gap-2 px-5 whitespace-nowrap">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                Tambah User
+            </a>
+        </div>
     </div>
 
     <!-- Users List -->
@@ -155,8 +161,7 @@
                                     </div>
                                 </td>
                                 <td class="px-5 py-4">
-                                    <p class="text-brand-900">{{ $user->student_name ?? '-' }}</p>
-                                    <p class="text-xs text-muted-foreground">{{ $user->student_class ?? '-' }}@if($user->student_major) · {{ $user->student_major }}@endif</p>
+                                    <p class="text-brand-900">{{ $user->student_class ?? '-' }}@if($user->bidang) · {{ $user->bidang }}@endif</p>
                                 </td>
                                 <td class="px-5 py-4 text-muted-foreground">
                                     @if($user->school_name)

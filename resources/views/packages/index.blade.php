@@ -46,22 +46,23 @@
                        class="w-full pl-9 pr-4 py-2.5 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-sm md:text-base bg-muted/50 hover:bg-card focus:bg-card">
             </div>
             <div class="flex flex-wrap gap-2">
-                <select id="filterJenjang" class="px-4 py-2.5 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-sm md:text-base bg-muted/50 hover:bg-card focus:bg-card appearance-none cursor-pointer pr-8">
-                    <option value="all">Semua Jenjang</option>
-                    @foreach($allJenjang as $j)
-                        <option value="{{ $j }}">{{ $j }}</option>
+                <select id="filterBidang" class="px-4 py-2.5 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-sm bg-muted/50 hover:bg-card focus:bg-card appearance-none cursor-pointer pr-8">
+                    <option value="all">Semua Bidang</option>
+                    @foreach($allBidang as $b)
+                        <option value="{{ mb_strtolower($b) }}">{{ $b }}</option>
                     @endforeach
                 </select>
-                <select id="filterKelas" class="px-4 py-2.5 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-sm md:text-base bg-muted/50 hover:bg-card focus:bg-card appearance-none cursor-pointer pr-8">
+                <select id="filterKelas" class="px-4 py-2.5 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-sm bg-muted/50 hover:bg-card focus:bg-card appearance-none cursor-pointer pr-8">
                     <option value="all">Semua Kelas</option>
                     @foreach($allKelas as $k)
-                        <option value="{{ $k }}">{{ $k }}</option>
+                        <option value="{{ mb_strtolower($k) }}">{{ $k }}</option>
                     @endforeach
                 </select>
-                <select id="filterPackage" class="px-4 py-2.5 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-sm md:text-base bg-muted/50 hover:bg-card focus:bg-card appearance-none cursor-pointer pr-8">
-                    <option value="all">Semua Paket</option>
-                    <option value="active">Aktif</option>
-                    <option value="popular">Terpopuler</option>
+                <select id="filterJadwal" class="px-4 py-2.5 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-sm bg-muted/50 hover:bg-card focus:bg-card appearance-none cursor-pointer pr-8">
+                    <option value="all">Semua Jadwal</option>
+                    <option value="active">Sedang Berlangsung</option>
+                    <option value="upcoming">Akan Datang</option>
+                    <option value="no_limit">Tanpa Batasan</option>
                 </select>
             </div>
         </div>
@@ -86,11 +87,12 @@
                 $icon = $packageIcons[$globalIndex % count($packageIcons)];
                 $totalCards = count($package->cards ?? []);
                 $totalQuestions = count($package->questions ?? []);
-                $videoCount = $package->videos()->where('is_active', true)->count();
+                $scheduleStatus = $package->schedule_status;
             @endphp
             <div class="relative bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 group package-item hover:-translate-y-1.5 border border-border/80 hover:border-primary/30 flex flex-col"
                  data-kelas="{{ mb_strtolower($package->kelas ?? '') }}"
-                 data-jenjang="{{ mb_strtolower($package->jenjang ?? '') }}">
+                 data-bidang="{{ mb_strtolower($package->bidang ?? '') }}"
+                 data-jadwal="{{ $scheduleStatus }}">
                 {{-- Gradient Header --}}
                 <div class="relative h-40 md:h-44 overflow-hidden">
                     @if($package->thumbnail)
@@ -113,40 +115,54 @@
                         </div>
                     @endif
 
-                    {{-- Overlay Badges --}}
-                    <div class="absolute top-3 left-3 flex flex-wrap gap-1.5">
-                        @if($package->is_pay_what_you_want)
-                            <span class="bg-success-500 text-white text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg">💝 Seikhlasnya</span>
-                        @elseif($package->hasDiscount())
-                            <span class="bg-danger-500 text-white text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg">🔥 -{{ $package->discount_percent }}%</span>
+                    {{-- Status Jadwal Badge --}}
+                    <div class="absolute top-3 left-3">
+                        @if($scheduleStatus === 'active')
+                            <span class="bg-success-500 text-white text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> Berlangsung
+                            </span>
+                        @elseif($scheduleStatus === 'upcoming')
+                            <span class="bg-gold-400 text-foreground text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg">⏳ Akan Datang</span>
+                        @elseif($scheduleStatus === 'expired')
+                            <span class="bg-muted-foreground/70 text-white text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg">⛔ Berakhir</span>
+                        @else
+                            <span class="bg-primary/80 text-white text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg">♾️ Tanpa Batas</span>
                         @endif
                     </div>
-                    <span class="absolute top-3 right-3 bg-card/90 backdrop-blur text-foreground text-[10px] md:text-[11px] font-semibold px-2.5 py-1 rounded-full shadow border border-border">⏳ {{ $package->membership_duration_label }}</span>
+
+                    @if($package->is_active)
+                        <span class="absolute top-3 right-3 bg-card/90 backdrop-blur text-success-500 text-[10px] md:text-[11px] font-semibold px-2.5 py-1 rounded-full shadow border border-border">✅ Aktif</span>
+                    @endif
                 </div>
 
                 <div class="p-4 md:p-5 flex flex-col flex-1">
                     {{-- Title --}}
                     <div class="flex items-start justify-between gap-2 mb-2">
                         <h3 class="text-base md:text-lg font-bold text-foreground flex-1 line-clamp-1">{{ $package->title }}</h3>
-                        @if($package->is_active)
-                            <span class="bg-success-500 text-white text-[9px] px-2 py-0.5 rounded-full flex-shrink-0 font-bold">Aktif</span>
-                        @endif
                     </div>
 
-                    {{-- Tags --}}
+                    {{-- Tags: Bidang & Level --}}
                     <div class="flex flex-wrap gap-1.5 mb-2.5">
+                        @if($package->bidang)
+                            <span class="inline-flex items-center gap-0.5 text-[10px] md:text-[11px] bg-primary/10 text-primary font-semibold px-2 py-0.5 rounded-full">📂 {{ $package->bidang }}</span>
+                        @endif
+                        @if($package->level)
+                            <span class="inline-flex items-center gap-0.5 text-[10px] md:text-[11px] bg-navy/10 text-foreground font-semibold px-2 py-0.5 rounded-full">🎯 {{ $package->level }}</span>
+                        @endif
                         @if($package->kelas)
-                            <span class="inline-flex items-center gap-0.5 text-[10px] md:text-[11px] bg-primary/10 text-primary font-semibold px-2 py-0.5 rounded-full">🏫 {{ $package->kelas }}</span>
-                        @endif
-                        @if($package->jenjang)
-                            <span class="inline-flex items-center gap-0.5 text-[10px] md:text-[11px] bg-navy/10 text-foreground font-semibold px-2 py-0.5 rounded-full">🎓 {{ $package->jenjang }}</span>
-                        @endif
-                        @if($package->hide_explanation)
-                            <span class="inline-flex items-center gap-0.5 text-[10px] md:text-[11px] bg-gold-400/15 text-gold-600 font-semibold px-2 py-0.5 rounded-full">🔒 Tanpa Pembahasan</span>
+                            <span class="inline-flex items-center gap-0.5 text-[10px] md:text-[11px] bg-gold-400/15 text-gold-600 font-semibold px-2 py-0.5 rounded-full">🏫 {{ $package->kelas }}</span>
                         @endif
                     </div>
 
                     <p class="text-muted-foreground text-xs md:text-sm line-clamp-2 mb-3 leading-relaxed">{{ $package->description }}</p>
+
+                    {{-- Jadwal --}}
+                    @if($package->start_date || $package->end_date)
+                        <div class="flex items-center gap-1.5 text-[10px] md:text-[11px] text-muted-foreground mb-2.5 bg-muted/50 px-2 py-1.5 rounded-md">
+                            <span>📅</span>
+                            <span>{{ $package->schedule_label }}</span>
+                        </div>
+                    @endif
 
                     {{-- Stats --}}
                     <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] md:text-[11px] text-muted-foreground mb-3">
@@ -159,84 +175,29 @@
                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
                             {{ $totalQuestions }} Soal
                         </span>
-                        @if($videoCount > 0)
-                            <span class="w-px h-3 bg-border"></span>
-                            <span class="inline-flex items-center gap-1" title="Video Pembelajaran">
-                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/></svg>
-                                {{ $videoCount }} Video
-                            </span>
-                        @endif
-                        <span class="text-border">•</span>
-                        <span>⏱️ {{ $package->time_limit_minutes > 0 ? $package->time_limit_minutes . 'm' : 'Bebas' }}</span>
-                        <span class="text-border">•</span>
-                        <span>{{ $package->membership_duration_label }}</span>
                     </div>
 
-                    {{-- Price --}}
+                    {{-- Action Button --}}
                     <div class="mt-auto pt-3 border-t border-border">
-                        <div class="flex items-center justify-between mb-2.5">
-                            @if($package->is_pay_what_you_want)
-                                <div>
-                                    <span class="text-sm md:text-base font-bold text-success-500">💝 Seikhlasnya</span>
-                                    <div class="text-[10px] text-muted-foreground">Min. Rp {{ number_format($package->min_pay_amount ?? 0, 0, ',', '.') }}</div>
-                                </div>
-                            @elseif($package->hasDiscount())
-                                <div class="flex items-end gap-2">
-                                    <span class="text-lg md:text-xl font-bold text-danger-500">Rp {{ number_format($package->final_price, 0, ',', '.') }}</span>
-                                    <div class="text-[10px] text-muted-foreground line-through">Rp {{ number_format($package->price, 0, ',', '.') }}</div>
-                                </div>
-                            @else
-                                <span class="text-lg md:text-xl font-bold text-foreground">
-                                    Rp {{ number_format($package->price, 0, ',', '.') }}
-                                </span>
-                            @endif
-                        </div>
-
                         @auth
-                            @php
-                                $latestOrder = \App\Models\Order::latestPaidFor(Auth::id(), $package->id);
-                                $mStatus = $latestOrder?->membershipStatus();
-                                $hasAccess = $latestOrder
-                                    && $latestOrder->enrollmentIsUnlocked()
-                                    && $latestOrder->isMembershipActive();
-                                $needsActivation = $latestOrder
-                                    && $latestOrder->isMembershipActive()
-                                    && !$latestOrder->enrollmentIsUnlocked();
-                                $needsRenewal = $latestOrder && !$latestOrder->isMembershipActive();
-                                $isExpiringSoon = $latestOrder && $latestOrder->isMembershipExpiringSoon();
-                            @endphp
-
-                            @if($hasAccess && $isExpiringSoon)
-                                <div class="mb-2 text-[10px] text-gold-600 bg-gold-400/10 border border-gold-400/20 rounded-md px-2 py-1.5 text-center sm:text-left">
-                                    ⏳ Sisa {{ $latestOrder->membershipDaysRemaining() }} hari
-                                </div>
-                            @endif
-
-                            @if($hasAccess)
+                            @if($scheduleStatus === 'expired')
+                                <span class="block w-full text-center bg-muted text-muted-foreground py-2 md:py-2.5 rounded-md font-semibold text-xs md:text-sm cursor-not-allowed">
+                                    ⛔ Jadwal Berakhir
+                                </span>
+                            @elseif($scheduleStatus === 'upcoming')
+                                <span class="block w-full text-center bg-gold-400/20 text-gold-600 py-2 md:py-2.5 rounded-md font-semibold text-xs md:text-sm cursor-not-allowed">
+                                    ⏳ Belum Dimulai
+                                </span>
+                            @else
                                 <a href="{{ route('packages.show', $package->id) }}"
                                    class="block w-full text-center bg-success-500 text-white py-2 md:py-2.5 rounded-md font-semibold hover:bg-success-600 hover:shadow-lg transition-all duration-300 text-xs md:text-sm">
                                     📖 Mulai Belajar
-                                </a>
-                            @elseif($needsActivation)
-                                <a href="{{ route('packages.show', $package->id) }}"
-                                   class="block w-full text-center bg-gold-400 text-foreground py-2 md:py-2.5 rounded-md font-semibold hover:bg-gold-500 hover:shadow-lg transition-all duration-300 text-xs md:text-sm">
-                                    🔑 Aktivasi Paket
-                                </a>
-                            @elseif($needsRenewal)
-                                <a href="{{ route('packages.show', $package->id) }}"
-                                   class="block w-full text-center bg-danger-500 text-white py-2 md:py-2.5 rounded-md font-semibold hover:bg-danger-600 hover:shadow-lg transition-all duration-300 text-xs md:text-sm">
-                                    ⏳ Perpanjang
-                                </a>
-                            @else
-                                <a href="{{ route('packages.show', $package->id) }}"
-                                   class="block w-full text-center bg-navy-light text-white py-2 md:py-2.5 rounded-md font-semibold hover:bg-navy hover:shadow-lg transition-all duration-300 text-xs md:text-sm">
-                                    🛒 Beli Sekarang
                                 </a>
                             @endif
                         @else
                             <a href="{{ route('login') }}"
                                class="block w-full text-center bg-navy-light text-white py-2 md:py-2.5 rounded-md font-semibold hover:bg-navy hover:shadow-lg transition-all duration-300 text-xs md:text-sm">
-                                🔑 Masuk untuk Beli
+                                🔑 Masuk untuk Belajar
                             </a>
                         @endauth
                     </div>
@@ -264,36 +225,32 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchPackage');
-    const filterSelect = document.getElementById('filterPackage');
+    const filterBidang = document.getElementById('filterBidang');
     const filterKelas = document.getElementById('filterKelas');
-    const filterJenjang = document.getElementById('filterJenjang');
+    const filterJadwal = document.getElementById('filterJadwal');
     const packages = document.querySelectorAll('.package-item');
 
     function filterPackages() {
         const search = searchInput.value.toLowerCase();
-        const filter = filterSelect.value;
+        const bidang = filterBidang.value.toLowerCase();
         const kelas = filterKelas.value.toLowerCase();
-        const jenjang = filterJenjang.value.toLowerCase();
+        const jadwal = filterJadwal.value;
 
         packages.forEach(function(pkg) {
             const title = pkg.querySelector('h3').textContent.toLowerCase();
-            const desc = pkg.querySelector('p').textContent.toLowerCase();
+            const desc = pkg.querySelector('p') ? pkg.querySelector('p').textContent.toLowerCase() : '';
             let show = true;
 
             if (search && !title.includes(search) && !desc.includes(search)) {
                 show = false;
             }
-
-            if (filter === 'active' && show) {
-                const badge = pkg.querySelector('[class*="bg-success-500"], [class*="bg-green-600"]');
-                if (!badge) show = false;
-            }
-
-            if (kelas && show && pkg.dataset.kelas !== kelas) {
+            if (bidang !== 'all' && show && pkg.dataset.bidang !== bidang) {
                 show = false;
             }
-
-            if (jenjang && show && pkg.dataset.jenjang !== jenjang) {
+            if (kelas !== 'all' && show && pkg.dataset.kelas !== kelas) {
+                show = false;
+            }
+            if (jadwal !== 'all' && show && pkg.dataset.jadwal !== jadwal) {
                 show = false;
             }
 
@@ -302,9 +259,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     searchInput.addEventListener('input', filterPackages);
-    filterSelect.addEventListener('change', filterPackages);
+    filterBidang.addEventListener('change', filterPackages);
     filterKelas.addEventListener('change', filterPackages);
-    filterJenjang.addEventListener('change', filterPackages);
+    filterJadwal.addEventListener('change', filterPackages);
 });
 </script>
 @endpush

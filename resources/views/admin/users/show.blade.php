@@ -38,17 +38,29 @@
                     </div>
                     <p class="text-sm text-muted-foreground mt-0.5">{{ $user->email }}</p>
                 </div>
-                <div class="sm:ml-auto">
+                <div class="sm:ml-auto flex items-center gap-2">
+                    <a href="{{ route('admin.users.edit', $user->id) }}" class="btn-primary inline-flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                        Edit
+                    </a>
                     <form action="{{ route('admin.users.toggle-active', $user->id) }}" method="POST" onsubmit="return confirm('{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }} akun ini?')">
                         @csrf
-                        <button type="submit" class="w-full sm:w-auto {{ $user->is_active ? 'btn-danger' : 'btn-success' }}">
+                        <button type="submit" class="{{ $user->is_active ? 'btn-danger' : 'btn-success' }}">
                             @if($user->is_active)
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
-                                Nonaktifkan Akun
+                                Nonaktifkan
                             @else
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                Aktifkan Akun
+                                Aktifkan
                             @endif
+                        </button>
+                    </form>
+                    <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Yakin hapus user {{ $user->name }}? Semua data terkait akan dihapus.')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn-danger">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                            Hapus
                         </button>
                     </form>
                 </div>
@@ -60,44 +72,7 @@
         </div>
     </div>
 
-    <!-- Stats -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="stat-card stagger-item">
-            <div class="flex items-center gap-4">
-                <div class="stat-icon bg-gradient-to-br from-brand-900 to-brand-800 text-white shadow-lg shadow-brand-900/20">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                </div>
-                <div>
-                    <p class="form-label">Total Pesanan</p>
-                    <p class="text-2xl font-bold text-brand-900 leading-tight">{{ $stats['total_orders'] }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="stat-card stagger-item">
-            <div class="flex items-center gap-4">
-                <div class="stat-icon bg-gradient-to-br from-success-500 to-success-600 text-white shadow-lg shadow-success-500/20">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <div>
-                    <p class="form-label">Pesanan Lunas</p>
-                    <p class="text-2xl font-bold text-success-500 leading-tight">{{ $stats['paid_orders'] }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="stat-card stagger-item">
-            <div class="flex items-center gap-4">
-                <div class="stat-icon bg-gradient-to-br from-gold-400 to-gold-500 text-brand-900 shadow-lg shadow-gold-400/20">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <div>
-                    <p class="form-label">Total Belanja</p>
-                    <p class="text-2xl font-bold text-brand-900 leading-tight">Rp {{ number_format($stats['total_spent'], 0, ',', '.') }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Left column -->
         <div class="space-y-4">
             <div class="admin-card p-5 md:p-6">
@@ -107,16 +82,16 @@
                 </h3>
                 <div class="space-y-3.5 text-sm">
                     <div class="flex items-start justify-between gap-3">
-                        <span class="form-label shrink-0 mb-0">Nama Siswa</span>
-                        <span class="text-brand-900 font-medium text-right">{{ $user->student_name ?? '-' }}</span>
-                    </div>
-                    <div class="flex items-start justify-between gap-3">
                         <span class="form-label shrink-0 mb-0">Kelas</span>
                         <span class="text-brand-900 font-medium text-right">{{ $user->student_class ?? '-' }}</span>
                     </div>
                     <div class="flex items-start justify-between gap-3">
-                        <span class="form-label shrink-0 mb-0">Jurusan</span>
-                        <span class="text-brand-900 font-medium text-right">{{ $user->student_major ?? '-' }}</span>
+                        <span class="form-label shrink-0 mb-0">Bidang</span>
+                        <span class="text-brand-900 font-medium text-right">{{ $user->bidang ?? '-' }}</span>
+                    </div>
+                    <div class="flex items-start justify-between gap-3">
+                        <span class="form-label shrink-0 mb-0">Level</span>
+                        <span class="text-brand-900 font-medium text-right">{{ $user->level ?? '-' }}</span>
                     </div>
                     <div class="flex items-start justify-between gap-3">
                         <span class="form-label shrink-0 mb-0">Sekolah</span>
@@ -152,56 +127,32 @@
         </div>
 
         <!-- Right column -->
-        <div class="lg:col-span-2">
-            <div class="admin-card overflow-hidden">
-                <div class="px-5 md:px-6 py-5 flex items-center justify-between border-b border-border">
-                    <h3 class="text-xs font-bold text-brand-900 uppercase tracking-wide flex items-center gap-2">
-                        <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
-                        Riwayat Pesanan
-                    </h3>
-                    @if(!$user->orders->isEmpty())
-                        <span class="text-xs text-muted-foreground font-medium">{{ $user->orders->count() }} pesanan</span>
+        <div class="admin-card p-5 md:p-6">
+            <h3 class="text-xs font-bold text-brand-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+                <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5"/></svg>
+                Info Tambahan
+            </h3>
+            <div class="space-y-3.5 text-sm">
+                <div class="flex items-start justify-between gap-3">
+                    <span class="form-label shrink-0 mb-0">Role</span>
+                    <span class="text-brand-900 font-medium text-right">{{ ucfirst($user->role) }}</span>
+                </div>
+                <div class="flex items-start justify-between gap-3">
+                    <span class="form-label shrink-0 mb-0">Status</span>
+                    @if($user->is_active)
+                        <span class="badge-success">Aktif</span>
+                    @else
+                        <span class="badge-neutral">Nonaktif</span>
                     @endif
                 </div>
-                @if($user->orders->isEmpty())
-                    <div class="empty-state py-12">
-                        <div class="empty-state-icon mx-auto">
-                            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121 0 2.09-.773 2.34-1.872l1.836-8.046A1.125 1.125 0 0018.054 3H5.106m2.394 11.25l-1.5-6h13.5"/></svg>
-                        </div>
-                        <p class="empty-state-text">Belum ada pesanan</p>
-                    </div>
-                @else
-                    <div class="overflow-x-auto">
-                        <table class="w-full min-w-[560px] text-sm admin-table">
-                            <thead>
-                                <tr>
-                                    <th class="px-6 py-3 text-left">No. Pesanan</th>
-                                    <th class="px-6 py-3 text-left">Item</th>
-                                    <th class="px-6 py-3 text-left">Harga</th>
-                                    <th class="px-6 py-3 text-left">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-border">
-                                @foreach($user->orders as $order)
-                                    <tr>
-                                        <td class="px-6 py-3.5 font-mono text-xs font-semibold text-brand-800">{{ $order->order_number }}</td>
-                                        <td class="px-6 py-3.5 font-medium text-brand-900">@if($order->isVideoOrder())<span class="mr-1">🎬</span>@endif{{ $order->item_title }}</td>
-                                        <td class="px-6 py-3.5 font-medium">Rp {{ number_format($order->total_price, 0, ',', '.') }}</td>
-                                        <td class="px-6 py-3.5">
-                                            @if($order->payment_status === 'paid')
-                                                <span class="badge-success">Lunas</span>
-                                            @elseif($order->payment_status === 'pending')
-                                                <span class="badge-warning">Pending</span>
-                                            @else
-                                                <span class="badge-danger">Gagal</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
+                <div class="flex items-start justify-between gap-3">
+                    <span class="form-label shrink-0 mb-0">Terdaftar Sejak</span>
+                    <span class="text-brand-900 font-medium text-right">{{ $user->created_at->format('d M Y') }}</span>
+                </div>
+                <div class="flex items-start justify-between gap-3">
+                    <span class="form-label shrink-0 mb-0">Terakhir Diperbarui</span>
+                    <span class="text-brand-900 font-medium text-right">{{ $user->updated_at->format('d M Y H:i') }}</span>
+                </div>
             </div>
         </div>
     </div>

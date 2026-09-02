@@ -10,7 +10,7 @@ class PracticeSession extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'package_id', 'order_id', 'card_id',
+        'user_id', 'package_id', 'card_id',
         'total_question', 'correct_answer', 'wrong_answer',
         'unanswered', 'total_score', 'duration_seconds',
         'started_at', 'finished_at', 'status', 'answers'
@@ -31,10 +31,5 @@ class PracticeSession extends Model
     public function package()
     {
         return $this->belongsTo(Package::class);
-    }
-
-    public function order()
-    {
-        return $this->belongsTo(Order::class);
     }
 }

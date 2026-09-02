@@ -19,41 +19,35 @@
         [
             'icon' => '🧩', 'title' => 'Umum', 'color' => '#00a2e9',
             'items' => [
-                ['Apa itu KPM Belajar Online?', 'KPM Belajar Online adalah platform belajar berbayar yang menyediakan bank soal latihan dengan pembahasan lengkap serta video pembahasan soal untuk mendukung belajar mandiri.'],
-                ['Apakah perlu membuat akun untuk membeli?', 'Ya. Kamu perlu mendaftar (gratis) terlebih dahulu agar pembelian, akses, dan progres belajarmu tersimpan rapi di satu akun.'],
+                ['Apa itu KPM Belajar Online?', 'KPM Belajar Online adalah platform belajar yang menyediakan bank soal latihan dengan pembahasan lengkap untuk mendukung belajar mandiri.'],
+                ['Apakah perlu membuat akun untuk mengakses soal?', 'Ya. Kamu perlu mendaftar (gratis) terlebih dahulu agar progres belajarmu tersimpan rapi di satu akun.'],
                 ['Apakah bisa diakses dari HP?', 'Bisa! Tampilan platform sudah responsif dan nyaman digunakan dari HP, tablet, maupun laptop.'],
             ],
         ],
         [
-            'icon' => '💳', 'title' => 'Pembelian & Pembayaran', 'color' => '#009a4b',
+            'icon' => '🔑', 'title' => 'Akses & Paket', 'color' => '#f97316',
             'items' => [
-                ['Metode pembayaran apa saja yang tersedia?', 'Pembayaran diproses melalui Midtrans: transfer bank (BCA, BNI, BRI, Mandiri), e-wallet (GoPay, ShopeePay), QRIS, kartu kredit/debit, hingga Indomaret/Alfamart.'],
-                ['Sudah bayar tapi status masih "Pending"?', 'Untuk beberapa metode (terutama transfer manual/minimarket), verifikasi butuh waktu beberapa menit. Halaman akan diperbarui otomatis setelah Midtrans mengonfirmasi. Jika lebih dari 1 jam tetap pending, hubungi kami via live chat dengan menyertakan nomor pesanan.'],
-                ['Bisakah melanjutkan pembayaran yang tertunda?', 'Bisa. Buka menu <strong>Pesanan</strong>, temukan pesanan berstatus pending, lalu klik tombol <strong>Bayar</strong> untuk membuka kembali halaman pembayaran.'],
-                ['Apakah harga sudah termasuk pajak?', 'Harga yang tampil adalah harga final yang kamu bayar — tidak ada biaya tersembunyi.'],
+                ['Bagaimana cara mulai belajar?', 'Setelah login, buka menu <strong>Paket</strong> untuk melihat daftar paket yang tersedia. Pilih paket yang sesuai, lalu mulai latihan.'],
+                ['Apakah semua paket bisa diakses gratis?', 'Ya! Semua paket soal bisa diakses langsung oleh pengguna yang sudah terdaftar. Kerjakan soal sepuasmu.'],
+                ['Berapa kali saya bisa mengerjakan paket yang sama?', 'Setiap paket hanya bisa dikerjakan satu kali. Pastikan kamu sudah siap sebelum memulai.'],
+                ['Bagaimana jika saya belum selesai mengerjakan?', 'Jika kamu keluar sebelum selesai, sesi latihan akan disimpan sebagai "in_progress" dan kamu bisa melanjutkannya nanti.'],
             ],
         ],
         [
-            'icon' => '🔑', 'title' => 'Aktivasi & Akses', 'color' => '#f97316',
+            'icon' => '📝', 'title' => 'Latihan Soal', 'color' => '#009a4b',
             'items' => [
-                ['Bagaimana cara mengaktifkan paket bank soal?', 'Setelah pembayaran lunas, buka detail pesanan untuk melihat <strong>Enroll Key</strong>. Masukkan key tersebut pada halaman paket untuk membuka akses membership sesuai durasi.'],
-                ['Kenapa video saya belum bisa ditonton padahal sudah bayar?', 'Setelah pembayaran terverifikasi, akses video perlu diaktifkan oleh admin (biasanya cepat). Kartu video akan menampilkan status <strong>"Menunggu Aktivasi"</strong> — begitu aktif, statusnya berubah menjadi <strong>"Aktif"</strong> dan tombol Tonton muncul otomatis.'],
-                ['Berapa lama masa akses saya?', 'Tergantung produk: paket bank soal memiliki durasi membership (misal 30/90 hari), sedangkan video pembahasan dihitung sejak akses diaktifkan (misal 30 hari). Sisa waktu selalu tampil di dashboard dan halaman pesanan.'],
-                ['Akses saya habis, apakah harus beli lagi?', 'Ya, akses bersifat sewa-masa-aktif. Kamu bisa memperpanjang langsung dari kartu paket/video lewat tombol <strong>Perpanjang</strong>.'],
-            ],
-        ],
-        [
-            'icon' => '🎬', 'title' => 'Video Pembahasan', 'color' => '#ec4899',
-            'items' => [
-                ['Apakah video bisa diunduh?', 'Video hanya dapat ditonton streaming di platform agar kualitas dan hak konten tetap terjaga.'],
-                ['Kenapa pemutar video tidak muncul?', 'Pastikan koneksi internet stabil dan browser kamu versi terbaru. Jika masih bermasalah, coba muat ulang halaman atau ganti browser.'],
+                ['Apakah ada batas waktu mengerjakan?', 'Bergantung pada pengaturan paket. Beberapa paket memiliki batas waktu, beberapa tidak. Waktu akan ditampilkan saat kamu mulai latihan.'],
+                ['Bisakah mengulang soal yang salah?', 'Ya! Setelah menyelesaikan latihan, kamu bisa melihat pembahasan lengkap untuk setiap soal di halaman hasil.'],
+                ['Di mana saya bisa melihat riwayat latihan?', 'Buka menu <strong>Latihan</strong> untuk melihat semua sesi latihan yang sudah kamu kerjakan beserta nilainya.'],
+                ['Bagaimana cara melihat statistik belajar?', 'Klik menu <strong>Statistik</strong> di dropdown profil untuk melihat ringkasan performa belajarmu.'],
             ],
         ],
         [
             'icon' => '⚙️', 'title' => 'Akun & Teknis', 'color' => '#7c3aed',
             'items' => [
-                ['Bagaimana jika lupa password?', 'Klik <strong>"Lupa Password?"</strong> di halaman login, masukkan emailmu, jawab pertanyaan verifikasi, lalu buat password baru.'],
-                ['Apakah data pribadi saya aman?', 'Kami hanya menyimpan data yang diperlukan (nama, email, sekolah) dan tidak membagikannya ke pihak ketiga. Pembayaran sepenuhnya ditangani Midtrans dengan enkripsi standar industri.'],
+                ['Bagaimana jika lupa password?', 'Klik <strong>"Lupa Password?"</strong> di halaman login, masukkan emailmu, lalu buat password baru melalui link yang dikirim ke email.'],
+                ['Apakah data pribadi saya aman?', 'Kami hanya menyimpan data yang diperlukan (nama, email, sekolah) dan tidak membagikannya ke pihak ketiga.'],
+                ['Bagaimana cara mengubah profil saya?', 'Buka menu <strong>Profil Saya</strong> dari dropdown profil untuk mengubah data diri, foto profil, dan informasi lainnya.'],
             ],
         ],
     ];
@@ -68,7 +62,7 @@
     <div class="relative z-10 px-5 sm:px-8 py-12 sm:py-16 md:py-20 text-center max-w-3xl mx-auto">
         <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur border border-white/15 text-xs font-semibold text-white/85 mb-5">❓ Pusat Bantuan</span>
         <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight">Pertanyaan yang <span class="text-gold-400">Sering Diajukan</span></h1>
-        <p class="mt-4 text-sm sm:text-base text-white/70 leading-relaxed">Temukan jawaban cepat seputar pembelian, aktivasi, video, dan penggunaan platform.</p>
+        <p class="mt-4 text-sm sm:text-base text-white/70 leading-relaxed">Temukan jawaban cepat seputar penggunaan platform dan latihan soal.</p>
     </div>
 </div>
 

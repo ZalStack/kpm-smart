@@ -210,11 +210,6 @@
                         <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-border"></div></div>
                         <span class="relative bg-background px-4 text-xs text-muted-foreground uppercase tracking-wide">atau</span>
                     </div>
-
-                    <p class="mt-6 text-center text-sm text-muted-foreground">
-                        Belum punya akun?
-                        <a href="{{ route('register') }}" class="text-primary hover:text-primary/80 font-bold transition">Daftar sekarang</a>
-                    </p>
                 </div>
             </div>
         </div>

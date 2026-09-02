@@ -26,11 +26,6 @@ class AppServiceProvider extends ServiceProvider
         Paginator::defaultView('vendor.pagination.custom');
         Paginator::defaultSimpleView('vendor.pagination.custom');
 
-        // Sinkronisasi pesanan video -> tabel orders hanya SATU ARAH
-        // (video_orders adalah sumber kebenaran; baris mirror di orders
-        // bersifat read-model untuk halaman Pesanan/Transaksi/Laporan).
-        \App\Models\VideoOrder::observe(\App\Observers\VideoOrderObserver::class);
-
         $this->configureRateLimiters();
     }
 
@@ -50,19 +45,9 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(10)->by('support:' . $request->ip());
         });
 
-        // Verifikasi enroll key: 10x/menit per user/IP (anti brute-force key).
-        RateLimiter::for('enroll-key', function (Request $request) {
-            return Limit::perMinute(10)->by('enroll:' . ($request->user()?->id ?? $request->ip()));
-        });
-
         // API publik (testimonials): 30x/menit per IP.
         RateLimiter::for('public-api', function (Request $request) {
             return Limit::perMinute(30)->by('api:' . $request->ip());
-        });
-
-        // Pembuatan tagihan Midtrans: 20x/menit per user (anti spam gateway).
-        RateLimiter::for('payments', function (Request $request) {
-            return Limit::perMinute(20)->by('pay:' . ($request->user()?->id ?? $request->ip()));
         });
     }
 }

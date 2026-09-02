@@ -217,9 +217,15 @@
                     @forelse($recentActivities as $activity)
                         <div class="flex items-center justify-between p-3 hover:bg-brand-50/30 transition">
                             <div class="flex items-center gap-3 min-w-0">
-                                <span class="w-8 h-8 rounded-full bg-brand-50 flex items-center justify-center text-sm flex-shrink-0">
-                                    <svg class="w-4 h-4 text-brand-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
-                                </span>
+                                <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-border">
+                                    @if($activity->user && $activity->user->profile_photo)
+                                        <img src="{{ asset('storage/' . $activity->user->profile_photo) }}" alt="{{ $activity->user->name }}" class="w-full h-full object-cover">
+                                    @else
+                                        <div class="w-full h-full bg-brand-50 flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-brand-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                                        </div>
+                                    @endif
+                                </div>
                                 <div class="min-w-0">
                                     <p class="text-sm font-medium text-foreground truncate">{{ $activity->user?->name ?? 'Unknown' }}</p>
                                     <p class="text-xs text-muted-foreground truncate">{{ $activity->package?->title ?? 'Deleted' }}</p>

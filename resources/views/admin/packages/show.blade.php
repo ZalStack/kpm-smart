@@ -56,16 +56,14 @@
                         <h1 class="text-lg sm:text-xl lg:text-2xl font-bold text-foreground truncate">{{ $package->title }}</h1>
                         <p class="text-sm text-muted-foreground mt-1 line-clamp-2">{{ $package->description }}</p>
                         <div class="flex flex-wrap items-center gap-2 mt-3">
+                            @if($package->bidang)
+                                <span class="badge bg-primary/10 text-primary border-0">📂 {{ $package->bidang }}</span>
+                            @endif
+                            @if($package->level)
+                                <span class="badge bg-navy/10 text-navy border-0">🎯 {{ $package->level }}</span>
+                            @endif
                             @if($package->kelas)
-                                <span class="badge badge-info">{{ $package->kelas }}</span>
-                            @endif
-                            @if($package->jenjang)
-                                <span class="badge badge-neutral">{{ $package->jenjang }}</span>
-                            @endif
-                            @if($package->is_pay_what_you_want)
-                                <span class="badge badge-info">Bayar Seikhlasnya</span>
-                            @elseif($package->hasDiscount())
-                                <span class="badge badge-warning">Diskon {{ $package->discount_percent }}%</span>
+                                <span class="badge badge-info">🏫 {{ $package->kelas }}</span>
                             @endif
                             <span class="badge badge-neutral">{{ $totalCards }} Card</span>
                             <span class="badge badge-neutral">{{ $totalQuestions }} Soal</span>
@@ -96,7 +94,7 @@
     </div>
 
     {{-- Stat Cards --}}
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
         {{-- Total Card --}}
         <div class="admin-card stagger-item group p-4 sm:p-5">
             <div class="flex items-center gap-3">
@@ -127,38 +125,8 @@
             </div>
         </div>
 
-        {{-- Total Pesanan --}}
-        <div class="admin-card stagger-item group p-4 sm:p-5">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-md bg-success-500/10 text-success-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
-                    </svg>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-xl sm:text-2xl font-bold text-foreground">{{ $totalOrders }}</p>
-                    <p class="text-[10px] sm:text-[11px] text-muted-foreground font-medium">Pesanan</p>
-                </div>
-            </div>
-        </div>
-
-        {{-- Berhasil --}}
-        <div class="admin-card stagger-item group p-4 sm:p-5">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-md bg-gold-400/10 text-gold-400 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-xl sm:text-2xl font-bold text-foreground">{{ $paidOrders }}</p>
-                    <p class="text-[10px] sm:text-[11px] text-muted-foreground font-medium">Berhasil</p>
-                </div>
-            </div>
-        </div>
-
         {{-- Praktek --}}
-        <div class="admin-card stagger-item group col-span-2 sm:col-span-3 lg:col-span-1 p-4 sm:p-5">
+        <div class="admin-card stagger-item group p-4 sm:p-5">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-md bg-purple-500/10 text-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -179,94 +147,41 @@
         {{-- Left Column: Detail Info --}}
         <div class="lg:col-span-1 space-y-5 sm:space-y-6">
 
-            {{-- Informasi Harga --}}
+            {{-- Informasi Paket --}}
             <div class="admin-card stagger-item p-4 sm:p-5">
                 <div class="flex items-center gap-2.5 mb-4">
                     <div class="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
                         <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
                         </svg>
                     </div>
-                    <h3 class="text-sm font-bold text-foreground">Informasi Harga</h3>
+                    <h3 class="text-sm font-bold text-foreground">Informasi Paket</h3>
                 </div>
 
                 <div class="space-y-0">
-                    @if($package->is_pay_what_you_want)
-                        <div class="flex items-center justify-between py-2.5 border-b border-border last:border-0">
-                            <span class="text-xs sm:text-sm text-muted-foreground">Tipe Harga</span>
-                            <span class="badge badge-info">Bayar Seikhlasnya</span>
+                    @if($package->bidang)
+                        <div class="flex items-center justify-between py-2.5 border-b border-border">
+                            <span class="text-xs sm:text-sm text-muted-foreground">Bidang</span>
+                            <span class="text-xs sm:text-sm font-semibold text-foreground">{{ $package->bidang }}</span>
                         </div>
-                        @if($package->min_pay_amount > 0)
-                            <div class="flex items-center justify-between py-2.5 border-b border-border last:border-0">
-                                <span class="text-xs sm:text-sm text-muted-foreground">Minimum Bayar</span>
-                                <span class="text-xs sm:text-sm font-semibold text-foreground">Rp {{ number_format($package->min_pay_amount, 0, ',', '.') }}</span>
-                            </div>
-                        @endif
-                    @else
-                        @if($package->hasDiscount())
-                            <div class="flex items-center justify-between py-2.5 border-b border-border last:border-0">
-                                <span class="text-xs sm:text-sm text-muted-foreground">Harga Normal</span>
-                                <span class="text-xs sm:text-sm text-muted-foreground line-through">Rp {{ number_format($package->price, 0, ',', '.') }}</span>
-                            </div>
-                            <div class="flex items-center justify-between py-2.5 border-b border-border last:border-0">
-                                <span class="text-xs sm:text-sm text-muted-foreground">Harga Diskon</span>
-                                <span class="text-xs sm:text-sm font-bold text-success-500">Rp {{ number_format($package->discount_price, 0, ',', '.') }}</span>
-                            </div>
-                            <div class="flex items-center justify-between py-2.5 last:border-0">
-                                <span class="text-xs sm:text-sm text-muted-foreground">Diskon</span>
-                                <span class="badge badge-warning">{{ $package->discount_percent }}%</span>
-                            </div>
-                        @else
-                            <div class="flex items-center justify-between py-2.5 last:border-0">
-                                <span class="text-xs sm:text-sm text-muted-foreground">Harga</span>
-                                <span class="text-sm lg:text-base font-bold text-foreground">Rp {{ number_format($package->price, 0, ',', '.') }}</span>
-                            </div>
-                        @endif
                     @endif
-                </div>
-            </div>
-
-            {{-- Informasi Membership --}}
-            <div class="admin-card stagger-item p-4 sm:p-5">
-                <div class="flex items-center gap-2.5 mb-4">
-                    <div class="w-7 h-7 rounded-md bg-navy/10 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-navy" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-sm font-bold text-foreground">Informasi Membership</h3>
-                </div>
-
-                <div class="space-y-0">
+                    @if($package->level)
+                        <div class="flex items-center justify-between py-2.5 border-b border-border">
+                            <span class="text-xs sm:text-sm text-muted-foreground">Level</span>
+                            <span class="text-xs sm:text-sm font-semibold text-foreground">{{ $package->level }}</span>
+                        </div>
+                    @endif
                     @if($package->kelas)
                         <div class="flex items-center justify-between py-2.5 border-b border-border">
                             <span class="text-xs sm:text-sm text-muted-foreground">Kelas</span>
                             <span class="text-xs sm:text-sm font-semibold text-foreground">{{ $package->kelas }}</span>
                         </div>
                     @endif
-                    @if($package->jenjang)
-                        <div class="flex items-center justify-between py-2.5 border-b border-border">
-                            <span class="text-xs sm:text-sm text-muted-foreground">Jenjang</span>
-                            <span class="text-xs sm:text-sm font-semibold text-foreground">{{ $package->jenjang }}</span>
-                        </div>
-                    @endif
-                    <div class="flex items-center justify-between py-2.5 border-b border-border last:border-0">
-                        <span class="text-xs sm:text-sm text-muted-foreground">Durasi</span>
-                        <span class="text-xs sm:text-sm font-semibold text-foreground">{{ $package->membership_duration_label }}</span>
-                    </div>
                     <div class="flex items-center justify-between py-2.5 border-b border-border">
-                        <span class="text-xs sm:text-sm text-muted-foreground">Batas Waktu</span>
-                        <span class="text-xs sm:text-sm font-semibold text-foreground">{{ $package->time_limit_label }}</span>
+                        <span class="text-xs sm:text-sm text-muted-foreground">Harga</span>
+                        <span class="text-sm font-bold text-foreground">Rp {{ number_format($package->price, 0, ',', '.') }}</span>
                     </div>
-                    <div class="flex items-center justify-between py-2.5 border-b border-border">
-                        <span class="text-xs sm:text-sm text-muted-foreground">Pembahasan</span>
-                        @if($package->hide_explanation)
-                            <span class="badge badge-warning text-[10px]">Disembunyikan</span>
-                        @else
-                            <span class="badge badge-success text-[10px]">Ditampilkan</span>
-                        @endif
-                    </div>
-                    <div class="flex items-center justify-between py-2.5 last:border-0">
+                    <div class="flex items-center justify-between py-2.5">
                         <span class="text-xs sm:text-sm text-muted-foreground">Status</span>
                         @if($package->is_active)
                             <span class="badge badge-success">Aktif</span>
@@ -277,20 +192,131 @@
                 </div>
             </div>
 
-            {{-- Pendapatan --}}
+            {{-- Jadwal Pengerjaan --}}
             <div class="admin-card stagger-item p-4 sm:p-5">
                 <div class="flex items-center gap-2.5 mb-4">
-                    <div class="w-7 h-7 rounded-md bg-success-500/10 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-success-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/>
+                    <div class="w-7 h-7 rounded-md bg-gold-400/10 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-gold-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5"/>
                         </svg>
                     </div>
-                    <h3 class="text-sm font-bold text-foreground">Pendapatan</h3>
+                    <h3 class="text-sm font-bold text-foreground">Jadwal Pengerjaan</h3>
                 </div>
 
-                <div class="text-center py-3">
-                    <p class="text-xl sm:text-2xl font-bold text-success-500">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</p>
-                    <p class="text-[10px] sm:text-[11px] text-muted-foreground mt-1">Total Pendapatan</p>
+                @php $scheduleStatus = $package->schedule_status; @endphp
+                <div class="mb-3">
+                    @if($scheduleStatus === 'active')
+                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-success-500/10 text-success-500">
+                            <span class="w-1.5 h-1.5 rounded-full bg-success-500 animate-pulse"></span> Sedang Berlangsung
+                        </span>
+                    @elseif($scheduleStatus === 'upcoming')
+                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-gold-400/15 text-gold-600">⏳ Akan Datang</span>
+                    @elseif($scheduleStatus === 'expired')
+                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-muted text-muted-foreground">⛔ Berakhir</span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-primary/10 text-primary">♾️ Tanpa Batasan</span>
+                    @endif
+                </div>
+
+                @if($package->start_date || $package->end_date)
+                    <div class="space-y-1 text-xs text-muted-foreground">
+                        @if($package->start_date)
+                            <p>📅 Mulai: <span class="font-semibold text-foreground">{{ $package->start_date->translatedFormat('d M Y') }}</span>
+                                @if($package->start_time) · {{ substr($package->start_time, 0, 5) }} WIB @endif
+                            </p>
+                        @endif
+                        @if($package->end_date)
+                            <p>📅 Berakhir: <span class="font-semibold text-foreground">{{ $package->end_date->translatedFormat('d M Y') }}</span>
+                                @if($package->end_time) · {{ substr($package->end_time, 0, 5) }} WIB @endif
+                            </p>
+                        @endif
+                    </div>
+                @else
+                    <p class="text-xs text-muted-foreground">Tidak ada batasan waktu pengerjaan.</p>
+                @endif
+
+                <div class="mt-3 pt-3 border-t border-border">
+                    <a href="{{ route('admin.packages.edit.informasi', $package) }}" class="text-xs font-semibold text-primary hover:underline">✏️ Edit Jadwal</a>
+                </div>
+            </div>
+
+            {{-- Realtime Toggle Pengaturan Soal --}}
+            <div class="admin-card stagger-item p-4 sm:p-5" id="settingsPanel">
+                <div class="flex items-center gap-2.5 mb-4">
+                    <div class="w-7 h-7 rounded-md bg-navy/10 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-navy" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-sm font-bold text-foreground">Pengaturan Soal</h3>
+                    <span id="settingsSaving" class="ml-auto text-xs text-muted-foreground hidden">⏳ Menyimpan...</span>
+                    <span id="settingsSaved" class="ml-auto text-xs text-success-500 hidden">✅ Tersimpan</span>
+                </div>
+
+                <div class="space-y-3">
+                    {{-- Toggle: Kunci Jawaban --}}
+                    <div class="flex items-center justify-between p-3 bg-muted/50 rounded-md border border-border">
+                        <div class="flex-1 mr-3">
+                            <p class="text-xs font-semibold text-foreground">Kunci Jawaban (Benar/Salah)</p>
+                            <p class="text-[10px] text-muted-foreground mt-0.5">User bisa lihat jawaban benar setelah mengerjakan</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                            <input type="checkbox" class="sr-only peer js-toggle-setting"
+                                   data-field="show_answer_key"
+                                   data-package="{{ $package->id }}"
+                                   {{ $package->show_answer_key ? 'checked' : '' }}>
+                            <div class="w-11 h-6 bg-border rounded-full peer peer-checked:bg-success-500 transition-colors duration-300"></div>
+                            <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-card rounded-full shadow transition-transform duration-300 peer-checked:translate-x-5"></div>
+                        </label>
+                    </div>
+
+                    {{-- Toggle: Pembahasan --}}
+                    <div class="flex items-center justify-between p-3 bg-muted/50 rounded-md border border-border">
+                        <div class="flex-1 mr-3">
+                            <p class="text-xs font-semibold text-foreground">Pembahasan</p>
+                            <p class="text-[10px] text-muted-foreground mt-0.5">User bisa lihat pembahasan soal setelah mengerjakan</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                            <input type="checkbox" class="sr-only peer js-toggle-setting"
+                                   data-field="show_explanation"
+                                   data-package="{{ $package->id }}"
+                                   {{ $package->show_explanation ? 'checked' : '' }}>
+                            <div class="w-11 h-6 bg-border rounded-full peer peer-checked:bg-success-500 transition-colors duration-300"></div>
+                            <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-card rounded-full shadow transition-transform duration-300 peer-checked:translate-x-5"></div>
+                        </label>
+                    </div>
+
+                    {{-- Toggle: Skor --}}
+                    <div class="flex items-center justify-between p-3 bg-muted/50 rounded-md border border-border">
+                        <div class="flex-1 mr-3">
+                            <p class="text-xs font-semibold text-foreground">Skor / Nilai</p>
+                            <p class="text-[10px] text-muted-foreground mt-0.5">User bisa lihat skor setelah mengerjakan</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                            <input type="checkbox" class="sr-only peer js-toggle-setting"
+                                   data-field="show_score"
+                                   data-package="{{ $package->id }}"
+                                   {{ $package->show_score ? 'checked' : '' }}>
+                            <div class="w-11 h-6 bg-border rounded-full peer peer-checked:bg-success-500 transition-colors duration-300"></div>
+                            <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-card rounded-full shadow transition-transform duration-300 peer-checked:translate-x-5"></div>
+                        </label>
+                    </div>
+
+                    {{-- Toggle: Status Aktif --}}
+                    <div class="flex items-center justify-between p-3 bg-muted/50 rounded-md border border-border">
+                        <div class="flex-1 mr-3">
+                            <p class="text-xs font-semibold text-foreground">Paket Aktif</p>
+                            <p class="text-[10px] text-muted-foreground mt-0.5">Paket bisa dilihat dan dikerjakan user</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                            <input type="checkbox" class="sr-only peer js-toggle-setting"
+                                   data-field="is_active"
+                                   data-package="{{ $package->id }}"
+                                   {{ $package->is_active ? 'checked' : '' }}>
+                            <div class="w-11 h-6 bg-border rounded-full peer peer-checked:bg-success-500 transition-colors duration-300"></div>
+                            <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-card rounded-full shadow transition-transform duration-300 peer-checked:translate-x-5"></div>
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
@@ -448,4 +474,64 @@
         </a>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const savingEl = document.getElementById('settingsSaving');
+    const savedEl  = document.getElementById('settingsSaved');
+    let savedTimer = null;
+
+    function showSaved() {
+        if (savingEl) savingEl.classList.add('hidden');
+        if (savedEl) {
+            savedEl.classList.remove('hidden');
+            clearTimeout(savedTimer);
+            savedTimer = setTimeout(() => savedEl.classList.add('hidden'), 2500);
+        }
+    }
+
+    function showSaving() {
+        if (savedEl) savedEl.classList.add('hidden');
+        if (savingEl) savingEl.classList.remove('hidden');
+    }
+
+    // Realtime toggle pengaturan (show_answer_key, show_explanation, show_score, is_active)
+    document.querySelectorAll('.js-toggle-setting').forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            const field     = this.dataset.field;
+            const packageId = this.dataset.package;
+            const newVal    = this.checked;
+            showSaving();
+
+            fetch(`/admin/packages/${packageId}/ajax/toggle-setting`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ field: field }),
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showSaved();
+                } else {
+                    // Revert toggle on error
+                    this.checked = !newVal;
+                    if (savingEl) savingEl.classList.add('hidden');
+                    alert('Gagal menyimpan pengaturan: ' + (data.message ?? 'Error'));
+                }
+            })
+            .catch(() => {
+                this.checked = !newVal;
+                if (savingEl) savingEl.classList.add('hidden');
+                alert('Gagal terhubung ke server. Coba lagi.');
+            });
+        });
+    });
+});
+</script>
+@endpush
 @endsection

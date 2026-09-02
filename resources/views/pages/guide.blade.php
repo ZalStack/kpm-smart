@@ -18,23 +18,15 @@
     $steps = [
         [
             'icon' => '📝', 'color' => '#00a2e9', 'title' => 'Daftar / Masuk',
-            'desc' => 'Klik "Daftar" di pojok kanan atas, isi nama, email, dan password. Sudah punya akun? Langsung "Masuk".',
+            'desc' => 'Klik "Masuk" di pojok kanan atas, isi email dan password. Belum punya akun? Hubungi admin untuk membuatkan akun.',
         ],
         [
-            'icon' => '🛒', 'color' => '#009a4b', 'title' => 'Pilih Paket atau Video',
-            'desc' => 'Jelajahi Paket Bank Soal atau Video Pembahasan di menu. Klik "Beli Sekarang" pada yang kamu inginkan.',
-        ],
-        [
-            'icon' => '💳', 'color' => '#FCC626', 'title' => 'Selesaikan Pembayaran',
-            'desc' => 'Pilih metode bayar (transfer, e-wallet, QRIS, minimarket) di halaman pembayaran Midtrans, lalu ikuti instruksinya.',
-        ],
-        [
-            'icon' => '🔑', 'color' => '#f97316', 'title' => 'Aktivasi Akses',
-            'desc' => 'Paket bank soal: masukkan Enroll Key dari halaman detail pesanan. Video: tunggu admin mengaktifkan aksesmu (biasanya cepat setelah pembayaran terverifikasi).',
+            'icon' => '📦', 'color' => '#009a4b', 'title' => 'Pilih Paket',
+            'desc' => 'Buka menu <strong>Paket</strong> untuk melihat daftar paket soal yang tersedia. Pilih paket yang sesuai dengan kebutuhanmu.',
         ],
         [
             'icon' => '🚀', 'color' => '#ec4899', 'title' => 'Mulai Belajar!',
-            'desc' => 'Akses aktif? Kerjakan latihan soal atau tonton video pembahasan. Progress belajarmu tercatat otomatis di dashboard.',
+            'desc' => 'Klik "Mulai Latihan" pada paket yang dipilih. Kerjakan soal, lihat pembahasan, dan pantau progress belajarmu di dashboard.',
         ],
     ];
 
@@ -42,28 +34,20 @@
         [
             'icon' => '🧑‍🎓', 'title' => 'Mengerjakan Latihan Soal',
             'items' => [
-                'Buka menu <strong>Latihan</strong> lalu pilih paket yang sudah kamu beli.',
-                'Pilih jumlah soal atau mulai sesi latihan.',
-                'Jawab soal satu per satu — pembahasan muncul setelah menjawab.',
-                'Selesai? Nilai dan riwayat tersimpan otomatis di <strong>Statistik</strong>.',
+                'Buka menu <strong>Paket</strong> lalu pilih paket yang ingin kamu kerjakan.',
+                'Klik <strong>"Mulai Latihan"</strong> untuk memulai sesi latihan baru.',
+                'Jawab soal satu per satu — navigasi soal ada di panel kiri.',
+                'Klik <strong>"Selesai"</strong> untuk mengumpulkan jawabanmu.',
+                'Lihat hasil, skor, dan pembahasan di halaman hasil.',
             ],
         ],
         [
-            'icon' => '🎬', 'title' => 'Menonton Video Pembahasan',
+            'icon' => '📊', 'title' => 'Melihat Statistik Belajar',
             'items' => [
-                'Buka menu <strong>Video</strong> untuk melihat semua video yang tersedia.',
-                'Status akses ditampilkan pada tiap kartu: Aktif, Menunggu Aktivasi, atau Premium (belum dibeli).',
-                'Setelah membeli & akses diaktifkan admin, klik video lalu tekan play.',
-                'Masa akses video mengikuti durasi paket (misal 30 hari sejak aktivasi).',
-            ],
-        ],
-        [
-            'icon' => '📦', 'title' => 'Mengelola Pesanan',
-            'items' => [
-                'Semua transaksi ada di menu <strong>Pesanan</strong>.',
-                'Pesanan pending bisa dilanjutkan lewat tombol <strong>Bayar</strong>.',
-                'Setelah lunas, status berubah menjadi <strong>Lunas</strong> beserta petunjuk aktivasi.',
-                'Simpan nomor pesanan jika perlu menghubungi bantuan.',
+                'Buka dropdown profil di pojok kanan atas, pilih <strong>Statistik</strong>.',
+                'Lihat ringkasan: total latihan, nilai terbaik, rata-rata skor.',
+                'Pantau progress per paket dengan grafik visual.',
+                'Gunakan tips belajar yang tersedia untuk meningkatkan performa.',
             ],
         ],
         [
@@ -72,7 +56,7 @@
                 'Klik tombol chat hijau/biru di pojok kanan bawah layar.',
                 'Tulis pertanyaanmu — tidak perlu login untuk bertanya.',
                 'Jawaban admin akan muncul di jendela chat yang sama.',
-                'Untuk kendala pembayaran, sertakan nomor pesanan (contoh: ORD-...).',
+                'Atau kunjungi halaman <strong>Bantuan</strong> di panel admin untuk melihat tiket.',
             ],
         ],
     ];
@@ -87,14 +71,13 @@
     <div class="relative z-10 px-5 sm:px-8 py-12 sm:py-16 md:py-20 text-center max-w-3xl mx-auto">
         <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur border border-white/15 text-xs font-semibold text-white/85 mb-5">📖 Panduan Penggunaan</span>
         <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight">Cara Menggunakan <span class="text-gold-400">KPM Belajar Online</span></h1>
-        <p class="mt-4 text-sm sm:text-base text-white/70 leading-relaxed">Ikuti 5 langkah mudah di bawah ini untuk mulai belajar. Semua bisa diselesaikan kurang dari 10 menit.</p>
+        <p class="mt-4 text-sm sm:text-base text-white/70 leading-relaxed">Ikuti 3 langkah mudah di bawah ini untuk mulai belajar. Cepat dan tanpa ribet.</p>
     </div>
 </div>
 
 <!-- Timeline Langkah -->
 <div class="mt-8 md:mt-12 max-w-3xl mx-auto">
     <ol class="relative space-y-4 md:space-y-6">
-        <!-- garis vertikal -->
         <span class="absolute left-[27px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-primary/40 via-gold-400/40 to-success-500/40 hidden sm:block" aria-hidden="true"></span>
         @foreach($steps as $i => $step)
             <li class="relative flex gap-4 items-start bg-card rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow duration-300 p-4 sm:p-5">

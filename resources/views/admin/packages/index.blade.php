@@ -102,10 +102,10 @@
                         <option value="{{ $k }}" {{ request('kelas') == $k ? 'selected' : '' }}>{{ $k }}</option>
                     @endforeach
                 </select>
-                <select name="jenjang" class="form-select px-4 py-3 border border-border rounded-md text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition outline-none bg-muted/50 hover:bg-card focus:bg-card w-full sm:w-40 appearance-none cursor-pointer">
-                    <option value="">Semua Jenjang</option>
-                    @foreach($allJenjang as $j)
-                        <option value="{{ $j }}" {{ request('jenjang') == $j ? 'selected' : '' }}>{{ $j }}</option>
+                <select name="bidang" class="form-select px-4 py-3 border border-border rounded-md text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition outline-none bg-muted/50 hover:bg-card focus:bg-card w-full sm:w-40 appearance-none cursor-pointer">
+                    <option value="">Semua Bidang</option>
+                    @foreach($allBidang as $b)
+                        <option value="{{ $b }}" {{ request('bidang') == $b ? 'selected' : '' }}>{{ $b }}</option>
                     @endforeach
                 </select>
                 <button type="submit" class="btn-primary justify-center gap-2 !py-3 !px-6 whitespace-nowrap">
@@ -114,7 +114,7 @@
                     </svg>
                     Cari
                 </button>
-                @if(request('search') || request('status') || request('kelas') || request('jenjang'))
+                @if(request('search') || request('status') || request('kelas') || request('bidang'))
                     <a href="{{ route('admin.packages.index') }}" class="btn-secondary justify-center !py-3 !px-6 whitespace-nowrap">Reset</a>
                 @endif
                 <a href="{{ route('admin.packages.create') }}" class="btn-primary justify-center gap-2 !py-3 !px-6 whitespace-nowrap">
@@ -152,10 +152,9 @@
                         <tr class="bg-gradient-to-r from-muted to-muted/50 border-b border-border">
                             <th class="px-5 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">#</th>
                             <th class="px-5 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Paket</th>
-                            <th class="px-5 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Kelas</th>
-                            <th class="px-5 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Jenjang</th>
-                            <th class="px-5 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Harga</th>
-                            <th class="px-5 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Membership</th>
+                            <th class="px-5 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Bidang</th>
+                            <th class="px-5 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Level</th>
+                            <th class="px-5 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Jadwal</th>
                             <th class="px-5 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Soal</th>
                             <th class="px-5 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
                             <th class="px-5 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Aksi</th>
@@ -186,37 +185,32 @@
                                     </div>
                                 </td>
                                 <td class="px-5 py-4">
-                                    @if($package->kelas)
-                                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-primary/10 text-primary">{{ $package->kelas }}</span>
+                                    @if($package->bidang)
+                                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-primary/10 text-primary">{{ $package->bidang }}</span>
                                     @else
                                         <span class="text-xs text-muted-foreground">-</span>
                                     @endif
                                 </td>
                                 <td class="px-5 py-4">
-                                    @if($package->jenjang)
-                                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-navy/10 text-navy">{{ $package->jenjang }}</span>
+                                    @if($package->level)
+                                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-navy/10 text-navy">{{ $package->level }}</span>
                                     @else
                                         <span class="text-xs text-muted-foreground">-</span>
                                     @endif
                                 </td>
                                 <td class="px-5 py-4">
-                                    @if($package->is_pay_what_you_want)
-                                        <div class="flex flex-col">
-                                            <span class="badge-success inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full w-fit">Seikhlasnya</span>
-                                            <span class="text-[11px] text-muted-foreground mt-1">Min. Rp {{ number_format($package->min_pay_amount ?? 0, 0, ',', '.') }}</span>
-                                        </div>
-                                    @elseif($package->hasDiscount())
-                                        <div class="flex flex-col leading-tight">
-                                            <span class="text-xs text-muted-foreground line-through">Rp {{ number_format($package->price, 0, ',', '.') }}</span>
-                                            <span class="font-bold text-danger-500 text-base">Rp {{ number_format($package->final_price, 0, ',', '.') }}</span>
-                                            <span class="text-[10px] font-semibold badge-danger text-white px-2 py-0.5 rounded-full w-fit mt-0.5">-{{ $package->discount_percent }}%</span>
-                                        </div>
+                                    @php $sch = $package->schedule_status; @endphp
+                                    @if($sch === 'active')
+                                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-success-500/10 text-success-500">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-success-500 animate-pulse"></span> Berlangsung
+                                        </span>
+                                    @elseif($sch === 'upcoming')
+                                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-gold-400/15 text-gold-600">⏳ Akan Datang</span>
+                                    @elseif($sch === 'expired')
+                                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-muted text-muted-foreground">⛔ Berakhir</span>
                                     @else
-                                        <span class="font-semibold text-foreground">Rp {{ number_format($package->price, 0, ',', '.') }}</span>
+                                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-primary/10 text-primary">♾️ Tanpa Batas</span>
                                     @endif
-                                </td>
-                                <td class="px-5 py-4">
-                                    <span class="badge-info inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full whitespace-nowrap">{{ $package->membership_duration_label }}</span>
                                 </td>
                                 <td class="px-5 py-4 text-center">
                                     <span class="inline-flex items-center justify-center min-w-[32px] px-2.5 py-1 rounded-full {{ $qCount > 0 ? 'bg-navy-light/10 text-navy-light' : 'badge-neutral' }} text-xs font-semibold">{{ $qCount }}</span>
@@ -304,23 +298,27 @@
                 </div>
 
                 <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border">
+                    @if($package->bidang)
+                        <span class="bg-primary/10 text-primary text-[10px] font-semibold px-3 py-1.5 rounded-full">📂 {{ $package->bidang }}</span>
+                    @endif
+                    @if($package->level)
+                        <span class="bg-navy/10 text-navy text-[10px] font-semibold px-3 py-1.5 rounded-full">🎯 {{ $package->level }}</span>
+                    @endif
                     @if($package->kelas)
-                        <span class="badge-info text-[10px] font-semibold px-3 py-1.5 rounded-full">{{ $package->kelas }}</span>
+                        <span class="badge-info text-[10px] font-semibold px-3 py-1.5 rounded-full">🏫 {{ $package->kelas }}</span>
                     @endif
-                    @if($package->jenjang)
-                        <span class="text-[10px] font-semibold px-3 py-1.5 rounded-full bg-navy/10 text-navy">{{ $package->jenjang }}</span>
-                    @endif
-                    @if($package->is_pay_what_you_want)
-                        <span class="badge-success text-[10px] font-semibold px-3 py-1.5 rounded-full">Seikhlasnya</span>
-                    @elseif($package->hasDiscount())
-                            <span class="text-xs font-bold px-3 py-1.5 rounded-md bg-danger-50 text-danger-500">
-                            Rp {{ number_format($package->final_price, 0, ',', '.') }}
-                            <span class="text-[10px] text-muted-foreground font-normal line-through ml-1">Rp {{ number_format($package->price, 0, ',', '.') }}</span>
+                    @php $sch = $package->schedule_status; @endphp
+                    @if($sch === 'active')
+                        <span class="inline-flex items-center gap-1 bg-success-500/10 text-success-500 text-[10px] font-semibold px-3 py-1.5 rounded-full">
+                            <span class="w-1.5 h-1.5 rounded-full bg-success-500 animate-pulse"></span> Berlangsung
                         </span>
+                    @elseif($sch === 'upcoming')
+                        <span class="bg-gold-400/15 text-gold-600 text-[10px] font-semibold px-3 py-1.5 rounded-full">⏳ Akan Datang</span>
+                    @elseif($sch === 'expired')
+                        <span class="badge-neutral text-[10px] font-semibold px-3 py-1.5 rounded-full">⛔ Berakhir</span>
                     @else
-                        <span class="text-xs font-semibold px-3 py-1.5 rounded-md bg-muted text-foreground">Rp {{ number_format($package->price, 0, ',', '.') }}</span>
+                        <span class="bg-primary/10 text-primary text-[10px] font-semibold px-3 py-1.5 rounded-full">♾️ Tanpa Batas</span>
                     @endif
-                    <span class="badge-info text-[10px] font-semibold px-3 py-1.5 rounded-full">{{ $package->membership_duration_label }}</span>
                     <span class="text-[10px] font-semibold px-3 py-1.5 rounded-full {{ $qCount > 0 ? 'bg-navy-light/10 text-navy-light' : 'badge-neutral' }}">{{ $qCount }} soal</span>
                 </div>
 

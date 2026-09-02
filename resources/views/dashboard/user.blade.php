@@ -13,17 +13,10 @@
     .dash-stagger > *:nth-child(3) { animation-delay: 120ms; }
     .dash-stagger > *:nth-child(4) { animation-delay: 180ms; }
     .dash-stagger > *:nth-child(5) { animation-delay: 240ms; }
-    .dash-stagger > *:nth-child(6) { animation-delay: 300ms; }
-    .dash-stagger > *:nth-child(7) { animation-delay: 360ms; }
-    .dash-stagger > *:nth-child(8) { animation-delay: 420ms; }
 
     @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-    @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(0,162,233,.25); } 50% { box-shadow: 0 0 0 8px rgba(0,162,233,0); } }
 
-    .anim-float { animation: float 6s ease-in-out infinite; }
-
-    /* Hero - same as welcome */
     .dash-hero {
         background: linear-gradient(160deg, #0a0e27 0%, #161758 30%, #1e3a8a 60%, #161758 85%, #0a0e27 100%);
         position: relative; overflow: hidden;
@@ -42,7 +35,6 @@
         background-size: 32px 32px; pointer-events: none;
     }
 
-    /* Card modern - same as welcome */
     .card-modern {
         background: #fff; border-radius: 20px;
         border: 1px solid rgba(0,0,0,.04);
@@ -55,7 +47,6 @@
         border-color: rgba(0,162,233,.12);
     }
 
-    /* Stat tile */
     .stat-tile {
         background: #fff; border-radius: 16px;
         border: 1px solid rgba(0,0,0,.04);
@@ -70,28 +61,18 @@
     .stat-tile:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,.06); border-color: transparent; }
     .stat-tile:hover::before { opacity: 1; }
 
-    /* Quick tile */
     .quick-tile {
         border-radius: 16px;
         transition: all .35s cubic-bezier(.16,1,.3,1);
     }
     .quick-tile:hover { transform: translateY(-3px); }
 
-    /* Section badge */
     .section-badge {
         display: inline-flex; align-items: center; gap: .5rem;
         padding: .375rem 1rem; border-radius: 9999px;
         font-size: .75rem; font-weight: 600;
     }
 
-    /* Testimonial quote */
-    .testi-quote { position: relative; padding-left: 1rem; border-left: 3px solid #00a2e9; }
-    .testi-quote::before {
-        content: '\201C'; position: absolute; top: -12px; left: -12px;
-        font-size: 48px; color: #00a2e9; opacity: .12; font-family: Georgia, serif;
-    }
-
-    /* Btn gold */
     .btn-gold {
         background: linear-gradient(135deg, #FCC626 0%, #f5b800 100%);
         color: #161758; font-weight: 700; border-radius: 14px;
@@ -105,12 +86,10 @@
         background: linear-gradient(135deg, #f5b800 0%, #d4a00a 100%);
     }
 
-    /* Package card */
     .pkg-card { position: relative; overflow: hidden; border-radius: 20px; }
     .pkg-card .pkg-thumb { transition: transform .6s cubic-bezier(.16,1,.3,1); }
     .pkg-card:hover .pkg-thumb { transform: scale(1.08); }
 
-    /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(0,0,0,.1); border-radius: 10px; }
@@ -127,13 +106,11 @@
 
 <div class="space-y-6 md:space-y-8 dash-stagger">
 
-    <!-- ================= HERO ================= -->
+    <!-- HERO -->
     <div class="relative rounded-3xl overflow-hidden dash-hero text-white shadow-xl shadow-navy/20">
-        <!-- Floating Dots -->
         <div class="absolute top-8 left-[10%] w-2 h-2 bg-gold-400 rounded-full opacity-40 anim-float" style="animation-delay:0s"></div>
         <div class="absolute top-16 right-[15%] w-3 h-3 bg-cyan-400 rounded-full opacity-25 anim-float" style="animation-delay:1.5s"></div>
         <div class="absolute bottom-12 left-[20%] w-2 h-2 bg-success-400 rounded-full opacity-30 anim-float" style="animation-delay:3s"></div>
-        <div class="absolute top-20 left-[50%] w-1.5 h-1.5 bg-white rounded-full opacity-15 anim-float" style="animation-delay:.7s"></div>
 
         <div class="relative z-10 p-5 sm:p-6 md:p-8 lg:p-10 flex flex-col lg:flex-row lg:items-center gap-5 lg:gap-8">
             <div class="flex-1 min-w-0">
@@ -151,9 +128,9 @@
                     Teruslah belajar dan tingkatkan kemampuanmu bersama <span class="text-gold-400 font-semibold">KPM Belajar Online</span>.
                 </p>
 
-                @if($user->student_name)
+                @if($user->name)
                     <div class="inline-flex items-center gap-2 max-w-full bg-white/[.07] backdrop-blur px-3 py-1.5 rounded-full text-[11px] sm:text-xs text-white/70 border border-white/[.1]">
-                        🎓 <span class="truncate">{{ $user->student_name }} • {{ $user->student_class }} {{ $user->student_major ? '• ' . $user->student_major : '' }}</span>
+                        🎓 <span class="truncate">{{ $user->name }} • {{ $user->student_class }} {{ $user->bidang ? '• ' . $user->bidang : '' }}</span>
                     </div>
                 @endif
             </div>
@@ -164,39 +141,20 @@
                     🚀 Mulai Belajar
                     <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                 </a>
-                <a href="{{ route('videos.index') }}"
-                   class="inline-flex items-center justify-center gap-2 bg-white/[.08] backdrop-blur border border-white/[.15] text-white px-5 py-2.5 rounded-md font-semibold text-sm hover:bg-white/[.12] hover:border-white/30 transition-all duration-300">
-                    🎬 Jelajahi Video
-                </a>
             </div>
         </div>
     </div>
 
-    <!-- ================= STATISTIK ================= -->
+    <!-- STATISTIK -->
     <div>
         <div class="flex items-end justify-between mb-4">
             <div>
                 <span class="section-badge bg-primary/10 text-primary mb-2">📊 Statistik</span>
                 <h2 class="text-lg md:text-xl font-bold text-foreground" style="font-family:'Sora','Inter',sans-serif">Progress Belajarmu</h2>
-                <p class="text-[11px] text-muted-foreground mt-0.5 hidden sm:block">Ringkasan aktivitas belajar terkini</p>
             </div>
         </div>
 
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            <div class="stat-tile p-4 md:p-5" style="--tile-accent:#00a2e9">
-                <div class="flex items-start justify-between gap-2">
-                    <div class="min-w-0">
-                        <p class="text-[10px] md:text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">Paket Aktif</p>
-                        <p class="text-2xl md:text-3xl font-extrabold text-foreground mt-1 leading-none" style="font-family:'Sora','Inter',sans-serif">{{ $orders->count() }}</p>
-                    </div>
-                    <div class="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-primary/10 flex items-center justify-center text-xl flex-shrink-0">📚</div>
-                </div>
-                <a href="{{ route('packages.index') }}" class="mt-3 inline-flex items-center gap-1 text-[11px] md:text-xs font-semibold text-primary hover:text-foreground transition-colors">
-                    Lihat paket
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                </a>
-            </div>
-
             <div class="stat-tile p-4 md:p-5" style="--tile-accent:#10b981">
                 <div class="flex items-start justify-between gap-2">
                     <div class="min-w-0">
@@ -238,10 +196,24 @@
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                 </a>
             </div>
+
+            <div class="stat-tile p-4 md:p-5" style="--tile-accent:#00a2e9">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                        <p class="text-[10px] md:text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">Paket Tersedia</p>
+                        <p class="text-2xl md:text-3xl font-extrabold text-foreground mt-1 leading-none" style="font-family:'Sora','Inter',sans-serif">{{ $packages->count() }}</p>
+                    </div>
+                    <div class="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-primary/10 flex items-center justify-center text-xl flex-shrink-0">📚</div>
+                </div>
+                <a href="{{ route('packages.index') }}" class="mt-3 inline-flex items-center gap-1 text-[11px] md:text-xs font-semibold text-primary hover:text-foreground transition-colors">
+                    Lihat paket
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                </a>
+            </div>
         </div>
     </div>
 
-    <!-- ================= AKSI CEPAT ================= -->
+    <!-- AKSI CEPAT -->
     <div>
         <div class="flex items-end justify-between mb-4">
             <div>
@@ -249,7 +221,7 @@
                 <h2 class="text-lg md:text-xl font-bold text-foreground" style="font-family:'Sora','Inter',sans-serif">Mulai Aktivitas</h2>
             </div>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
             <a href="{{ route('packages.index') }}" class="quick-tile card-modern group !rounded-2xl p-4 md:p-5 text-center">
                 <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center text-2xl group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">📚</div>
                 <p class="text-[13px] font-bold text-foreground">Cari Paket</p>
@@ -260,25 +232,15 @@
                 <p class="text-[13px] font-bold text-foreground">Riwayat</p>
                 <p class="text-[10px] text-muted-foreground mt-0.5 hidden sm:block">Pantau progress</p>
             </a>
-            <a href="{{ route('orders.index') }}" class="quick-tile card-modern group !rounded-2xl p-4 md:p-5 text-center">
-                <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-gold-400/15 to-gold-400/5 flex items-center justify-center text-2xl group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">📦</div>
-                <p class="text-[13px] font-bold text-foreground">Pesanan</p>
-                <p class="text-[10px] text-muted-foreground mt-0.5 hidden sm:block">Cek status beli</p>
-            </a>
             <button onclick="toggleChat()" class="quick-tile card-modern group !rounded-2xl p-4 md:p-5 text-center">
                 <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-cyan-50 to-cyan-100/50 flex items-center justify-center text-2xl group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">🤖</div>
                 <p class="text-[13px] font-bold text-foreground">Tanya AI</p>
                 <p class="text-[10px] text-muted-foreground mt-0.5 hidden sm:block">Asisten pintar</p>
             </button>
-            <a href="{{ route('profile.edit') }}" class="quick-tile card-modern group !rounded-2xl p-4 md:p-5 text-center col-span-2 sm:col-span-1">
-                <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-violet-50 to-violet-100/50 flex items-center justify-center text-2xl group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">👤</div>
-                <p class="text-[13px] font-bold text-foreground">Profil Saya</p>
-                <p class="text-[10px] text-muted-foreground mt-0.5 hidden sm:block">Kelola data diri</p>
-            </a>
         </div>
     </div>
 
-    <!-- ================= PUSAT BANTUAN ================= -->
+    <!-- PUSAT BANTUAN -->
     <div class="card-modern !rounded-2xl p-5 sm:p-6">
         <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
             <div class="flex items-center gap-3 flex-1 min-w-0">
@@ -305,117 +267,7 @@
         </div>
     </div>
 
-    <!-- ================= VIDEO PEMBAHASAN ================= -->
-    @if($videos->isNotEmpty())
-    <div>
-        <div class="flex items-center justify-between gap-3 mb-4">
-            <div class="min-w-0">
-                <span class="section-badge bg-cyan-50 text-cyan-600 mb-2">🎬 Video</span>
-                <h2 class="text-lg md:text-xl font-bold text-foreground" style="font-family:'Sora','Inter',sans-serif">Video Pembahasan</h2>
-                <p class="text-[11px] text-muted-foreground mt-0.5 hidden sm:block">Belajar lebih mudah dengan video pembahasan soal</p>
-            </div>
-            <a href="{{ route('videos.index') }}" class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-foreground transition-colors whitespace-nowrap flex-shrink-0">
-                Lihat Semua
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-            </a>
-        </div>
-
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            @foreach($videos as $video)
-                @php
-                    $accessStatus = $videoAccessMap[$video->id] ?? null;
-                    $hasActiveAccess = $accessStatus === 'active';
-                @endphp
-                <a href="{{ route('videos.show', $video->id) }}" class="pkg-card card-modern group block !rounded-2xl overflow-hidden">
-                    <div class="relative aspect-video overflow-hidden {{ $hasActiveAccess ? 'bg-gradient-to-br from-success-500/70 to-navy-light' : 'bg-gradient-to-br from-navy to-navy-light' }}">
-                        @if($video->thumbnail)
-                            <img src="{{ asset('storage/' . $video->thumbnail) }}" alt="{{ $video->title }}" class="pkg-thumb w-full h-full object-cover" loading="lazy">
-                        @endif
-                        <div class="absolute inset-0 bg-black/20 group-hover:bg-black/35 transition-colors flex items-center justify-center">
-                            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                @if($hasActiveAccess)
-                                    <svg class="w-4 h-4 text-success-500 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                @else
-                                    <svg class="w-4 h-4 text-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                                @endif
-                            </div>
-                        </div>
-                        @if($accessStatus === 'active')
-                            <span class="absolute top-2 left-2 bg-success-500 text-white text-[8px] md:text-[9px] font-bold px-2.5 py-0.5 rounded-full shadow uppercase tracking-wide">✓ Aktif</span>
-                        @elseif($accessStatus === 'awaiting_activation')
-                            <span class="absolute top-2 left-2 bg-gold-400 text-foreground text-[8px] md:text-[9px] font-bold px-2.5 py-0.5 rounded-full shadow uppercase tracking-wide">⏳ Menunggu</span>
-                        @elseif($accessStatus === 'pending_payment')
-                            <span class="absolute top-2 left-2 bg-gold-400 text-foreground text-[8px] md:text-[9px] font-bold px-2.5 py-0.5 rounded-full shadow uppercase tracking-wide">💳 Bayar</span>
-                        @elseif($accessStatus === 'expired')
-                            <span class="absolute top-2 left-2 bg-muted text-white text-[8px] md:text-[9px] font-bold px-2.5 py-0.5 rounded-full shadow uppercase tracking-wide">Berakhir</span>
-                        @else
-                            <span class="absolute top-2 left-2 bg-gold-400 text-foreground text-[8px] md:text-[9px] font-bold px-2.5 py-0.5 rounded-full shadow uppercase tracking-wide">🔒 Premium</span>
-                        @endif
-                    </div>
-                    <div class="p-3 md:p-4">
-                        <h4 class="text-[11px] md:text-xs font-semibold text-foreground line-clamp-2 leading-snug min-h-[1.75rem]">{{ $video->title }}</h4>
-                        <div class="flex items-center justify-between gap-1 mt-2">
-                            @if($hasActiveAccess)
-                                <span class="text-[10px] md:text-[11px] font-bold text-success-500">Tonton Sekarang</span>
-                            @elseif($accessStatus === 'awaiting_activation')
-                                <span class="text-[10px] md:text-[11px] font-semibold text-gold-600">Menunggu Admin</span>
-                            @elseif($accessStatus === 'pending_payment')
-                                <span class="text-[10px] md:text-[11px] font-semibold text-gold-500">Selesaikan Bayar</span>
-                            @elseif($accessStatus === 'expired')
-                                <span class="text-[10px] md:text-[11px] font-semibold text-muted-foreground">Beli Lagi</span>
-                            @else
-                                <span class="text-[10px] md:text-[11px] font-bold text-foreground">Rp {{ number_format($video->final_price, 0, ',', '.') }}</span>
-                            @endif
-                            <span class="text-[9px] md:text-[10px] text-muted-foreground whitespace-nowrap">⏱️ {{ $video->access_duration_days }} hari</span>
-                        </div>
-                    </div>
-                </a>
-            @endforeach
-        </div>
-    </div>
-    @endif
-
-    <!-- ================= TESTIMONI ================= -->
-    <div class="card-modern !rounded-2xl p-5 sm:p-6 md:p-8" id="testimonialSection">
-        <div class="mb-5">
-            <span class="section-badge bg-gold-50 text-gold-600 mb-2">💬 Testimoni</span>
-            <h2 class="text-lg md:text-xl font-bold text-foreground" style="font-family:'Sora','Inter',sans-serif">Beri Testimoni</h2>
-            <p class="text-[11px] text-muted-foreground mt-0.5">Bagikan pengalaman belajarmu di KPM Belajar Online</p>
-        </div>
-
-        <div id="testimonialStatus"></div>
-
-        <form id="testimonialForm" class="space-y-4 max-w-2xl">
-            @csrf
-            <div>
-                <label class="block text-xs font-medium text-muted-foreground mb-1.5">Rating</label>
-                <div class="flex gap-1 text-2xl" id="ratingStars">
-                    <button type="button" class="rating-star text-gold-400" data-value="1">★</button>
-                    <button type="button" class="rating-star text-gold-400" data-value="2">★</button>
-                    <button type="button" class="rating-star text-gold-400" data-value="3">★</button>
-                    <button type="button" class="rating-star text-gold-400" data-value="4">★</button>
-                    <button type="button" class="rating-star text-gold-400" data-value="5">★</button>
-                </div>
-                <input type="hidden" name="rating" id="ratingInput" value="5">
-            </div>
-
-            <div>
-                <label class="block text-xs font-medium text-muted-foreground mb-1.5">Testimoni</label>
-                <textarea name="content" id="testimonialContent" rows="3"
-                          placeholder="Tulis pengalaman Anda menggunakan platform ini..."
-                          class="w-full rounded-xl border-border focus:border-primary focus:ring-primary transition text-sm"
-                          maxlength="500"></textarea>
-                <p class="text-[10px] text-muted-foreground mt-1"><span id="charCount">0</span>/500 karakter</p>
-            </div>
-
-            <button type="submit" id="submitTestimonial"
-                    class="btn-gold !text-sm !py-2.5 !px-6 w-full sm:w-auto justify-center">
-                📤 Kirim Testimoni
-            </button>
-        </form>
-    </div>
-
-    <!-- ================= PAKET BANK SOAL ================= -->
+    <!-- PAKET BANK SOAL -->
     <div>
         <div class="flex items-center justify-between gap-3 mb-4">
             <div class="min-w-0">
@@ -437,10 +289,8 @@
                 'bg-gradient-to-br from-amber-400 to-orange-500',
                 'bg-gradient-to-br from-cyan-500 to-blue-600',
                 'bg-gradient-to-br from-pink-500 to-fuchsia-600',
-                'bg-gradient-to-br from-teal-500 to-emerald-600',
-                'bg-gradient-to-br from-blue-500 to-indigo-600',
             ];
-            $dashIcons = ['📖', '📚', '🎯', '💡', '🚀', '🌟', '🎓', '📊', '⚡', '🏆', '💎', '🔥'];
+            $dashIcons = ['📖', '📚', '🎯', '💡', '🚀', '🌟'];
         @endphp
 
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
@@ -448,130 +298,36 @@
                 @php
                     $colorClass = $dashColors[$index % count($dashColors)];
                     $icon = $dashIcons[$index % count($dashIcons)];
-
-                    $latestOrder = \App\Models\Order::latestPaidFor(Auth::id(), $package->id);
-                    $hasAccess = $latestOrder
-                        && $latestOrder->enrollmentIsUnlocked()
-                        && $latestOrder->isMembershipActive();
-                    $needsActivation = $latestOrder
-                        && $latestOrder->isMembershipActive()
-                        && !$latestOrder->enrollmentIsUnlocked();
-                    $needsRenewal = $latestOrder && !$latestOrder->isMembershipActive();
-                    $isExpiringSoon = $latestOrder && $latestOrder->isMembershipExpiringSoon();
-
                     $totalCards = count($package->cards ?? []);
                     $totalQuestions = count($package->questions ?? []);
-                    $videoCount = $package->videos()->where('is_active', true)->count();
                 @endphp
-                <div class="pkg-card card-modern flex flex-col group overflow-hidden">
-                    {{-- Thumbnail --}}
-                    <div class="relative h-44 overflow-hidden">
+                <a href="{{ route('packages.show', $package->id) }}" class="pkg-card card-modern group block !rounded-2xl overflow-hidden">
+                    <div class="relative h-40 overflow-hidden">
                         @if($package->thumbnail)
                             <img src="{{ asset('storage/' . $package->thumbnail) }}" alt="{{ $package->title }}" class="pkg-thumb w-full h-full object-cover" loading="lazy">
                         @else
-                            <div class="w-full h-full {{ $colorClass }} flex items-center justify-center relative">
-                                <div class="absolute inset-0 opacity-10">
-                                    <svg class="w-full h-full" viewBox="0 0 100 100"><circle cx="25" cy="25" r="18" fill="white" opacity=".3"/><circle cx="75" cy="35" r="22" fill="white" opacity=".2"/><circle cx="50" cy="75" r="28" fill="white" opacity=".2"/></svg>
-                                </div>
-                                <span class="text-6xl opacity-80 group-hover:scale-110 transition-transform duration-500">{{ $icon }}</span>
+                            <div class="w-full h-full {{ $colorClass }} flex items-center justify-center">
+                                <span class="text-5xl opacity-80 group-hover:scale-110 transition-transform duration-500">{{ $icon }}</span>
                             </div>
                         @endif
-
-                        {{-- Badges --}}
-                        <div class="absolute top-3 left-3 flex flex-wrap gap-1.5">
-                            @if($package->is_pay_what_you_want)
-                                <span class="bg-success-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg">💝 Seikhlasnya</span>
-                            @elseif($package->hasDiscount())
-                                <span class="bg-danger-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg">🔥 -{{ $package->discount_percent }}%</span>
+                        <span class="absolute top-3 right-3 bg-card/90 backdrop-blur text-foreground text-[10px] font-semibold px-2.5 py-1 rounded-full shadow border border-border">
+                            @php $sch = $package->schedule_status; @endphp
+                            @if($sch === 'active') 🟢 Berlangsung
+                            @elseif($sch === 'upcoming') ⏳ Akan Datang
+                            @elseif($sch === 'expired') ⛔ Berakhir
+                            @else ♾️ Tanpa Batas
                             @endif
-                        </div>
-                        <span class="absolute top-3 right-3 bg-card/90 backdrop-blur text-foreground text-[10px] font-semibold px-2.5 py-1 rounded-full shadow border border-border">⏳ {{ $package->membership_duration_label }}</span>
-                        @if($hasAccess)
-                            <div class="absolute bottom-3 left-3">
-                                <span class="bg-success-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg">✓ Dimiliki</span>
-                            </div>
-                        @endif
+                        </span>
                     </div>
-
-                    <div class="p-4 md:p-5 flex flex-col flex-1">
-                        {{-- Title --}}
-                        <div class="flex items-start justify-between gap-2 mb-1.5">
-                            <h3 class="font-bold text-foreground text-[15px] leading-snug line-clamp-1">{{ $package->title }}</h3>
-                            @if($hasAccess)
-                                <span class="shrink-0 bg-success-100 text-success-600 text-[9px] px-2 py-0.5 rounded-full font-bold">✓ Dimiliki</span>
-                            @endif
-                        </div>
-
-                        {{-- Tags --}}
-                        <div class="flex flex-wrap gap-1 mb-2">
-                            @if($package->kelas)
-                                <span class="text-[10px] bg-cyan-50 text-cyan-600 font-semibold px-2 py-0.5 rounded-full">🏫 {{ $package->kelas }}</span>
-                            @endif
-                            @if($package->jenjang)
-                                <span class="text-[10px] bg-foreground/5 text-foreground font-semibold px-2 py-0.5 rounded-full">🎓 {{ $package->jenjang }}</span>
-                            @endif
-                            @if($package->hide_explanation)
-                                <span class="text-[10px] bg-gold-400/15 text-gold-600 font-semibold px-2 py-0.5 rounded-full">🔒 Tanpa Pembahasan</span>
-                            @endif
-                        </div>
-
-                        <p class="text-muted-foreground text-xs line-clamp-2 mb-3 leading-relaxed">{{ $package->description }}</p>
-
-                        {{-- Stats --}}
-                        <div class="flex items-center gap-3 text-[11px] text-muted-foreground mb-3">
-                            <span class="inline-flex items-center gap-1">📋 {{ $totalCards }} Card</span>
-                            <span class="inline-flex items-center gap-1">❓ {{ $totalQuestions }} Soal</span>
-                            @if($videoCount > 0)
-                                <span class="inline-flex items-center gap-1">🎬 {{ $videoCount }} Video</span>
-                            @endif
-                        </div>
-
-                        {{-- Practice --}}
-                        <div class="flex items-center gap-2 text-[11px] text-muted-foreground mb-3">
-                            <span>⏱️ {{ $package->time_limit_minutes > 0 ? $package->time_limit_minutes . 'm' : 'Bebas' }}</span>
-                            <span class="text-border">|</span>
-                            <span>{{ $package->membership_duration_label }}</span>
-                        </div>
-
-                        {{-- Expiring Warning --}}
-                        @if($hasAccess && $isExpiringSoon)
-                            <div class="text-[10px] text-gold-600 bg-gold-400/10 border border-gold-400/20 rounded-lg px-2.5 py-1.5 text-center mb-3">
-                                ⏳ Sisa {{ $latestOrder->membershipDaysRemaining() }} hari — segera perpanjang
-                            </div>
-                        @endif
-
-                        {{-- Price & CTA --}}
-                        <div class="mt-auto pt-3 border-t border-border">
-                            <div class="flex items-center justify-between mb-3">
-                                @if($hasAccess)
-                                    <span class="text-success-500 font-bold text-sm">✅ Sudah Dimiliki</span>
-                                @elseif($package->is_pay_what_you_want)
-                                    <div>
-                                        <span class="text-sm font-bold text-success-500">💝 Seikhlasnya</span>
-                                        <div class="text-[10px] text-muted-foreground">Min. Rp {{ number_format($package->min_pay_amount ?? 0, 0, ',', '.') }}</div>
-                                    </div>
-                                @elseif($package->hasDiscount())
-                                    <div>
-                                        <span class="text-lg font-bold text-danger-500">Rp {{ number_format($package->final_price, 0, ',', '.') }}</span>
-                                        <div class="text-[10px] text-muted-foreground line-through">Rp {{ number_format($package->price, 0, ',', '.') }}</div>
-                                    </div>
-                                @else
-                                    <span class="text-lg font-bold text-foreground">Rp {{ number_format($package->price, 0, ',', '.') }}</span>
-                                @endif
-                            </div>
-
-                            @if($hasAccess)
-                                <a href="{{ route('packages.show', $package->id) }}" class="block w-full text-center bg-success-500 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-success-600 hover:shadow-lg transition-all">📖 Mulai Belajar</a>
-                            @elseif($needsActivation)
-                                <a href="{{ route('packages.show', $package->id) }}" class="block w-full text-center bg-gold-400 text-foreground py-2.5 rounded-xl font-semibold text-sm hover:bg-gold-500 hover:shadow-lg transition-all">🔑 Aktivasi Paket</a>
-                            @elseif($needsRenewal)
-                                <a href="{{ route('packages.show', $package->id) }}" class="block w-full text-center bg-danger-500 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-danger-600 hover:shadow-lg transition-all">⏳ Perpanjang</a>
-                            @else
-                                <a href="{{ route('packages.show', $package->id) }}" class="block w-full text-center bg-foreground text-white py-2.5 rounded-xl font-semibold text-sm hover:shadow-lg transition-all">🛒 Beli Sekarang</a>
-                            @endif
+                    <div class="p-4">
+                        <h3 class="font-bold text-foreground text-[14px] leading-snug line-clamp-1">{{ $package->title }}</h3>
+                        <div class="flex items-center gap-3 text-[11px] text-muted-foreground mt-2">
+                            <span>📋 {{ $totalCards }} Card</span>
+                            <span>❓ {{ $totalQuestions }} Soal</span>
+                            @if($package->bidang)<span>📂 {{ $package->bidang }}</span>@endif
                         </div>
                     </div>
-                </div>
+                </a>
             @empty
                 <div class="col-span-full text-center py-16 card-modern !rounded-2xl">
                     <div class="text-6xl mb-4">📭</div>
@@ -581,280 +337,5 @@
             @endforelse
         </div>
     </div>
-
-    <!-- ================= PESANAN TERBARU ================= -->
-    <div>
-        <div class="flex items-center justify-between gap-3 mb-4">
-            <div class="min-w-0">
-                <span class="section-badge bg-emerald-50 text-emerald-600 mb-2">🕐 Pesanan</span>
-                <h2 class="text-lg md:text-xl font-bold text-foreground" style="font-family:'Sora','Inter',sans-serif">Pesanan Terbaru</h2>
-                <p class="text-[11px] text-muted-foreground mt-0.5 hidden sm:block">Riwayat pembelian terkini</p>
-            </div>
-            <a href="{{ route('orders.index') }}" class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-foreground transition-colors whitespace-nowrap flex-shrink-0">
-                Lihat Semua
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-            </a>
-        </div>
-
-        @if($recentOrders->isEmpty())
-            <div class="card-modern !rounded-2xl p-8 text-center">
-                <div class="text-5xl mb-3">🛒</div>
-                <p class="font-medium text-sm text-muted-foreground">Belum ada pesanan. Yuk, mulai belajar sekarang!</p>
-                <a href="{{ route('packages.index') }}" class="btn-gold !text-sm !py-2.5 !px-5 mt-4 inline-flex justify-center">Lihat Paket</a>
-            </div>
-        @else
-            <!-- Kartu (mobile) -->
-            <div class="md:hidden space-y-3">
-                @foreach($recentOrders as $order)
-                    <div class="card-modern !rounded-2xl p-4">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="min-w-0 flex-1">
-                                <p class="font-semibold text-foreground text-sm truncate">@if($order->isVideoOrder())<span class="mr-1">🎬</span>@endif{{ $order->item_title }}</p>
-                                <p class="text-xs text-muted-foreground mt-0.5">Rp {{ number_format($order->total_price, 0, ',', '.') }}</p>
-                            </div>
-                            @if($order->payment_status === 'paid')
-                                <span class="bg-success-50 text-success-500 px-2.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap">✅ Lunas</span>
-                            @elseif($order->payment_status === 'pending')
-                                <span class="bg-gold-400/20 text-gold-500 px-2.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap">⏳ Pending</span>
-                            @else
-                                <span class="bg-danger-50 text-danger-500 px-2.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap">❌ Gagal</span>
-                            @endif
-                        </div>
-                        <div class="mt-3 pt-3 border-t border-border">
-                            @if($order->payment_status === 'paid')
-                                @if($order->isVideoOrder() && $order->videoOrder)
-                                    <a href="{{ route('videos.show', $order->videoOrder->video) }}" class="block text-center bg-primary text-white text-xs px-3 py-2.5 rounded-xl hover:bg-primary/90 transition font-semibold">▶️ Tonton Video</a>
-                                @elseif(!$order->isVideoOrder())
-                                    <a href="{{ route('packages.show', $order->package_id) }}" class="block text-center bg-success-500 text-white text-xs px-3 py-2.5 rounded-xl hover:bg-success-600 transition font-semibold">📖 Belajar</a>
-                                @endif
-                            @elseif($order->payment_status === 'pending' && $order->isVideoOrder() && $order->videoOrder)
-                                <a href="{{ route('videos.pay', [$order->videoOrder->video, $order->videoOrder]) }}" class="block text-center bg-gold-400 text-foreground text-xs px-3 py-2.5 rounded-xl hover:bg-gold-500 transition font-semibold">💳 Bayar Sekarang</a>
-                            @elseif($order->payment_status === 'pending' && !$order->isVideoOrder())
-                                <a href="{{ route('orders.process-payment', $order) }}" class="w-full block text-center bg-gold-400 text-foreground text-xs px-3 py-2.5 rounded-xl hover:bg-gold-500 transition font-semibold">💳 Bayar Sekarang</a>
-                            @endif
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-
-            <!-- Tabel (tablet ke atas) -->
-            <div class="hidden md:block card-modern !rounded-2xl overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full min-w-[600px] text-sm">
-                        <thead class="bg-muted/80 border-b border-border">
-                            <tr>
-                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Item</th>
-                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Harga</th>
-                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3.5 text-right text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-border">
-                            @foreach($recentOrders as $order)
-                                <tr class="hover:bg-muted/60 transition">
-                                    <td class="px-6 py-3.5 font-semibold text-foreground text-[13px]">@if($order->isVideoOrder())<span class="mr-1">🎬</span>@endif{{ $order->item_title }}</td>
-                                    <td class="px-6 py-3.5 text-muted-foreground text-[13px]">Rp {{ number_format($order->total_price, 0, ',', '.') }}</td>
-                                    <td class="px-6 py-3.5">
-                                        @if($order->payment_status === 'paid')
-                                            <span class="bg-success-50 text-success-500 px-2.5 py-0.5 rounded-full text-xs font-bold">✅ Lunas</span>
-                                        @elseif($order->payment_status === 'pending')
-                                            <span class="bg-gold-400/20 text-gold-500 px-2.5 py-0.5 rounded-full text-xs font-bold">⏳ Pending</span>
-                                        @else
-                                            <span class="bg-danger-50 text-danger-500 px-2.5 py-0.5 rounded-full text-xs font-bold">❌ Gagal</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-3.5 text-right">
-                                        @if($order->payment_status === 'paid')
-                                            @if($order->isVideoOrder() && $order->videoOrder)
-                                                <a href="{{ route('videos.show', $order->videoOrder->video) }}" class="bg-primary text-white text-xs px-3 py-1.5 rounded-xl hover:bg-primary/90 transition inline-block font-semibold">▶️ Tonton</a>
-                                            @elseif(!$order->isVideoOrder())
-                                                <a href="{{ route('packages.show', $order->package_id) }}" class="bg-success-500 text-white text-xs px-3 py-1.5 rounded-xl hover:bg-success-600 transition inline-block font-semibold">Belajar</a>
-                                            @endif
-                                        @elseif($order->payment_status === 'pending' && $order->isVideoOrder() && $order->videoOrder)
-                                            <a href="{{ route('videos.pay', [$order->videoOrder->video, $order->videoOrder]) }}" class="bg-gold-400 text-foreground text-xs px-3 py-1.5 rounded-xl hover:bg-gold-500 transition inline-block font-semibold">Bayar</a>
-                                        @elseif($order->payment_status === 'pending' && !$order->isVideoOrder())
-                                            <a href="{{ route('orders.process-payment', $order) }}" class="bg-gold-400 text-foreground text-xs px-3 py-1.5 rounded-xl hover:bg-gold-500 transition inline-block font-semibold">Bayar</a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        @endif
-    </div>
 </div>
-
-@push('scripts')
-<script>
-// Testimonial
-document.addEventListener('DOMContentLoaded', function() {
-    const isUser = {{ auth()->check() && auth()->user()->role === 'user' ? 'true' : 'false' }};
-    if (!isUser) return;
-
-    const form = document.getElementById('testimonialForm');
-    if (!form) return;
-
-    // Load user's testimonial
-    fetch('/testimonials/my-testimonial')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.data) {
-                const status = document.getElementById('testimonialStatus');
-                if (data.data.is_approved) {
-                    status.innerHTML = `
-                        <div class="bg-success-50 border-l-4 border-success-500 p-4 rounded-2xl mb-4">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl">✅</span>
-                                <div>
-                                    <p class="font-semibold text-success-600">Testimoni sudah disetujui!</p>
-                                    <p class="text-sm text-muted-foreground">"${escapeHtml(data.data.content)}"</p>
-                                    <p class="text-xs text-muted-foreground mt-1">Rating: ${'★'.repeat(data.data.rating)}${'☆'.repeat(5 - data.data.rating)}</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    form.style.display = 'none';
-                } else {
-                    status.innerHTML = `
-                        <div class="bg-gold-400/10 border-l-4 border-gold-400 p-4 rounded-2xl mb-4">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl">⏳</span>
-                                <div>
-                                    <p class="font-semibold text-gold-600">Testimoni menunggu persetujuan</p>
-                                    <p class="text-sm text-muted-foreground">"${escapeHtml(data.data.content)}"</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    form.style.display = 'none';
-                }
-            }
-        })
-        .catch(err => console.error('Error loading testimonial:', err));
-
-    // Rating stars
-    const stars = document.querySelectorAll('.rating-star');
-    const ratingInput = document.getElementById('ratingInput');
-
-    stars.forEach(star => {
-        star.addEventListener('click', function() {
-            const value = parseInt(this.dataset.value);
-            ratingInput.value = value;
-            stars.forEach(s => {
-                const val = parseInt(s.dataset.value);
-                if (val <= value) {
-                    s.classList.remove('text-muted-foreground');
-                    s.classList.add('text-gold-400');
-                } else {
-                    s.classList.remove('text-gold-400');
-                    s.classList.add('text-muted-foreground');
-                }
-            });
-        });
-
-        star.addEventListener('mouseenter', function() {
-            const value = parseInt(this.dataset.value);
-            stars.forEach(s => {
-                const val = parseInt(s.dataset.value);
-                if (val <= value) {
-                    s.classList.remove('text-muted-foreground');
-                    s.classList.add('text-gold-300');
-                } else {
-                    s.classList.remove('text-gold-300');
-                    s.classList.add('text-muted-foreground');
-                }
-            });
-        });
-
-        star.addEventListener('mouseleave', function() {
-            const current = parseInt(ratingInput.value);
-            stars.forEach(s => {
-                const val = parseInt(s.dataset.value);
-                if (val <= current) {
-                    s.classList.remove('text-gold-300', 'text-muted-foreground');
-                    s.classList.add('text-gold-400');
-                } else {
-                    s.classList.remove('text-gold-300', 'text-gold-400');
-                    s.classList.add('text-muted-foreground');
-                }
-            });
-        });
-    });
-
-    // Character counter
-    const content = document.getElementById('testimonialContent');
-    const charCount = document.getElementById('charCount');
-    if (content && charCount) {
-        content.addEventListener('input', function() {
-            charCount.textContent = this.value.length;
-        });
-    }
-
-    // Submit form
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const btn = document.getElementById('submitTestimonial');
-        const content = document.getElementById('testimonialContent');
-        const rating = document.getElementById('ratingInput');
-
-        if (!content.value.trim()) {
-            alert('Silakan tulis testimoni Anda.');
-            return;
-        }
-
-        btn.disabled = true;
-        btn.textContent = '⏳ Mengirim...';
-
-        fetch('/testimonials/store', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-                content: content.value.trim(),
-                rating: parseInt(rating.value)
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const status = document.getElementById('testimonialStatus');
-                status.innerHTML = `
-                    <div class="bg-success-50 border-l-4 border-success-500 p-4 rounded-2xl mb-4">
-                        <div class="flex items-center gap-3">
-                            <span class="text-2xl">✅</span>
-                            <div>
-                                <p class="font-semibold text-success-600">${escapeHtml(data.message)}</p>
-                                <p class="text-sm text-muted-foreground">"${escapeHtml(content.value.trim())}"</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                form.style.display = 'none';
-            } else {
-                alert(data.message || 'Gagal mengirim testimoni.');
-            }
-        })
-        .catch(err => {
-            alert('Terjadi kesalahan. Silakan coba lagi.');
-            console.error(err);
-        })
-        .finally(() => {
-            btn.disabled = false;
-            btn.textContent = '📤 Kirim Testimoni';
-        });
-    });
-});
-
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-</script>
-@endpush
 @endsection

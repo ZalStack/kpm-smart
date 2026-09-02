@@ -10,38 +10,26 @@ class Package extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title', 'description', 'kelas', 'jenjang', 'thumbnail', 'price',
-        'discount_price', 'is_discount_active',
-        'is_pay_what_you_want', 'min_pay_amount',
-        'membership_duration_days',
-        'is_active', 'hide_explanation', 'time_limit_minutes',
-        'cards', 'questions', 'reviews'
+        'title', 'description', 'kelas', 'thumbnail', 'price',
+        'bidang', 'level',
+        'start_date', 'end_date', 'start_time', 'end_time',
+        'show_answer_key', 'show_explanation', 'show_score',
+        'is_active',
+        'cards', 'questions', 'reviews',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
-        'hide_explanation' => 'boolean',
-        'time_limit_minutes' => 'integer',
+        'show_answer_key' => 'boolean',
+        'show_explanation' => 'boolean',
+        'show_score' => 'boolean',
         'price' => 'decimal:2',
-        'discount_price' => 'decimal:2',
-        'is_discount_active' => 'boolean',
-        'is_pay_what_you_want' => 'boolean',
-        'min_pay_amount' => 'decimal:2',
-        'membership_duration_days' => 'integer',
+        'start_date' => 'date',
+        'end_date' => 'date',
         'cards' => 'array',
         'questions' => 'array',
         'reviews' => 'array',
     ];
-
-    public function orders()
-    {
-        return $this->hasMany(Order::class);
-    }
-
-    public function videos()
-    {
-        return $this->hasMany(Video::class);
-    }
 
     public function practiceSessions()
     {
@@ -49,96 +37,94 @@ class Package extends Model
     }
 
     /**
-     * Apakah paket ini sedang punya diskon aktif & valid
-     * (diskon harus lebih murah dari harga normal).
+     * Apakah paket ini sedang dalam jadwal pengerjaan.
      */
-    public function hasDiscount(): bool
+    public function isWithinSchedule(): bool
     {
-        return (bool) $this->is_discount_active
-            && $this->discount_price !== null
-            && (float) $this->discount_price < (float) $this->price;
-    }
+        $now = now();
 
-    /**
-     * Harga akhir yang harus dibayar user: harga diskon (jika aktif)
-     * atau harga normal.
-     */
-    public function getFinalPriceAttribute()
-    {
-        return $this->hasDiscount() ? $this->discount_price : $this->price;
-    }
-
-    /**
-     * Persentase potongan harga, dibulatkan ke bawah. 0 jika tidak diskon.
-     */
-    public function getDiscountPercentAttribute(): int
-    {
-        if (!$this->hasDiscount() || (float) $this->price <= 0) {
-            return 0;
+        if ($this->start_date && $now->lt($this->start_date)) {
+            return false;
         }
 
-        return (int) round((((float) $this->price - (float) $this->discount_price) / (float) $this->price) * 100);
-    }
-
-    /**
-     * Nominal minimum yang boleh dibayar user untuk paket "Bayar Seikhlasnya".
-     */
-    public function minimumPayAmount(): float
-    {
-        return (float) ($this->min_pay_amount ?? 0);
-    }
-
-    /**
-     * Durasi membership paket ini dalam hari (fallback 30 hari jika belum diatur).
-     */
-    public function membershipDurationDays(): int
-    {
-        $days = (int) ($this->membership_duration_days ?? 30);
-        return $days < 1 ? 30 : $days;
-    }
-
-    /**
-     * Batas waktu pengerjaan dalam menit. 0 atau null berarti tanpa batas.
-     */
-    public function getTimeLimitAttribute(): ?int
-    {
-        $minutes = (int) ($this->time_limit_minutes ?? 0);
-        return $minutes > 0 ? $minutes : null;
-    }
-
-    /**
-     * Label waktu pengerjaan, mis. "60 Menit", "Tanpa Batas".
-     */
-    public function getTimeLimitLabelAttribute(): string
-    {
-        $minutes = $this->time_limit_minutes ?? 0;
-        if ($minutes <= 0) {
-            return 'Tanpa Batas';
+        if ($this->end_date && $now->gt($this->end_date)) {
+            return false;
         }
-        if ($minutes >= 60 && $minutes % 60 === 0) {
-            $hours = $minutes / 60;
-            return $hours . ' Jam';
-        }
-        return $minutes . ' Menit';
+
+        return true;
     }
 
     /**
-     * Label durasi membership yang mudah dibaca, mis. "30 Hari", "3 Bulan", "1 Tahun".
+     * Status jadwal: upcoming, active, expired, atau no_limit.
      */
-    public function getMembershipDurationLabelAttribute(): string
+    public function getScheduleStatusAttribute(): string
     {
-        $days = $this->membershipDurationDays();
+        if (!$this->start_date && !$this->end_date) {
+            return 'no_limit';
+        }
 
-        $presets = [
-            7 => '7 Hari',
-            14 => '14 Hari',
-            30 => '30 Hari (1 Bulan)',
-            60 => '60 Hari (2 Bulan)',
-            90 => '90 Hari (3 Bulan)',
-            180 => '180 Hari (6 Bulan)',
-            365 => '365 Hari (1 Tahun)',
-        ];
+        $now = now();
 
-        return $presets[$days] ?? $days . ' Hari';
+        if ($this->start_date && $now->lt($this->start_date)) {
+            return 'upcoming';
+        }
+
+        if ($this->end_date && $now->gt($this->end_date)) {
+            return 'expired';
+        }
+
+        return 'active';
+    }
+
+    /**
+     * Label jadwal yang mudah dibaca.
+     */
+    public function getScheduleLabelAttribute(): string
+    {
+        $status = $this->schedule_status;
+
+        if ($status === 'no_limit') {
+            return 'Tanpa Batasan Waktu';
+        }
+
+        $parts = [];
+        if ($this->start_date) {
+            $parts[] = $this->start_date->translatedFormat('d M Y');
+        }
+        if ($this->end_date) {
+            $parts[] = $this->end_date->translatedFormat('d M Y');
+        }
+
+        $dateStr = implode(' — ', $parts);
+
+        if ($this->start_time && $this->end_time) {
+            $dateStr .= ' (' . substr($this->start_time, 0, 5) . ' — ' . substr($this->end_time, 0, 5) . ' WIB)';
+        }
+
+        return $dateStr;
+    }
+
+    /**
+     * Apakah user boleh melihat kunci jawaban.
+     */
+    public function canShowAnswerKey(): bool
+    {
+        return (bool) $this->show_answer_key;
+    }
+
+    /**
+     * Apakah user boleh melihat pembahasan.
+     */
+    public function canShowExplanation(): bool
+    {
+        return (bool) $this->show_explanation;
+    }
+
+    /**
+     * Apakah user boleh melihat skor.
+     */
+    public function canShowScore(): bool
+    {
+        return (bool) $this->show_score;
     }
 }

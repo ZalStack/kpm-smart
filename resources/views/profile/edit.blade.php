@@ -80,22 +80,22 @@
                 <h2 class="text-sm font-bold text-foreground uppercase tracking-wide mb-3">🎓 Data Siswa</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-muted-foreground mb-1">Nama Siswa *</label>
-                        <input type="text" name="student_name" value="{{ old('student_name', $user->student_name) }}" required
-                               class="w-full px-4 py-2.5 border border-border rounded-md bg-muted hover:bg-card focus:bg-card focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200">
-                        @error('student_name') <p class="text-xs text-danger-500 mt-1">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
                         <label class="block text-sm font-medium text-muted-foreground mb-1">Kelas *</label>
                         <input type="text" name="student_class" value="{{ old('student_class', $user->student_class) }}" required
                                class="w-full px-4 py-2.5 border border-border rounded-md bg-muted hover:bg-card focus:bg-card focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200">
                         @error('student_class') <p class="text-xs text-danger-500 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-muted-foreground mb-1">Jurusan *</label>
-                        <input type="text" name="student_major" value="{{ old('student_major', $user->student_major) }}" required
+                        <label class="block text-sm font-medium text-muted-foreground mb-1">Bidang</label>
+                        <input type="text" name="bidang" value="{{ old('bidang', $user->bidang) }}"
                                class="w-full px-4 py-2.5 border border-border rounded-md bg-muted hover:bg-card focus:bg-card focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200">
-                        @error('student_major') <p class="text-xs text-danger-500 mt-1">{{ $message }}</p> @enderror
+                        @error('bidang') <p class="text-xs text-danger-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-muted-foreground mb-1">Level</label>
+                        <input type="text" name="level" value="{{ old('level', $user->level) }}"
+                               class="w-full px-4 py-2.5 border border-border rounded-md bg-muted hover:bg-card focus:bg-card focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200" placeholder="Contoh: Pemula, Menengah, Lanjut">
+                        @error('level') <p class="text-xs text-danger-500 mt-1">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </div>

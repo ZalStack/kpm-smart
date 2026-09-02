@@ -24,9 +24,7 @@
                     @auth
                         @if(Auth::user()->role === 'user')
                             <a href="{{ route('packages.index') }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition {{ request()->routeIs('packages.*') ? 'text-foreground bg-accent' : '' }}">Paket</a>
-                            <a href="{{ route('videos.index') }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition {{ request()->routeIs('videos.*') ? 'text-foreground bg-accent' : '' }}">Video</a>
                             <a href="{{ route('practice.history') }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition {{ request()->routeIs('practice.*') ? 'text-foreground bg-accent' : '' }}">Latihan</a>
-                            <a href="{{ route('orders.index') }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition {{ request()->routeIs('orders.*') ? 'text-foreground bg-accent' : '' }}">Pesanan</a>
                         @endif
                         <a href="{{ Auth::user()->role === 'admin' ? route('admin.dashboard') : route('user.dashboard') }}"
                            class="inline-flex items-center justify-center bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition ml-2">
@@ -66,9 +64,6 @@
                                 </div>
                                 <a href="{{ route('profile.edit') }}" class="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition rounded-md mx-1">Profil Saya</a>
                                 @if(Auth::user()->role === 'user')
-                                    <a href="{{ route('orders.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition rounded-md mx-1">Pesanan Saya</a>
-                                    <a href="{{ route('videos.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition rounded-md mx-1">Video Pembahasan</a>
-                                    <a href="{{ route('practice.history') }}" class="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition rounded-md mx-1">Riwayat Latihan</a>
                                     <a href="{{ route('practice.statistics') }}" class="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition rounded-md mx-1">Statistik</a>
                                 @endif
                                 <div class="border-t my-1"></div>
@@ -80,7 +75,6 @@
                         </div>
                     @else
                         <a href="{{ route('login') }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition">Masuk</a>
-                        <a href="{{ route('register') }}" class="inline-flex items-center justify-center bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition ml-2">Daftar</a>
                     @endauth
                 </div>
 
@@ -107,10 +101,7 @@
                     @if(Auth::user()->role === 'user')
                         <a href="{{ route('user.dashboard') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition text-sm {{ request()->routeIs('user.dashboard') ? 'bg-accent text-foreground' : 'text-muted-foreground' }}">Dasbor</a>
                         <a href="{{ route('packages.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition text-sm {{ request()->routeIs('packages.*') ? 'bg-accent text-foreground' : 'text-muted-foreground' }}">Paket Bank Soal</a>
-                        <a href="{{ route('videos.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition text-sm {{ request()->routeIs('videos.*') ? 'bg-accent text-foreground' : 'text-muted-foreground' }}">Video Pembahasan</a>
-                        <a href="{{ route('practice.history') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition text-sm {{ request()->routeIs('practice.*') ? 'bg-accent text-foreground' : 'text-muted-foreground' }}">Riwayat Latihan</a>
-                        <a href="{{ route('practice.statistics') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition text-sm {{ request()->routeIs('practice.statistics') ? 'bg-accent text-foreground' : 'text-muted-foreground' }}">Statistik</a>
-                        <a href="{{ route('orders.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition text-sm {{ request()->routeIs('orders.*') ? 'bg-accent text-foreground' : 'text-muted-foreground' }}">Pesanan Saya</a>
+                        <a href="{{ route('practice.history') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition text-sm {{ request()->routeIs('practice.*') ? 'bg-accent text-foreground' : 'text-muted-foreground' }}">Latihan</a>
                         <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition text-sm {{ request()->routeIs('profile.*') ? 'bg-accent text-foreground' : 'text-muted-foreground' }}">Profil Saya</a>
                     @else
                         <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition text-sm {{ request()->routeIs('admin.dashboard') ? 'bg-accent text-foreground' : 'text-muted-foreground' }}">Dasbor Admin</a>
@@ -121,7 +112,6 @@
                     </form>
                 @else
                     <a href="{{ route('login') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition text-sm text-muted-foreground">Masuk</a>
-                    <a href="{{ route('register') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm mt-1">Daftar Sekarang</a>
                 @endauth
             </div>
         </div>
@@ -187,11 +177,9 @@
                     <ul class="space-y-2 text-muted-foreground text-sm">
                         <li><a href="{{ route('pages.features') }}" class="hover:text-foreground transition-all duration-200">Fitur Unggulan</a></li>
                         <li><a href="{{ auth()->check() ? route('packages.index') : url('/#packages') }}" class="hover:text-foreground transition-all duration-200">Paket Bank Soal</a></li>
-                        @auth
-                            <li><a href="{{ route('videos.index') }}" class="hover:text-foreground transition-all duration-200">Video Pembahasan</a></li>
-                            <li><a href="{{ route('practice.history') }}" class="hover:text-foreground transition-all duration-200">Latihan</a></li>
-                            <li><a href="{{ route('orders.index') }}" class="hover:text-foreground transition-all duration-200">Pesanan</a></li>
-                        @endauth
+                    @auth
+                        <li><a href="{{ route('practice.history') }}" class="hover:text-foreground transition-all duration-200">Latihan</a></li>
+                    @endauth
                     </ul>
                 </div>
                 <div>

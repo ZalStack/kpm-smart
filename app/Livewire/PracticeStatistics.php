@@ -89,7 +89,7 @@ class PracticeStatistics extends Component
         $baseFiltered = $this->baseQuery();
 
         $sessions = (clone $baseFiltered)
-            ->with(['user', 'package', 'order'])
+            ->with(['user', 'package'])
             ->orderBy('created_at', 'desc')
             ->paginate(10)
             ->withQueryString();
