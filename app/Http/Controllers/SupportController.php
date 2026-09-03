@@ -9,6 +9,7 @@ use App\Support\SearchHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class SupportController extends Controller
 {
@@ -114,14 +115,19 @@ class SupportController extends Controller
             'closed' => SupportTicket::where('status', 'closed')->count(),
         ];
 
-        return view('admin.support.index', compact('tickets', 'counts'));
+        return Inertia::render('Admin/Support/SupportIndex', [
+            'tickets' => $tickets,
+            'counts' => $counts,
+        ]);
     }
 
     // Admin - Show detail
     public function adminShow($id)
     {
         $ticket = SupportTicket::findOrFail($id);
-        return view('admin.support.show', compact('ticket'));
+        return Inertia::render('Admin/Support/SupportShow', [
+            'ticket' => $ticket,
+        ]);
     }
 
     // Admin - Answer ticket

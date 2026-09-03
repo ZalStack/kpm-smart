@@ -11,14 +11,15 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\LoginLogController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 // Redirect ke Login
 Route::get('/', fn () => redirect()->route('login'));
 
 // Halaman Informasi Publik (Fitur, Panduan, FAQ)
-Route::get('/fitur', fn () => view('pages.features'))->name('pages.features');
-Route::get('/panduan', fn () => view('pages.guide'))->name('pages.guide');
-Route::get('/faq', fn () => view('pages.faq'))->name('pages.faq');
+Route::get('/fitur', fn () => Inertia::render('Pages/Features'))->name('pages.features');
+Route::get('/panduan', fn () => Inertia::render('Pages/Guide'))->name('pages.guide');
+Route::get('/faq', fn () => Inertia::render('Pages/Faq'))->name('pages.faq');
 
 // Support Routes (Public - tidak perlu login, dilindungi rate limiter anti spam)
 Route::post('/support/submit', [SupportController::class, 'submitQuestion'])
@@ -110,14 +111,18 @@ Route::middleware(['auth', 'role:admin'])
         Route::post('/packages/{package}/ajax/toggle-setting', [PackageController::class, 'ajaxToggleSetting'])->name('packages.ajax.toggle-setting');
         Route::post('/packages/{package}/ajax/update-schedule', [PackageController::class, 'ajaxUpdateSchedule'])->name('packages.ajax.update-schedule');
 
+        // Image Upload for Questions
+        Route::post('/packages/{package}/upload-image', [PackageController::class, 'uploadImage'])->name('packages.upload-image');
+
         // Practice Statistics Management
         Route::prefix('practice-statistics')
             ->name('practice-statistics.')
             ->group(function () {
                 Route::get('/', [PracticeStatisticsController::class, 'index'])->name('index');
-                Route::get('/{session}', [PracticeStatisticsController::class, 'show'])->name('show');
+                // Export routes HARUS didaftarkan SEBELUM /{session} agar tidak tertangkap sebagai parameter
                 Route::get('/export/excel', [PracticeStatisticsController::class, 'exportExcel'])->name('export-excel');
                 Route::get('/export/pdf', [PracticeStatisticsController::class, 'exportPdf'])->name('export-pdf');
+                Route::get('/{session}', [PracticeStatisticsController::class, 'show'])->name('show');
             });
 
         // Support Management
@@ -125,12 +130,13 @@ Route::middleware(['auth', 'role:admin'])
             ->name('support.')
             ->group(function () {
                 Route::get('/', [SupportController::class, 'adminIndex'])->name('index');
+                // Rute statis HARUS didaftarkan sebelum rute dinamis /{id}
+                Route::post('/bulk-delete', [SupportController::class, 'adminBulkDelete'])->name('bulk-delete');
+                Route::get('/export/csv', [SupportController::class, 'adminExport'])->name('export');
                 Route::get('/{id}', [SupportController::class, 'adminShow'])->name('show');
                 Route::post('/{id}/answer', [SupportController::class, 'adminAnswer'])->name('answer');
                 Route::put('/{id}/status', [SupportController::class, 'adminUpdateStatus'])->name('update-status');
                 Route::delete('/{id}', [SupportController::class, 'adminDelete'])->name('delete');
-                Route::post('/bulk-delete', [SupportController::class, 'adminBulkDelete'])->name('bulk-delete');
-                Route::get('/export/csv', [SupportController::class, 'adminExport'])->name('export');
             });
 
         // Login Logs (Admin)
@@ -139,9 +145,10 @@ Route::middleware(['auth', 'role:admin'])
         // Notifications (Admin)
         Route::get('/notifications', [NotificationController::class, 'adminIndex'])->name('notifications.index');
         Route::post('/notifications/dropdown', [NotificationController::class, 'dropdown'])->name('notifications.dropdown');
-        Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+        // Rute statis HARUS sebelum /{id}/read
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
         Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+        Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
     });
 
 // User Routes
@@ -158,16 +165,22 @@ Route::middleware(['auth', 'role:user'])->group(function () {
 
     // Practice
     Route::get('/practice', [PracticeController::class, 'index'])->name('practice.index');
+    // Rute statis HARUS sebelum /{session} agar tidak tertangkap sebagai parameter
     Route::get('/practice/history', [PracticeController::class, 'history'])->name('practice.history');
     Route::get('/practice/statistics', [PracticeController::class, 'statistics'])->name('practice.statistics');
+    Route::get('/practice/start/{package}', [PracticeController::class, 'startRedirect'])->name('practice.start.get');
     Route::post('/practice/start/{package}', [PracticeController::class, 'start'])->name('practice.start');
     Route::post('/practice/submit/{session}', [PracticeController::class, 'submit'])->name('practice.submit');
+    Route::get('/practice/submit/{session}', function ($session) {
+        return redirect()->route('practice.show', $session);
+    });
     Route::get('/practice/{session}', [PracticeController::class, 'show'])->name('practice.show');
 
     // Notifications (User)
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/dropdown', [NotificationController::class, 'dropdown'])->name('notifications.dropdown');
-    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+    // Rute statis HARUS sebelum /{id}/read
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
 });

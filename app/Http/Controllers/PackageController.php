@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 use Smalot\PdfParser\Parser;
 use ZipArchive;
 
@@ -16,6 +17,15 @@ class PackageController extends Controller
     {
         $query = Package::where('is_active', true);
 
+        if (request('search')) {
+            $search = request('search');
+            $escapedSearch = \App\Support\SearchHelper::escapeLike($search);
+            $query->where(function ($q) use ($escapedSearch) {
+                $q->where('title', 'like', "%{$escapedSearch}%")
+                  ->orWhere('description', 'like', "%{$escapedSearch}%");
+            });
+        }
+
         if (request('kelas')) {
             $query->where('kelas', request('kelas'));
         }
@@ -23,11 +33,16 @@ class PackageController extends Controller
             $query->where('bidang', request('bidang'));
         }
 
-        $packages = $query->paginate(12);
+        $packages = $query->latest()->paginate(12)->withQueryString();
         $allKelas = Package::where('is_active', true)->whereNotNull('kelas')->where('kelas', '!=', '')->distinct()->pluck('kelas')->sort()->values();
         $allBidang = Package::where('is_active', true)->whereNotNull('bidang')->where('bidang', '!=', '')->distinct()->pluck('bidang')->sort()->values();
 
-        return view('packages.index', compact('packages', 'allKelas', 'allBidang'));
+        return Inertia::render('Packages/PackageList', [
+            'packages' => $packages,
+            'allKelas' => $allKelas,
+            'allBidang' => $allBidang,
+            'filters' => request()->only(['search', 'kelas', 'bidang']),
+        ]);
     }
 
     public function adminIndex(Request $request)
@@ -59,7 +74,23 @@ class PackageController extends Controller
         $allKelas = Package::whereNotNull('kelas')->where('kelas', '!=', '')->distinct()->pluck('kelas')->sort()->values();
         $allBidang = Package::whereNotNull('bidang')->where('bidang', '!=', '')->distinct()->pluck('bidang')->sort()->values();
 
-        return view('admin.packages.index', compact('packages', 'allKelas', 'allBidang'));
+        $totalQuestions = 0;
+        foreach ($packages as $pkg) {
+            $totalQuestions += count($pkg->questions ?? []);
+        }
+
+        return Inertia::render('Admin/Packages/PackageIndex', [
+            'packages' => $packages,
+            'allKelas' => $allKelas,
+            'allBidang' => $allBidang,
+            'filters' => $request->only(['search', 'status', 'kelas', 'bidang']),
+            'stats' => [
+                'total' => $packages->total(),
+                'active' => Package::where('is_active', true)->count(),
+                'inactive' => Package::where('is_active', false)->count(),
+                'totalQuestions' => $totalQuestions,
+            ],
+        ]);
     }
 
     public function adminShow(Package $package)
@@ -71,15 +102,14 @@ class PackageController extends Controller
         $totalQuestions = count($allQuestions);
         $totalPracticeSessions = $package->practiceSessions()->count();
 
-        return view('admin.packages.show', compact(
-            'package', 'cards', 'allQuestions', 'questionsByCard',
-            'totalCards', 'totalQuestions', 'totalPracticeSessions'
-        ));
+        return Inertia::render('Admin/Packages/PackageShow', [
+            'package' => $package,
+        ]);
     }
 
     public function create()
     {
-        return view('admin.packages.create');
+        return Inertia::render('Admin/Packages/PackageCreate');
     }
 
     public function store(Request $request)
@@ -90,7 +120,6 @@ class PackageController extends Controller
             'kelas' => 'nullable|string|max:255',
             'bidang' => 'nullable|string|max:100',
             'level' => 'nullable|string|max:50',
-            'price' => 'required|numeric|min:0',
             'is_active' => 'boolean',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -114,7 +143,6 @@ class PackageController extends Controller
             'kelas' => $request->kelas,
             'bidang' => $request->bidang,
             'level' => $request->level,
-            'price' => $request->price,
             'is_active' => $request->is_active ?? true,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
@@ -145,27 +173,37 @@ class PackageController extends Controller
 
     public function editInformasi(Package $package)
     {
-        return view('admin.packages.edit.informasi', compact('package'));
+        return Inertia::render('Admin/Packages/PackageEditInfo', [
+            'package' => $package,
+        ]);
     }
 
     public function editCards(Package $package)
     {
-        $cardsMap = collect($package->cards ?? [])->keyBy('id');
         $allQuestions = array_values($package->questions ?? []);
         $questionsByCard = collect($allQuestions)->groupBy('card_id');
 
-        return view('admin.packages.edit.cards', compact('package', 'cardsMap', 'questionsByCard'));
+        return Inertia::render('Admin/Packages/PackageEditCards', [
+            'package' => $package,
+            'questionsByCard' => $questionsByCard,
+        ]);
     }
 
     public function editQuestions(Package $package)
     {
-        $cardsMap = collect($package->cards ?? [])->keyBy('id');
         $allQuestions = array_values($package->questions ?? []);
         $questionsByCard = collect($allQuestions)->groupBy('card_id');
         $totalCards = count($package->cards ?? []);
         $totalQuestions = count($allQuestions);
 
-        return view('admin.packages.edit.questions', compact('package', 'cardsMap', 'allQuestions', 'questionsByCard', 'totalCards', 'totalQuestions'));
+        return Inertia::render('Admin/Packages/PackageEditQuestions', [
+            'package' => $package,
+            'allQuestions' => $allQuestions,
+            'cards' => array_values($package->cards ?? []),
+            'questionsByCard' => $questionsByCard,
+            'totalCards' => $totalCards,
+            'totalQuestions' => $totalQuestions,
+        ]);
     }
 
     // ===================== UPDATE METHODS =====================
@@ -178,7 +216,6 @@ class PackageController extends Controller
             'kelas' => 'nullable|string|max:255',
             'bidang' => 'nullable|string|max:100',
             'level' => 'nullable|string|max:50',
-            'price' => 'required|numeric|min:0',
             'is_active' => 'boolean',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -202,7 +239,6 @@ class PackageController extends Controller
             'kelas' => $request->kelas,
             'bidang' => $request->bidang,
             'level' => $request->level,
-            'price' => $request->price,
             'is_active' => $request->is_active ?? true,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
@@ -285,15 +321,30 @@ class PackageController extends Controller
         ]);
     }
 
+    /**
+     * Upload image for question editor (AJAX).
+     */
+    public function uploadImage(Request $request, Package $package)
+    {
+        $validator = Validator::make($request->all(), [
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:3072',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
+        }
+
+        $path = $request->file('image')->store('question_images/' . $package->id, 'public');
+
+        return response()->json([
+            'success' => true,
+            'url' => Storage::disk('public')->url($path),
+        ]);
+    }
+
     public function confirmDelete(Package $package)
     {
-        $totalCards = count($package->cards ?? []);
-        $totalQuestions = count($package->questions ?? []);
-        $totalPracticeSessions = $package->practiceSessions()->count();
-
-        return view('admin.packages.confirm-delete', compact(
-            'package', 'totalCards', 'totalQuestions', 'totalPracticeSessions'
-        ));
+        return redirect()->route('admin.packages.index');
     }
 
     public function destroy(Package $package)
@@ -311,10 +362,41 @@ class PackageController extends Controller
         $totalCards = count($package->cards ?? []);
         $totalQuestions = count($package->questions ?? []);
 
-        return view('packages.show', [
+        $completedSession = $package->practiceSessions()
+            ->where('user_id', auth()->id())
+            ->where('status', 'completed')
+            ->latest()
+            ->first();
+
+        $inProgressSession = $package->practiceSessions()
+            ->where('user_id', auth()->id())
+            ->where('status', 'in_progress')
+            ->latest()
+            ->first();
+
+        // Per-card completion status (1-attempt restriction)
+        $completedCardIds = $package->practiceSessions()
+            ->where('user_id', auth()->id())
+            ->where('status', 'completed')
+            ->whereNotNull('card_id')
+            ->pluck('id', 'card_id')
+            ->toArray();
+
+        $inProgressCardIds = $package->practiceSessions()
+            ->where('user_id', auth()->id())
+            ->where('status', 'in_progress')
+            ->whereNotNull('card_id')
+            ->pluck('id', 'card_id')
+            ->toArray();
+
+        return Inertia::render('Packages/PackageDetail', [
             'package' => $package,
             'totalCards' => $totalCards,
             'totalQuestions' => $totalQuestions,
+            'completedSession' => $completedSession,
+            'inProgressSession' => $inProgressSession,
+            'completedCardIds' => $completedCardIds,
+            'inProgressCardIds' => $inProgressCardIds,
         ]);
     }
 
@@ -360,13 +442,16 @@ class PackageController extends Controller
 
     public function createQuestion(Package $package)
     {
-        $cards = $package->cards ?? [];
-        return view('admin.packages.edit.question-form', compact('package', 'cards'));
+        $cards = array_values($package->cards ?? []);
+        return Inertia::render('Admin/Packages/QuestionForm', [
+            'package' => $package,
+            'cards' => $cards,
+        ]);
     }
 
     public function editQuestion(Package $package, $questionId)
     {
-        $cards = $package->cards ?? [];
+        $cards = array_values($package->cards ?? []);
         $questions = $package->questions ?? [];
         $question = null;
 
@@ -381,7 +466,27 @@ class PackageController extends Controller
             return redirect()->route('admin.packages.edit.questions', $package)->with('error', 'Soal tidak ditemukan!');
         }
 
-        return view('admin.packages.edit.question-form', compact('package', 'cards', 'question'));
+        $existingImages = [];
+        $imageDir = 'question_images/' . $package->id;
+        if (Storage::disk('public')->exists($imageDir)) {
+            $files = Storage::disk('public')->allFiles($imageDir);
+            foreach ($files as $file) {
+                $filename = basename($file);
+                if (str_starts_with($filename, 'auto_')) {
+                    $existingImages[] = [
+                        'filename' => $filename,
+                        'url' => Storage::disk('public')->url($file),
+                    ];
+                }
+            }
+        }
+
+        return Inertia::render('Admin/Packages/QuestionForm', [
+            'package' => $package,
+            'cards' => $cards,
+            'question' => $question,
+            'existingImages' => $existingImages,
+        ]);
     }
 
     public function addQuestion(Request $request, Package $package)
@@ -502,8 +607,11 @@ class PackageController extends Controller
 
     public function showImportForm(Package $package)
     {
-        $cards = $package->cards ?? [];
-        return view('admin.packages.edit.import-pdf', compact('package', 'cards'));
+        $cards = array_values($package->cards ?? []);
+        return Inertia::render('Admin/Packages/ImportPdf', [
+            'package' => $package,
+            'cards' => $cards,
+        ]);
     }
 
     public function importPdf(Request $request, Package $package)

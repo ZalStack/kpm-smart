@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class AdminUserController extends Controller
 {
@@ -34,12 +35,17 @@ class AdminUserController extends Controller
 
         $users = $query->latest()->paginate(10)->withQueryString();
 
-        return view('admin.users.index', [
+        $totalUsers = User::where('role', 'user')->count();
+        $activeUsers = User::where('role', 'user')->where('is_active', true)->count();
+        $inactiveUsers = $totalUsers - $activeUsers;
+        $newThisMonth = User::where('role', 'user')->whereMonth('created_at', now()->month)->count();
+
+        return Inertia::render('Admin/Users/UserIndex', [
             'users' => $users,
             'search' => $search ?? '',
             'status' => $status ?? '',
-            'totalUsers' => User::where('role', 'user')->count(),
-            'activeUsers' => User::where('role', 'user')->where('is_active', true)->count(),
+            'totalUsers' => $totalUsers,
+            'activeUsers' => $activeUsers,
         ]);
     }
 
@@ -48,7 +54,7 @@ class AdminUserController extends Controller
      */
     public function create()
     {
-        return view('admin.users.create');
+        return Inertia::render('Admin/Users/UserCreate');
     }
 
     /**
@@ -105,7 +111,9 @@ class AdminUserController extends Controller
      */
     public function show(User $user)
     {
-        return view('admin.users.show', compact('user'));
+        return Inertia::render('Admin/Users/UserShow', [
+            'user' => $user,
+        ]);
     }
 
     /**
@@ -113,7 +121,9 @@ class AdminUserController extends Controller
      */
     public function edit(User $user)
     {
-        return view('admin.users.edit', compact('user'));
+        return Inertia::render('Admin/Users/UserEdit', [
+            'user' => $user,
+        ]);
     }
 
     /**

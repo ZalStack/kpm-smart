@@ -12,7 +12,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement('ALTER TABLE practice_sessions MODIFY COLUMN order_id BIGINT UNSIGNED NULL');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE practice_sessions MODIFY COLUMN order_id BIGINT UNSIGNED NULL');
+        } else {
+            Schema::table('practice_sessions', function (Blueprint $table) {
+                $table->unsignedBigInteger('order_id')->nullable()->change();
+            });
+        }
     }
 
     /**
@@ -20,6 +26,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement('ALTER TABLE practice_sessions MODIFY COLUMN order_id BIGINT UNSIGNED NOT NULL');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE practice_sessions MODIFY COLUMN order_id BIGINT UNSIGNED NOT NULL');
+        } else {
+            Schema::table('practice_sessions', function (Blueprint $table) {
+                $table->unsignedBigInteger('order_id')->nullable(false)->change();
+            });
+        }
     }
 };

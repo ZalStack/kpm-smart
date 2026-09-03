@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Package;
 use App\Models\PracticeSession;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
@@ -22,10 +23,12 @@ class DashboardController extends Controller
         $bestScore = $sessions->best ?? 0;
         $averageScore = $sessions->avg_score ?? 0;
 
-        return view('dashboard.user', compact(
-            'user', 'packages',
-            'totalAttempts', 'bestScore', 'averageScore'
-        ));
+        return Inertia::render('Dashboard/UserDashboard', [
+            'packages' => $packages,
+            'totalAttempts' => $totalAttempts,
+            'bestScore' => $bestScore,
+            'averageScore' => round($averageScore, 1),
+        ]);
     }
 
     public function adminDashboard()
@@ -63,9 +66,12 @@ class DashboardController extends Controller
             ]);
         }
 
-        return view('dashboard.admin', compact(
-            'totalUsers', 'totalPackages', 'totalSessions',
-            'recentUsers', 'packageStats'
-        ));
+        return Inertia::render('Dashboard/AdminDashboard', [
+            'totalUsers' => $totalUsers,
+            'totalPackages' => $totalPackages,
+            'totalSessions' => $totalSessions,
+            'recentUsers' => $recentUsers,
+            'packageStats' => $packageStats,
+        ]);
     }
 }

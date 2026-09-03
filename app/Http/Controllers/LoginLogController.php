@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\LoginLog;
 use App\Support\SearchHelper;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class LoginLogController extends Controller
 {
@@ -34,6 +35,10 @@ class LoginLogController extends Controller
         $todayCount = LoginLog::whereDate('login_at', today())->count();
         $weekCount = LoginLog::whereBetween('login_at', [now()->startOfWeek(), now()->endOfWeek()])->count();
 
-        return view('admin.login-logs.index', compact('logs', 'todayCount', 'weekCount'));
+        return Inertia::render('Admin/LoginLogs/LoginLogIndex', [
+            'logs' => $logs,
+            'todayCount' => $todayCount,
+            'weekCount' => $weekCount,
+        ]);
     }
 }

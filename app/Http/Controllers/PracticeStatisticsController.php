@@ -7,6 +7,7 @@ use App\Models\Package;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 use Carbon\Carbon;
 
 class PracticeStatisticsController extends Controller
@@ -16,7 +17,58 @@ class PracticeStatisticsController extends Controller
      */
     public function index(Request $request)
     {
-        return view('admin.practice-statistics.index');
+        $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
+        $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
+        $packageId = $request->get('package_id', '');
+        $status = $request->get('status', '');
+
+        $query = PracticeSession::with(['user', 'package'])
+            ->whereBetween('created_at', [
+                Carbon::parse($startDate)->startOfDay(),
+                Carbon::parse($endDate)->endOfDay()
+            ]);
+
+        if ($packageId) {
+            $query->where('package_id', $packageId);
+        }
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        $sessions = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
+        $packages = Package::select('id', 'title')->orderBy('title')->get();
+
+        $dateBetween = [
+            Carbon::parse($startDate)->startOfDay(),
+            Carbon::parse($endDate)->endOfDay(),
+        ];
+        $baseQuery = PracticeSession::whereBetween('created_at', $dateBetween);
+        if ($packageId) {
+            $baseQuery->where('package_id', $packageId);
+        }
+        if ($status) {
+            $baseQuery->where('status', $status);
+        }
+
+        $totalSessions = $sessions->total();
+        $totalUsers = (clone $baseQuery)->distinct('user_id')->count('user_id');
+        $avgScore = (clone $baseQuery)->where('status', 'completed')->avg('total_score') ?? 0;
+        $totalCorrect = (clone $baseQuery)->sum('correct_answer');
+        $totalQuestions = (clone $baseQuery)->sum('total_question');
+
+        return Inertia::render('Admin/PracticeStatistics/PracticeStatIndex', [
+            'sessions' => $sessions,
+            'packages' => $packages,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'stats' => [
+                'totalSessions' => $totalSessions,
+                'totalUsers' => $totalUsers,
+                'avgScore' => number_format($avgScore, 1),
+                'totalCorrect' => $totalCorrect,
+                'totalQuestions' => $totalQuestions,
+            ],
+        ]);
     }
 
     /**
@@ -24,17 +76,29 @@ class PracticeStatisticsController extends Controller
      */
     public function show(PracticeSession $session)
     {
-        $session->load(['user', 'package', 'order']);
+        $session->load(['user', 'package']);
         $results = $session->answers ?? [];
 
-        $hideExplanation = false;
-        $timeLimitMinutes = null;
+        $showExplanation = true;
+        $showAnswerKey = true;
+        $showScore = true;
+        $timeLimitMinutes = 0;
+
         if ($session->package) {
-            $hideExplanation = $session->package->hide_explanation ?? false;
-            $timeLimitMinutes = $session->package->time_limit_minutes ?? null;
+            $showExplanation = $session->package->canShowExplanation();
+            $showAnswerKey = $session->package->canShowAnswerKey();
+            $showScore = $session->package->canShowScore();
+            $timeLimitMinutes = $session->package->time_limit_minutes ?? 0;
         }
 
-        return view('admin.practice-statistics.show', compact('session', 'results', 'hideExplanation', 'timeLimitMinutes'));
+        return Inertia::render('Admin/PracticeStatistics/PracticeStatShow', [
+            'session' => $session,
+            'results' => $results,
+            'showExplanation' => $showExplanation,
+            'showAnswerKey' => $showAnswerKey,
+            'showScore' => $showScore,
+            'timeLimitMinutes' => $timeLimitMinutes,
+        ]);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class NotificationController extends Controller
 {
@@ -13,7 +14,10 @@ class NotificationController extends Controller
         $notifications = NotificationService::getAll(auth()->id(), 20);
         $unreadCount = NotificationService::getUnreadCount(auth()->id());
 
-        return view('notifications.index', compact('notifications', 'unreadCount'));
+        return Inertia::render('Notifications/NotificationIndex', [
+            'notifications' => $notifications,
+            'unreadCount' => $unreadCount,
+        ]);
     }
 
     public function adminIndex()
@@ -21,7 +25,10 @@ class NotificationController extends Controller
         $notifications = NotificationService::getAll(auth()->id(), 10);
         $unreadCount = NotificationService::getUnreadCount(auth()->id());
 
-        return view('admin.notifications.index', compact('notifications', 'unreadCount'));
+        return Inertia::render('Admin/Notifications/NotificationIndex', [
+            'notifications' => $notifications,
+            'unreadCount' => $unreadCount,
+        ]);
     }
 
     public function dropdown(Request $request): JsonResponse

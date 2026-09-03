@@ -12,12 +12,13 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class AuthController extends Controller
 {
     public function showLogin()
     {
-        return view('auth.login');
+        return Inertia::render('Auth/Login');
     }
 
     public function login(Request $request)
@@ -83,63 +84,6 @@ class AuthController extends Controller
         return back()->withErrors(['email' => 'Email atau password salah!']);
     }
 
-    public function showRegister()
-    {
-        return view('auth.register');
-    }
-
-    public function register(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:8|confirmed',
-            'phone' => 'required|string',
-            'student_name' => 'required|string',
-            'student_class' => 'required|string',
-            'bidang' => 'nullable|string',
-            'level' => 'nullable|string',
-            'school_name' => 'required|string',
-            'address' => 'nullable|string',
-            'gender' => 'nullable|string',
-            'religion' => 'nullable|string',
-            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => $request->password,
-            'phone' => $request->phone,
-            'student_name' => $request->student_name,
-            'student_class' => $request->student_class,
-            'bidang' => $request->bidang,
-            'level' => $request->level,
-            'school_name' => $request->school_name,
-            'address' => $request->address,
-            'gender' => $request->gender,
-            'religion' => $request->religion,
-        ]);
-
-        // Field peran/status tidak mass-assignable — diatur eksplisit di sini.
-        $user->role = 'user';
-        $user->is_verified = true;
-        $user->is_active = true;
-        $user->save();
-
-        if ($request->hasFile('profile_photo')) {
-            $path = $request->file('profile_photo')->store('profile_photos', 'public');
-            $user->update(['profile_photo' => $path]);
-        }
-
-        Auth::login($user);
-        return redirect()->route('user.dashboard')->with('success', 'Registrasi berhasil!');
-    }
-
     public function logout(Request $request)
     {
         Auth::logout();
@@ -155,7 +99,9 @@ class AuthController extends Controller
     public function showProfile()
     {
         $user = Auth::user();
-        return view('profile.edit', compact('user'));
+        return Inertia::render('Profile/Edit', [
+            'user' => $user,
+        ]);
     }
 
     public function updateProfile(Request $request)
@@ -223,7 +169,7 @@ class AuthController extends Controller
     // STEP 1 - Form input email
     public function showForgotPassword()
     {
-        return view('auth.forgot-password');
+        return Inertia::render('Auth/ForgotPassword');
     }
 
     public function forgotPassword(Request $request)
@@ -270,7 +216,7 @@ class AuthController extends Controller
             return redirect()->route('password.request');
         }
 
-        return view('auth.forgot-password-sent', [
+        return Inertia::render('Auth/ForgotPasswordSent', [
             'email' => session('reset_email_sent'),
         ]);
     }
@@ -315,7 +261,9 @@ class AuthController extends Controller
                 ->withErrors(['email' => 'Tautan reset tidak valid atau sudah kedaluwarsa. Silakan minta tautan baru.']);
         }
 
-        return view('auth.forgot-password-reset', ['token' => $token]);
+        return Inertia::render('Auth/ResetPassword', [
+            'token' => $token,
+        ]);
     }
 
     public function resetPassword(Request $request)

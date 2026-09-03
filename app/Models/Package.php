@@ -10,7 +10,7 @@ class Package extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title', 'description', 'kelas', 'thumbnail', 'price',
+        'title', 'description', 'kelas', 'thumbnail',
         'bidang', 'level',
         'start_date', 'end_date', 'start_time', 'end_time',
         'show_answer_key', 'show_explanation', 'show_score',
@@ -23,7 +23,6 @@ class Package extends Model
         'show_answer_key' => 'boolean',
         'show_explanation' => 'boolean',
         'show_score' => 'boolean',
-        'price' => 'decimal:2',
         'start_date' => 'date',
         'end_date' => 'date',
         'cards' => 'array',
@@ -37,18 +36,28 @@ class Package extends Model
     }
 
     /**
-     * Apakah paket ini sedang dalam jadwal pengerjaan.
+     * Apakah paket ini sedang dalam jadwal pengerjaan (termasuk waktu).
      */
     public function isWithinSchedule(): bool
     {
         $now = now();
 
-        if ($this->start_date && $now->lt($this->start_date)) {
-            return false;
+        if ($this->start_date) {
+            $startDateTime = $this->start_time
+                ? $this->start_date->copy()->setTimeFromTimeString($this->start_time)
+                : $this->start_date->copy()->startOfDay();
+            if ($now->lt($startDateTime)) {
+                return false;
+            }
         }
 
-        if ($this->end_date && $now->gt($this->end_date)) {
-            return false;
+        if ($this->end_date) {
+            $endDateTime = $this->end_time
+                ? $this->end_date->copy()->setTimeFromTimeString($this->end_time)
+                : $this->end_date->copy()->endOfDay();
+            if ($now->gt($endDateTime)) {
+                return false;
+            }
         }
 
         return true;
@@ -56,6 +65,7 @@ class Package extends Model
 
     /**
      * Status jadwal: upcoming, active, expired, atau no_limit.
+     * Mempertimbangkan tanggal DAN waktu.
      */
     public function getScheduleStatusAttribute(): string
     {
@@ -65,19 +75,29 @@ class Package extends Model
 
         $now = now();
 
-        if ($this->start_date && $now->lt($this->start_date)) {
-            return 'upcoming';
+        if ($this->start_date) {
+            $startDateTime = $this->start_time
+                ? $this->start_date->copy()->setTimeFromTimeString($this->start_time)
+                : $this->start_date->copy()->startOfDay();
+            if ($now->lt($startDateTime)) {
+                return 'upcoming';
+            }
         }
 
-        if ($this->end_date && $now->gt($this->end_date)) {
-            return 'expired';
+        if ($this->end_date) {
+            $endDateTime = $this->end_time
+                ? $this->end_date->copy()->setTimeFromTimeString($this->end_time)
+                : $this->end_date->copy()->endOfDay();
+            if ($now->gt($endDateTime)) {
+                return 'expired';
+            }
         }
 
         return 'active';
     }
 
     /**
-     * Label jadwal yang mudah dibaca.
+     * Label jadwal yang mudah dibaca (termasuk waktu jika ada).
      */
     public function getScheduleLabelAttribute(): string
     {
@@ -89,19 +109,21 @@ class Package extends Model
 
         $parts = [];
         if ($this->start_date) {
-            $parts[] = $this->start_date->translatedFormat('d M Y');
+            $label = $this->start_date->translatedFormat('d M Y');
+            if ($this->start_time) {
+                $label .= ' ' . substr($this->start_time, 0, 5) . ' WIB';
+            }
+            $parts[] = $label;
         }
         if ($this->end_date) {
-            $parts[] = $this->end_date->translatedFormat('d M Y');
+            $label = $this->end_date->translatedFormat('d M Y');
+            if ($this->end_time) {
+                $label .= ' ' . substr($this->end_time, 0, 5) . ' WIB';
+            }
+            $parts[] = $label;
         }
 
-        $dateStr = implode(' — ', $parts);
-
-        if ($this->start_time && $this->end_time) {
-            $dateStr .= ' (' . substr($this->start_time, 0, 5) . ' — ' . substr($this->end_time, 0, 5) . ' WIB)';
-        }
-
-        return $dateStr;
+        return implode(' — ', $parts);
     }
 
     /**

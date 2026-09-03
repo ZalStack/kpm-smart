@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Keamanan: security headers untuk semua respons web.
         $middleware->web(append: [
             \App\Http\Middleware\SecurityHeadersMiddleware::class,
+            \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

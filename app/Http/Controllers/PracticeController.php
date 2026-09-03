@@ -7,12 +7,27 @@ use App\Models\PracticeSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class PracticeController extends Controller
 {
     public function index()
     {
         return redirect()->route('practice.history');
+    }
+
+    public function startRedirect(Package $package)
+    {
+        $inProgress = PracticeSession::where('user_id', Auth::id())
+            ->where('package_id', $package->id)
+            ->where('status', 'in_progress')
+            ->first();
+
+        if ($inProgress) {
+            return redirect()->route('practice.show', $inProgress->id);
+        }
+
+        return redirect()->route('packages.show', $package->id);
     }
 
     public function start(Request $request, Package $package)
@@ -33,26 +48,13 @@ class PracticeController extends Controller
                 ->with('error', 'Paket ini belum bisa dikerjakan. Silakan tunggu jadwal mulai.');
         }
 
-        $existingSession = PracticeSession::where('user_id', Auth::id())
-            ->where('package_id', $package->id)
-            ->where('status', 'completed')
-            ->first();
-
-        if ($existingSession) {
-            return redirect()->route('practice.show', $existingSession->id)
-                ->with('info', 'Kamu sudah mengerjakan paket ini. Hasil latihan hanya bisa dikerjakan 1 kali.');
-        }
-
-        $inProgress = PracticeSession::where('user_id', Auth::id())
-            ->where('package_id', $package->id)
-            ->where('status', 'in_progress')
-            ->first();
-
-        if ($inProgress) {
-            return view('practice.start', compact('package', 'inProgress'));
-        }
-
         $cardId = $request->card_id;
+
+        // If card_id is not provided, pick first card if available
+        if (!$cardId && !empty($package->cards)) {
+            $cardId = $package->cards[0]['id'] ?? null;
+        }
+
         $questions = collect($package->questions ?? [])
             ->where('card_id', $cardId)
             ->values()
@@ -61,6 +63,35 @@ class PracticeController extends Controller
         if (empty($questions)) {
             return redirect()->route('packages.show', $package->id)
                 ->with('error', 'Tidak ada soal pada card ini!');
+        }
+
+        // Check if there is an in-progress session for this card
+        $inProgress = PracticeSession::where('user_id', Auth::id())
+            ->where('package_id', $package->id)
+            ->where('card_id', $cardId)
+            ->where('status', 'in_progress')
+            ->first();
+
+        if ($inProgress) {
+            return Inertia::render('Practice/PracticeStart', [
+                'package' => $package,
+                'questions' => $questions,
+                'session' => $inProgress,
+                'timeLimitMinutes' => 0,
+            ]);
+        }
+
+        // Blokir jika sudah mengerjakan (1-attempt restriction - tidak bisa retry)
+        $existingSession = PracticeSession::where('user_id', Auth::id())
+            ->where('package_id', $package->id)
+            ->where('card_id', $cardId)
+            ->where('status', 'completed')
+            ->latest()
+            ->first();
+
+        if ($existingSession) {
+            return redirect()->route('practice.show', $existingSession->id)
+                ->with('info', 'Kamu sudah mengerjakan tugas pada card ini. Soal hanya bisa dikerjakan 1 kali. Berikut hasil tugasmu.');
         }
 
         $session = PracticeSession::create([
@@ -73,7 +104,12 @@ class PracticeController extends Controller
             'answers' => [],
         ]);
 
-        return view('practice.start', compact('package', 'questions', 'session'));
+        return Inertia::render('Practice/PracticeStart', [
+            'package' => $package,
+            'questions' => $questions,
+            'session' => $session,
+            'timeLimitMinutes' => 0,
+        ]);
     }
 
     public function submit(Request $request, PracticeSession $session)
@@ -138,10 +174,17 @@ class PracticeController extends Controller
         $showExplanation = $package->canShowExplanation();
         $showScore      = $package->canShowScore();
 
-        return view('practice.result', compact(
-            'session', 'results', 'correct', 'wrong', 'unanswered', 'totalScore',
-            'showAnswerKey', 'showExplanation', 'showScore'
-        ));
+        return Inertia::render('Practice/PracticeResult', [
+            'session' => $session,
+            'results' => $results,
+            'correct' => $correct,
+            'wrong' => $wrong,
+            'unanswered' => $unanswered,
+            'totalScore' => $totalScore,
+            'showAnswerKey' => $showAnswerKey,
+            'showExplanation' => $showExplanation,
+            'showScore' => $showScore,
+        ]);
     }
 
     public function history()
@@ -151,7 +194,9 @@ class PracticeController extends Controller
             ->where('status', 'completed')
             ->orderBy('created_at', 'desc')
             ->get();
-        return view('practice.history', compact('sessions'));
+        return Inertia::render('Practice/PracticeHistory', [
+            'sessions' => $sessions,
+        ]);
     }
 
     public function show(PracticeSession $session)
@@ -160,15 +205,36 @@ class PracticeController extends Controller
             return redirect()->back()->with('error', 'Akses ditolak!');
         }
 
-        $results = $session->answers ?? [];
         $package = $session->package;
 
-        // Ambil pengaturan realtime dari package (bisa berubah oleh admin kapan saja)
-        $showAnswerKey   = $package->canShowAnswerKey();
-        $showExplanation = $package->canShowExplanation();
-        $showScore       = $package->canShowScore();
+        if ($session->status === 'in_progress') {
+            $questions = collect($package->questions ?? [])
+                ->where('card_id', $session->card_id)
+                ->values()
+                ->all();
 
-        return view('practice.show', compact('session', 'results', 'showAnswerKey', 'showExplanation', 'showScore'));
+            return Inertia::render('Practice/PracticeStart', [
+                'package' => $package,
+                'questions' => $questions,
+                'session' => $session,
+                'timeLimitMinutes' => 0,
+            ]);
+        }
+
+        $results = $session->answers ?? [];
+
+        // Ambil pengaturan realtime dari package (bisa berubah oleh admin kapan saja)
+        $showAnswerKey   = $package ? $package->canShowAnswerKey() : true;
+        $showExplanation = $package ? $package->canShowExplanation() : true;
+        $showScore       = $package ? $package->canShowScore() : true;
+
+        return Inertia::render('Practice/PracticeShow', [
+            'session' => $session,
+            'results' => $results,
+            'showAnswerKey' => $showAnswerKey,
+            'showExplanation' => $showExplanation,
+            'showScore' => $showScore,
+        ]);
     }
 
     public function statistics()
@@ -195,10 +261,14 @@ class PracticeController extends Controller
             ];
         });
 
-        return view('practice.statistics', compact(
-            'totalAttempts', 'bestScore', 'averageScore',
-            'totalQuestions', 'correctAnswers', 'accuracy',
-            'sessionsByPackage'
-        ));
+        return Inertia::render('Practice/PracticeStatistics', [
+            'totalAttempts' => $totalAttempts,
+            'bestScore' => $bestScore,
+            'averageScore' => $averageScore,
+            'totalQuestions' => $totalQuestions,
+            'correctAnswers' => $correctAnswers,
+            'accuracy' => $accuracy,
+            'sessionsByPackage' => array_values($sessionsByPackage->toArray()),
+        ]);
     }
 }
