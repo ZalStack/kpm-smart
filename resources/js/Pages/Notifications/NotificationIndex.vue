@@ -53,7 +53,7 @@ function markAllRead() {
 
 <template>
     <UserLayout>
-        <Head title="Notifikasi - KPM Belajar Online" />
+        <Head title="Notifikasi - KPM SMART" />
 
         <template #header-title>Notifikasi</template>
         <template #header-sub>{{ unreadCount }} belum dibaca</template>

@@ -18,7 +18,7 @@ const mobileMenuOpen = ref(false);
                         class="flex items-center gap-2 text-lg font-bold text-foreground hover:text-primary transition"
                     >
                         <span class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">K</span>
-                        <span class="hidden sm:inline">KPM Belajar Online</span>
+                        <span class="hidden sm:inline">KPM SMART</span>
                     </Link>
 
                     <div class="hidden md:flex items-center gap-1">
@@ -93,7 +93,7 @@ const mobileMenuOpen = ref(false);
                         </ul>
                     </div>
                 </div>
-                <div class="border-t mt-8 pt-6 text-center text-muted-foreground text-sm">&copy; {{ new Date().getFullYear() }} KPM Belajar Online. Hak cipta dilindungi.</div>
+                <div class="border-t mt-8 pt-6 text-center text-muted-foreground text-sm">&copy; {{ new Date().getFullYear() }} KPM SMART. Hak cipta dilindungi.</div>
             </div>
         </footer>
     </div>

@@ -19,7 +19,7 @@ const props = defineProps({
 
 <template>
     <UserLayout>
-        <Head title="Dasbor - KPM Belajar Online" />
+        <Head title="Dasbor - KPM SMART" />
 
         <template #header-title>Dasbor</template>
         <template #header-sub>Selamat datang, {{ user?.name }}</template>
@@ -32,7 +32,7 @@ const props = defineProps({
             </div>
             <div class="relative z-10">
                 <h2 class="text-xl md:text-2xl font-bold mb-2">Halo, {{ user?.name }}! 👋</h2>
-                <p class="text-white/80 text-sm md:text-base max-w-lg">Selamat datang di KPM Belajar Online. Pilih paket tugas dan mulai berlatih sekarang.</p>
+                <p class="text-white/80 text-sm md:text-base max-w-lg">Selamat datang di KPM SMART. Pilih paket tugas dan mulai berlatih sekarang.</p>
                 <Link :href="route('packages.index')" class="inline-flex items-center gap-2 mt-4 bg-white/20 hover:bg-white/30 backdrop-blur px-4 py-2 rounded-lg text-sm font-medium transition">
                     Mulai Belajar
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>

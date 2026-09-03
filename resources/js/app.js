@@ -6,7 +6,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { Ziggy } from './ziggy';
 
-const appName = import.meta.env.VITE_APP_NAME || 'KPM Belajar Online';
+const appName = import.meta.env.VITE_APP_NAME || 'KPM SMART';
 
 createInertiaApp({
     title: (title) => title ? `${title} - ${appName}` : appName,

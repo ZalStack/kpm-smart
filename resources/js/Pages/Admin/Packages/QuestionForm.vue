@@ -148,7 +148,7 @@ function submit() {
             Kembali ke Daftar Soal
         </Link>
 
-        <div class="max-w-4xl">
+        <div>
             <div class="bg-card rounded-xl border shadow-sm">
                 <form @submit.prevent="submit" enctype="multipart/form-data">
                     <!-- Card Selection -->

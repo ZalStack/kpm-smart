@@ -94,15 +94,16 @@ onUnmounted(() => {
                         class="flex items-center gap-2 text-lg font-bold text-foreground hover:text-primary transition"
                     >
                         <span class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">K</span>
-                        <span class="hidden sm:inline">KPM Belajar Online</span>
+                        <span class="hidden sm:inline">KPM SMART</span>
                     </Link>
 
                     <!-- Desktop Menu -->
                     <div class="hidden md:flex items-center gap-1">
                         <template v-if="user">
                             <template v-if="user.role === 'user'">
-                                <Link :href="route('packages.index')" class="inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition" :class="{ 'text-foreground bg-accent': route().current('packages.*') }">Paket</Link>
-                                <Link :href="route('practice.history')" class="inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition" :class="{ 'text-foreground bg-accent': route().current('practice.*') }">Tugas</Link>
+                                <Link :href="route('packages.index')" class="inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition" :class="{ 'text-foreground bg-accent': route().current('packages.*') }">Tugas</Link>
+                                <Link :href="route('practice.history')" class="inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition" :class="{ 'text-foreground bg-accent': route().current('practice.*') }">Riwayat</Link>
+                                <Link :href="route('leave-requests.index')" class="inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition" :class="{ 'text-foreground bg-accent': route().current('leave-requests.*') }">Izin</Link>
                             </template>
                             <Link :href="user.role === 'admin' ? route('admin.dashboard') : route('user.dashboard')" class="inline-flex items-center justify-center bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition ml-2">Dasbor</Link>
 
@@ -181,8 +182,9 @@ onUnmounted(() => {
                             </div>
                             <template v-if="user.role === 'user'">
                                 <Link :href="route('user.dashboard')" @click="closeMobileMenu" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition text-sm" :class="route().current('user.dashboard') ? 'bg-accent text-foreground' : 'text-muted-foreground'">Dasbor</Link>
-                                <Link :href="route('packages.index')" @click="closeMobileMenu" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition text-sm" :class="route().current('packages.*') ? 'bg-accent text-foreground' : 'text-muted-foreground'">Paket Tugas</Link>
-                                <Link :href="route('practice.history')" @click="closeMobileMenu" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition text-sm" :class="route().current('practice.*') ? 'bg-accent text-foreground' : 'text-muted-foreground'">Tugas</Link>
+                                <Link :href="route('packages.index')" @click="closeMobileMenu" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition text-sm" :class="route().current('packages.*') ? 'bg-accent text-foreground' : 'text-muted-foreground'">Tugas</Link>
+                                <Link :href="route('practice.history')" @click="closeMobileMenu" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition text-sm" :class="route().current('practice.*') ? 'bg-accent text-foreground' : 'text-muted-foreground'">Riwayat</Link>
+                                <Link :href="route('leave-requests.index')" @click="closeMobileMenu" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition text-sm" :class="route().current('leave-requests.*') ? 'bg-accent text-foreground' : 'text-muted-foreground'">Izin</Link>
                                 <Link :href="route('profile.edit')" @click="closeMobileMenu" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition text-sm" :class="route().current('profile.*') ? 'bg-accent text-foreground' : 'text-muted-foreground'">Profil Saya</Link>
                             </template>
                             <template v-else>
@@ -224,8 +226,8 @@ onUnmounted(() => {
                         <h4 class="font-semibold mb-4 text-sm">Menu</h4>
                         <ul class="space-y-2 text-muted-foreground text-sm">
                             <li><Link :href="route('pages.features')" class="hover:text-foreground transition-all duration-200">Fitur Unggulan</Link></li>
-                            <li><Link :href="user ? route('packages.index') : '/#packages'" class="hover:text-foreground transition-all duration-200">Paket Tugas</Link></li>
-                            <li v-if="user"><Link :href="route('practice.history')" class="hover:text-foreground transition-all duration-200">Tugas</Link></li>
+                            <li><Link :href="user ? route('packages.index') : '/#packages'" class="hover:text-foreground transition-all duration-200">Tugas</Link></li>
+                            <li v-if="user"><Link :href="route('practice.history')" class="hover:text-foreground transition-all duration-200">Riwayat</Link></li>
                         </ul>
                     </div>
                     <div>
@@ -245,7 +247,7 @@ onUnmounted(() => {
                         </ul>
                     </div>
                 </div>
-                <div class="border-t mt-8 pt-6 text-center text-muted-foreground text-sm">&copy; {{ new Date().getFullYear() }} KPM Belajar Online. Hak cipta dilindungi.</div>
+                <div class="border-t mt-8 pt-6 text-center text-muted-foreground text-sm">&copy; {{ new Date().getFullYear() }} KPM SMART. Hak cipta dilindungi.</div>
             </div>
         </footer>
     </div>

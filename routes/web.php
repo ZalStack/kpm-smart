@@ -10,6 +10,7 @@ use App\Http\Controllers\SupportController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\LoginLogController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\LeaveRequestController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -142,6 +143,16 @@ Route::middleware(['auth', 'role:admin'])
         // Login Logs (Admin)
         Route::get('/login-logs', [LoginLogController::class, 'index'])->name('login-logs.index');
 
+        // Leave Requests (Admin)
+        Route::prefix('leave-requests')
+            ->name('leave-requests.')
+            ->group(function () {
+                Route::get('/', [LeaveRequestController::class, 'adminIndex'])->name('index');
+                Route::get('/{id}', [LeaveRequestController::class, 'adminShow'])->name('show');
+                Route::put('/{id}/status', [LeaveRequestController::class, 'adminUpdateStatus'])->name('update-status');
+                Route::delete('/{id}', [LeaveRequestController::class, 'adminDestroy'])->name('delete');
+            });
+
         // Notifications (Admin)
         Route::get('/notifications', [NotificationController::class, 'adminIndex'])->name('notifications.index');
         Route::post('/notifications/dropdown', [NotificationController::class, 'dropdown'])->name('notifications.dropdown');
@@ -163,6 +174,11 @@ Route::middleware(['auth', 'role:user'])->group(function () {
     Route::get('/packages', [PackageController::class, 'index'])->name('packages.index');
     Route::get('/packages/{package}', [PackageController::class, 'show'])->name('packages.show');
 
+    // Leave Requests (User)
+    Route::get('/leave-requests', [LeaveRequestController::class, 'index'])->name('leave-requests.index');
+    Route::get('/leave-requests/create', [LeaveRequestController::class, 'create'])->name('leave-requests.create');
+    Route::post('/leave-requests', [LeaveRequestController::class, 'store'])->name('leave-requests.store');
+
     // Practice
     Route::get('/practice', [PracticeController::class, 'index'])->name('practice.index');
     // Rute statis HARUS sebelum /{session} agar tidak tertangkap sebagai parameter
@@ -171,6 +187,7 @@ Route::middleware(['auth', 'role:user'])->group(function () {
     Route::get('/practice/start/{package}', [PracticeController::class, 'startRedirect'])->name('practice.start.get');
     Route::post('/practice/start/{package}', [PracticeController::class, 'start'])->name('practice.start');
     Route::post('/practice/submit/{session}', [PracticeController::class, 'submit'])->name('practice.submit');
+    Route::post('/practice/save-answers/{session}', [PracticeController::class, 'saveAnswers'])->name('practice.save-answers');
     Route::get('/practice/submit/{session}', function ($session) {
         return redirect()->route('practice.show', $session);
     });

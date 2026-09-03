@@ -47,7 +47,7 @@ const accuracyOffset = computed(() => circumference - (numAccuracy.value / 100) 
 
 <template>
     <UserLayout>
-        <Head title="Statistik Belajar - KPM Belajar Online" />
+        <Head title="Statistik Belajar - KPM SMART" />
 
         <template #header-title>📊 Statistik Belajar</template>
         <template #header-sub>

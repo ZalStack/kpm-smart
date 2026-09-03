@@ -61,7 +61,7 @@ const topics = [
             </div>
             <div class="relative z-10 px-5 sm:px-8 py-12 sm:py-16 md:py-20 text-center max-w-3xl mx-auto">
                 <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur border border-white/15 text-xs font-semibold text-white/85 mb-5">📖 Panduan Penggunaan</span>
-                <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight">Cara Menggunakan <span class="text-dry-sage">KPM Belajar Online</span></h1>
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight">Cara Menggunakan <span class="text-dry-sage">KPM SMART</span></h1>
                 <p class="mt-4 text-sm sm:text-base text-white/70 leading-relaxed">Ikuti 3 langkah mudah di bawah ini untuk mulai belajar. Cepat dan tanpa ribet.</p>
             </div>
         </div>

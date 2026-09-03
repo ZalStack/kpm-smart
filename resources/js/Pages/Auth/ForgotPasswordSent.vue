@@ -12,7 +12,7 @@ const props = defineProps({
 
 <template>
     <GuestLayout>
-        <Head title="Tautan Terkirim - KPM Belajar Online" />
+        <Head title="Tautan Terkirim - KPM SMART" />
 
         <div class="auth-card rounded-[1.75rem] p-5 sm:p-9 text-center">
             <div class="w-16 h-16 rounded-full bg-fern/10 flex items-center justify-center mx-auto mb-6">

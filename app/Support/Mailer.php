@@ -17,7 +17,7 @@ class Mailer
     public function __construct()
     {
         $this->fromEmail = (string) config('mail.from.address', 'no-reply@localhost');
-        $this->fromName = (string) config('mail.from.name', config('app.name', 'KPM Belajar Online'));
+        $this->fromName = (string) config('mail.from.name', config('app.name', 'KPM SMART'));
     }
 
     /**

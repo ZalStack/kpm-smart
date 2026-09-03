@@ -43,7 +43,7 @@ const steps = [
             <div class="relative z-10 px-5 sm:px-8 py-12 sm:py-16 md:py-20 text-center max-w-3xl mx-auto">
                 <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur border border-white/15 text-xs font-semibold text-white/85 mb-5">✨ Fitur Unggulan</span>
                 <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight">Semua yang Kamu Butuhkan untuk <span class="text-dry-sage">Belajar Lebih Baik</span></h1>
-                <p class="mt-4 text-sm sm:text-base text-white/70 leading-relaxed">KPM Belajar Online menyediakan soal, pembahasan, dan statistik belajar dalam satu platform yang mudah digunakan.</p>
+                <p class="mt-4 text-sm sm:text-base text-white/70 leading-relaxed">KPM SMART menyediakan soal, pembahasan, dan statistik belajar dalam satu platform yang mudah digunakan.</p>
             </div>
         </div>
 

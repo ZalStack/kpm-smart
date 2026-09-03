@@ -72,7 +72,7 @@ const bestScore = computed(() => {
 
 <template>
     <UserLayout>
-        <Head title="Riwayat Tugas - KPM Belajar Online" />
+        <Head title="Riwayat Tugas - KPM SMART" />
 
         <template #header-title>📋 Riwayat Tugas</template>
         <template #header-sub>

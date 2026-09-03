@@ -81,8 +81,8 @@
     </table>
 
     <div class="footer">
-        <p>Dokumen ini dibuat oleh sistem KPM Belajar Online Membership</p>
-        <p>© {{ date('Y') }} KPM Belajar Online. All rights reserved.</p>
+        <p>Dokumen ini dibuat oleh sistem KPM SMART Membership</p>
+        <p>© {{ date('Y') }} KPM SMART. All rights reserved.</p>
     </div>
 </body>
 </html>

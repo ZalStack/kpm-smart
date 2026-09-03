@@ -73,11 +73,21 @@ class PracticeController extends Controller
             ->first();
 
         if ($inProgress) {
+            $savedAnswers = [];
+            if (!empty($inProgress->answers)) {
+                foreach ($inProgress->answers as $idx => $item) {
+                    $savedAnswers[$idx] = $item['user_answer'] ?? null;
+                }
+            }
+
             return Inertia::render('Practice/PracticeStart', [
                 'package' => $package,
                 'questions' => $questions,
                 'session' => $inProgress,
                 'timeLimitMinutes' => 0,
+                'savedAnswers' => $savedAnswers,
+                'savedCurrentIndex' => null,
+                'savedDurationSeconds' => $inProgress->duration_seconds ?? 0,
             ]);
         }
 
@@ -213,11 +223,21 @@ class PracticeController extends Controller
                 ->values()
                 ->all();
 
+            $savedAnswers = [];
+            if (!empty($session->answers)) {
+                foreach ($session->answers as $idx => $item) {
+                    $savedAnswers[$idx] = $item['user_answer'] ?? null;
+                }
+            }
+
             return Inertia::render('Practice/PracticeStart', [
                 'package' => $package,
                 'questions' => $questions,
                 'session' => $session,
                 'timeLimitMinutes' => 0,
+                'savedAnswers' => $savedAnswers,
+                'savedCurrentIndex' => null,
+                'savedDurationSeconds' => $session->duration_seconds ?? 0,
             ]);
         }
 
@@ -235,6 +255,63 @@ class PracticeController extends Controller
             'showExplanation' => $showExplanation,
             'showScore' => $showScore,
         ]);
+    }
+
+    public function saveAnswers(Request $request, PracticeSession $session)
+    {
+        if ($session->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Akses ditolak!'], 403);
+        }
+
+        if ($session->status !== 'in_progress') {
+            return response()->json(['error' => 'Sesi sudah selesai.'], 422);
+        }
+
+        $answers = $request->answers ?? [];
+
+        $package = $session->package;
+        $questions = collect($package->questions ?? [])
+            ->where('card_id', $session->card_id)
+            ->values()
+            ->all();
+
+        $results = [];
+        $correct = 0;
+        $wrong = 0;
+        $unanswered = 0;
+
+        foreach ($questions as $index => $question) {
+            $userAnswer = $answers[$index] ?? null;
+            $isCorrect = $userAnswer === $question['correct_answer'];
+
+            if ($userAnswer === null) {
+                $unanswered++;
+            } else if ($isCorrect) {
+                $correct++;
+            } else {
+                $wrong++;
+            }
+
+            $results[] = [
+                'question' => $question['question'],
+                'options' => $question['options'],
+                'correct_answer' => $question['correct_answer'],
+                'user_answer' => $userAnswer,
+                'is_correct' => $isCorrect,
+                'image' => $question['image'] ?? null,
+                'explanation' => $question['explanation'] ?? '',
+            ];
+        }
+
+        $session->update([
+            'answers' => $results,
+            'correct_answer' => $correct,
+            'wrong_answer' => $wrong,
+            'unanswered' => $unanswered,
+            'duration_seconds' => $request->duration_seconds ?? $session->duration_seconds,
+        ]);
+
+        return response()->json(['success' => true, 'saved_at' => now()->toISOString()]);
     }
 
     public function statistics()

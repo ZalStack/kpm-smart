@@ -45,7 +45,7 @@ function formatDate(dateStr) {
 
 <template>
     <UserLayout>
-        <Head :title="package.title + ' - KPM Belajar Online'" />
+        <Head :title="package.title + ' - KPM SMART'" />
 
         <template #header-title>{{ package.title }}</template>
         <template #header-sub>Detail paket tugas</template>

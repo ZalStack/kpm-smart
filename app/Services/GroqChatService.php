@@ -63,10 +63,10 @@ class GroqChatService
 
     private function buildSystemPrompt(): string
     {
-        return 'Kamu adalah asisten AI untuk platform "KPM Belajar Online" — platform membership pendidikan online untuk pelajar Indonesia.
+        return 'Kamu adalah asisten AI untuk platform "KPM SMART" — platform membership pendidikan online untuk pelajar Indonesia.
 
 TENTANG PLATFORM INI:
-- Website: KPM Belajar Online (membership-system)
+- Website: KPM SMART (membership-system)
 - Fitur utama: Latihan soal online, video pembahasan, manajemen paket belajar
 - Pembayaran: Midtrans (transfer bank, e-wallet, QRIS, kartu kredit)
 - Support: Live chat AI (kamu), tiket bantuan ke admin

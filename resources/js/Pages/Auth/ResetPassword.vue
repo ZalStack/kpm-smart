@@ -26,7 +26,7 @@ function submit() {
 
 <template>
     <GuestLayout>
-        <Head title="Reset Kata Sandi - KPM Belajar Online" />
+        <Head title="Reset Kata Sandi - KPM SMART" />
 
         <div class="auth-card rounded-[1.75rem] p-5 sm:p-9">
             <div class="mb-7">

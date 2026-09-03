@@ -30,7 +30,7 @@ function submit() {
 
 <template>
     <GuestLayout>
-        <Head title="Masuk - KPM Belajar Online" />
+        <Head title="Masuk - KPM SMART" />
 
         <div class="auth-card rounded-[1.75rem] p-5 sm:p-9">
             <div class="mb-7">

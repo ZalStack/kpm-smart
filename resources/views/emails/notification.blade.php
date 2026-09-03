@@ -19,7 +19,7 @@
                                         <div style="display:flex;align-items:center;gap:12px;">
                                             <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#FCC626,#FFB020);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:#090C2E;">K</div>
                                             <div>
-                                                <div style="color:#fff;font-weight:700;font-size:16px;">KPM Belajar Online</div>
+                                                <div style="color:#fff;font-weight:700;font-size:16px;">KPM SMART</div>
                                                 <div style="color:rgba(255,255,255,0.5);font-size:11px;">Notifikasi Sistem</div>
                                             </div>
                                         </div>
@@ -59,7 +59,7 @@
                     <tr>
                         <td style="background:#F7F9FE;padding:24px 40px;border-radius:0 0 20px 20px;border-top:1px solid #E5EAF4;">
                             <p style="margin:0;text-align:center;color:#94A3B8;font-size:11px;">
-                                © {{ date('Y') }} KPM Belajar Online. Hak cipta dilindungi.
+                                © {{ date('Y') }} KPM SMART. Hak cipta dilindungi.
                             </p>
                         </td>
                     </tr>

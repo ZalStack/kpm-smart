@@ -31,7 +31,7 @@ function submit() {
 
 <template>
     <UserLayout>
-        <Head title="Profil Saya - KPM Belajar Online" />
+        <Head title="Profil Saya - KPM SMART" />
 
         <template #header-title>Profil Saya</template>
         <template #header-sub>Perbarui informasi profil Anda</template>

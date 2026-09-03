@@ -89,7 +89,7 @@ function submit() {
             </div>
         </div>
 
-        <div class="max-w-4xl">
+        <div>
             <div class="bg-card rounded-xl border shadow-sm overflow-hidden">
                 <form @submit.prevent="submit" enctype="multipart/form-data">
                     <!-- Informasi Dasar -->

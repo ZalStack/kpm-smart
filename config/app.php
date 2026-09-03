@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'KPM Belajar Online'),
+    'name' => env('APP_NAME', 'KPM SMART'),
 
     /*
     |--------------------------------------------------------------------------

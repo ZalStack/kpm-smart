@@ -94,7 +94,7 @@ function submit() {
             Kembali ke Daftar Soal
         </Link>
 
-        <div class="max-w-3xl">
+        <div>
             <div class="bg-card rounded-xl border shadow-sm overflow-hidden">
                 <!-- Info Header -->
                 <div class="p-5 sm:p-6 bg-gradient-to-r from-green-600 to-green-700 text-white">

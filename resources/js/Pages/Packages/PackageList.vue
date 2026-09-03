@@ -69,7 +69,7 @@ function getScheduleLabel(pkg) {
 
 <template>
     <UserLayout>
-        <Head title="Paket Tugas - KPM Belajar Online" />
+        <Head title="Paket Tugas - KPM SMART" />
 
         <template #header-title>Paket Tugas</template>
         <template #header-sub>Pilih paket tugas yang sesuai untuk dikerjakan</template>

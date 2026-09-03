@@ -17,7 +17,7 @@ const props = defineProps({
 
 <template>
     <AdminLayout>
-        <Head title="Dasbor Admin - KPM Belajar Online" />
+        <Head title="Dasbor Admin - KPM SMART" />
 
         <template #header-title>Dasbor</template>
         <template #header-sub>Kelola sistem membership dengan mudah</template>

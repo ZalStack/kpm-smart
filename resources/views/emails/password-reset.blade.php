@@ -27,7 +27,7 @@
                                     <td style="padding-right:10px;">
                                         <div style="width:44px; height:44px; background:#FCC626; border-radius:14px; text-align:center; line-height:44px; font-size:20px; font-weight:800; color:#090C2E; font-family:'Sora','Segoe UI',Arial,sans-serif;">K</div>
                                     </td>
-                                    <td align="left" style="font-size:15px; font-weight:700; color:#0E1447;">KPM Belajar Online<br><span style="font-size:11px; font-weight:400; color:#94A3B8;">Platform belajar &amp; bank soal</span></td>
+                                    <td align="left" style="font-size:15px; font-weight:700; color:#0E1447;">KPM SMART<br><span style="font-size:11px; font-weight:400; color:#94A3B8;">Platform belajar &amp; bank soal</span></td>
                                 </tr>
                             </table>
                         </td>
@@ -98,7 +98,7 @@
                         <td align="center" style="padding:20px 12px 4px;">
                             <p style="margin:0; font-size:11px; color:#94A3B8; line-height:1.7;">
                                 Email ini dikirim otomatis oleh sistem {{ config('app.name') }}.<br>
-                                &copy; {{ date('Y') }} KPM Belajar Online. Hak cipta dilindungi.
+                                &copy; {{ date('Y') }} KPM SMART. Hak cipta dilindungi.
                             </p>
                         </td>
                     </tr>

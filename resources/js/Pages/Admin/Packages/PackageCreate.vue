@@ -60,7 +60,7 @@ function submit() {
             Kembali ke Daftar Paket
         </Link>
 
-        <div class="max-w-3xl">
+        <div>
             <div class="bg-card rounded-xl border shadow-sm">
                 <form @submit.prevent="submit" enctype="multipart/form-data">
                     <!-- Informasi Dasar -->

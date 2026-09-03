@@ -15,7 +15,7 @@ import { Link } from '@inertiajs/vue3';
                 <div class="flex items-center gap-3 mb-12">
                     <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-dry-sage to-fern flex items-center justify-center text-white font-bold text-xl shadow-lg ring-pulse">K</div>
                     <div class="leading-tight">
-                        <span class="font-bold text-lg block">KPM Belajar Online</span>
+                        <span class="font-bold text-lg block">KPM SMART</span>
                         <span class="text-xs text-white/60">Platform belajar & bank soal</span>
                     </div>
                 </div>
@@ -31,7 +31,7 @@ import { Link } from '@inertiajs/vue3';
             </div>
 
             <div class="relative z-10 text-xs text-white/40 fade-up" style="animation-delay:.15s">
-                &copy; {{ new Date().getFullYear() }} KPM Belajar Online. Hak cipta dilindungi.
+                &copy; {{ new Date().getFullYear() }} KPM SMART. Hak cipta dilindungi.
             </div>
         </div>
 
@@ -46,7 +46,7 @@ import { Link } from '@inertiajs/vue3';
                     <div class="flex items-center gap-3">
                         <div class="w-11 h-11 rounded-md bg-gradient-to-br from-dry-sage to-fern flex items-center justify-center text-white font-bold text-lg">K</div>
                         <div class="leading-tight text-left">
-                            <span class="font-bold text-foreground block">KPM Belajar Online</span>
+                            <span class="font-bold text-foreground block">KPM SMART</span>
                             <span class="text-[11px] text-muted-foreground">Platform belajar & bank soal</span>
                         </div>
                     </div>

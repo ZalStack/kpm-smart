@@ -56,7 +56,7 @@ const scoreOffset = computed(() => circumference - (Math.min(Number(props.sessio
             Kembali ke Statistik
         </Link>
 
-        <div class="max-w-3xl mx-auto space-y-6">
+        <div class="space-y-6">
 
             <!-- Score Hero Card -->
             <div :class="['rounded-2xl overflow-hidden shadow-card-lg text-white bg-gradient-to-br',
@@ -66,23 +66,16 @@ const scoreOffset = computed(() => circumference - (Math.min(Number(props.sessio
                 'from-red-400 to-red-600']">
                 <div class="px-6 pt-6 pb-4">
                     <div class="flex flex-col sm:flex-row items-center gap-5">
-                        <!-- Score Ring -->
                         <div v-if="showScore" class="relative flex-shrink-0">
                             <svg class="w-32 h-32 -rotate-90" viewBox="0 0 100 100">
                                 <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="10"/>
-                                <circle cx="50" cy="50" r="40" fill="none" stroke="white"
-                                        stroke-width="10" stroke-linecap="round"
-                                        :stroke-dasharray="circumference"
-                                        :stroke-dashoffset="scoreOffset"
-                                        class="transition-all duration-1000" />
+                                <circle cx="50" cy="50" r="40" fill="none" stroke="white" stroke-width="10" stroke-linecap="round" :stroke-dasharray="circumference" :stroke-dashoffset="scoreOffset" class="transition-all duration-1000" />
                             </svg>
                             <div class="absolute inset-0 flex flex-col items-center justify-center">
                                 <span class="text-2xl font-black leading-none">{{ Number(session.total_score || 0).toFixed(0) }}</span>
                                 <span class="text-[10px] text-white/70 mt-0.5">Nilai</span>
                             </div>
                         </div>
-
-                        <!-- Info -->
                         <div class="text-center sm:text-left flex-1">
                             <p class="text-3xl mb-1">{{ grade.emoji }}</p>
                             <h2 class="text-xl font-bold">{{ grade.label }}</h2>
@@ -94,9 +87,7 @@ const scoreOffset = computed(() => circumference - (Math.min(Number(props.sessio
                         </div>
                     </div>
                 </div>
-
-                <!-- Stats Row -->
-                <div class="grid grid-cols-4 gap-px bg-white/10 border-t border-white/10">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-px bg-white/10 border-t border-white/10">
                     <div class="bg-black/10 px-3 py-3 text-center">
                         <p class="text-xl font-bold">{{ session.total_question || 0 }}</p>
                         <p class="text-[10px] text-white/70">Total Soal</p>
@@ -116,79 +107,68 @@ const scoreOffset = computed(() => circumference - (Math.min(Number(props.sessio
                 </div>
             </div>
 
-            <!-- Session Info -->
-            <Card class="p-5">
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-                    <div>
-                        <p class="text-xs text-muted-foreground mb-1">Tanggal</p>
-                        <p class="text-sm font-semibold">{{ formatDate(session.created_at) }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-muted-foreground mb-1">Status</p>
-                        <Badge :variant="session.status === 'completed' ? 'success' : 'warning'" class="text-[10px]">{{ session.status === 'completed' ? 'Selesai' : 'Berlangsung' }}</Badge>
-                    </div>
-                    <div>
-                        <p class="text-xs text-muted-foreground mb-1">Card</p>
-                        <p class="text-sm font-semibold">{{ session.card_id || '-' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-muted-foreground mb-1">Waktu Limit</p>
-                        <p class="text-sm font-semibold">{{ timeLimitMinutes > 0 ? timeLimitMinutes + ' menit' : 'Tanpa batas' }}</p>
-                    </div>
+            <!-- Session Info - 4 Column Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-card rounded-xl border shadow-sm p-5 text-center">
+                    <p class="text-xs text-muted-foreground mb-1">Tanggal</p>
+                    <p class="text-sm font-semibold">{{ formatDate(session.created_at) }}</p>
                 </div>
-            </Card>
+                <div class="bg-card rounded-xl border shadow-sm p-5 text-center">
+                    <p class="text-xs text-muted-foreground mb-1">Status</p>
+                    <Badge :variant="session.status === 'completed' ? 'success' : 'warning'" class="text-[10px]">{{ session.status === 'completed' ? 'Selesai' : 'Berlangsung' }}</Badge>
+                </div>
+                <div class="bg-card rounded-xl border shadow-sm p-5 text-center">
+                    <p class="text-xs text-muted-foreground mb-1">Card</p>
+                    <p class="text-sm font-semibold">{{ session.card_id || '-' }}</p>
+                </div>
+                <div class="bg-card rounded-xl border shadow-sm p-5 text-center">
+                    <p class="text-xs text-muted-foreground mb-1">Waktu Limit</p>
+                    <p class="text-sm font-semibold">{{ timeLimitMinutes > 0 ? timeLimitMinutes + ' menit' : 'Tanpa batas' }}</p>
+                </div>
+            </div>
 
-            <!-- Answer Details -->
-            <div class="space-y-3">
-                <h3 class="text-lg font-semibold">📋 Detail Jawaban</h3>
+            <!-- Answer Details - 4 Column Grid -->
+            <div>
+                <h3 class="text-lg font-semibold mb-4">📋 Detail Jawaban</h3>
 
-                <!-- Empty State -->
                 <div v-if="results.length === 0" class="bg-card rounded-xl border p-8 text-center">
                     <div class="text-4xl mb-3">📝</div>
                     <p class="text-muted-foreground">Tidak ada data jawaban tersedia</p>
                 </div>
 
-                <div v-for="(result, idx) in results" :key="idx"
-                     :class="['bg-card rounded-xl border p-4 border-l-4 transition-all hover:shadow-sm',
-                              result.is_correct ? 'border-l-green-500' : (result.user_answer ? 'border-l-red-500' : 'border-l-yellow-400')]">
-                    <div class="flex items-start gap-3">
-                        <span class="flex-shrink-0 w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs font-bold">{{ idx + 1 }}</span>
-                        <div class="flex-1 min-w-0">
-                            <!-- Status Badge -->
-                            <Badge :variant="result.is_correct ? 'success' : (result.user_answer ? 'destructive' : 'outline')" class="text-[10px] mb-2">
-                                {{ result.is_correct ? '✅ Benar' : (result.user_answer ? '❌ Salah' : '⬜ Tidak Dijawab') }}
+                <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div v-for="(result, idx) in results" :key="idx"
+                         :class="['bg-card rounded-xl border p-4 border-l-4 transition-all hover:shadow-sm',
+                                  result.is_correct ? 'border-l-green-500' : (result.user_answer ? 'border-l-red-500' : 'border-l-yellow-400')]">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs font-bold">{{ idx + 1 }}</span>
+                            <Badge :variant="result.is_correct ? 'success' : (result.user_answer ? 'destructive' : 'outline')" class="text-[10px]">
+                                {{ result.is_correct ? '✅ Benar' : (result.user_answer ? '❌ Salah' : '⬜ Kosong') }}
                             </Badge>
+                        </div>
 
-                            <!-- Image -->
-                            <div v-if="result.image" class="mb-2">
-                                <img :src="result.image" alt="Gambar soal" class="max-w-full h-auto rounded-lg border max-h-48 object-contain" @error="$event.target.style.display='none'" />
-                            </div>
+                        <div v-if="result.image" class="mb-2">
+                            <img :src="result.image" alt="Gambar soal" class="w-full h-auto rounded-lg border max-h-32 object-contain" @error="$event.target.style.display='none'" />
+                        </div>
 
-                            <!-- Question -->
-                            <p class="text-sm leading-relaxed mb-2" v-html="result.question"></p>
+                        <p class="text-xs leading-relaxed mb-2 line-clamp-4" v-html="result.question"></p>
 
-                            <!-- User Answer vs Correct -->
-                            <div class="space-y-1 text-sm">
-                                <p>
-                                    <span class="text-muted-foreground">Jawaban User:</span>
-                                    <span :class="result.is_correct ? 'text-green-600 font-medium' : 'text-red-500'">
-                                        {{ result.user_answer || '-' }}
-                                    </span>
-                                </p>
-                                <p v-if="showAnswerKey && !result.is_correct">
-                                    <span class="text-muted-foreground">Jawaban Benar:</span>
-                                    <span class="text-green-600 font-medium">{{ result.correct_answer }}</span>
-                                </p>
-                            </div>
+                        <div class="space-y-1 text-xs">
+                            <p>
+                                <span class="text-muted-foreground">User:</span>
+                                <span :class="result.is_correct ? 'text-green-600 font-medium' : 'text-red-500'">
+                                    {{ result.user_answer || '-' }}
+                                </span>
+                            </p>
+                            <p v-if="showAnswerKey && !result.is_correct">
+                                <span class="text-muted-foreground">Benar:</span>
+                                <span class="text-green-600 font-medium">{{ result.correct_answer }}</span>
+                            </p>
+                        </div>
 
-                            <!-- Explanation -->
-                            <div v-if="showExplanation && result.explanation" class="mt-3 flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg p-3">
-                                <span class="text-blue-500 flex-shrink-0 mt-0.5">💡</span>
-                                <div>
-                                    <p class="text-[10px] font-semibold text-blue-700 mb-0.5">Pembahasan</p>
-                                    <p class="text-xs text-blue-800 leading-relaxed">{{ result.explanation }}</p>
-                                </div>
-                            </div>
+                        <div v-if="showExplanation && result.explanation" class="mt-2 flex items-start gap-1.5 bg-blue-50 border border-blue-100 rounded-lg p-2">
+                            <span class="text-blue-500 flex-shrink-0 text-xs">💡</span>
+                            <p class="text-[10px] text-blue-800 leading-relaxed line-clamp-3">{{ result.explanation }}</p>
                         </div>
                     </div>
                 </div>

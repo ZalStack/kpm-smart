@@ -57,7 +57,7 @@ const scoreOffset = computed(() => circumference - (Math.min(props.totalScore, 1
 
 <template>
     <UserLayout>
-        <Head title="Hasil Tugas - KPM Belajar Online" />
+        <Head title="Hasil Tugas - KPM SMART" />
 
         <template #header-title>🎯 Hasil Tugas</template>
         <template #header-sub>{{ session.package?.title }}</template>
