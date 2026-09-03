@@ -211,7 +211,7 @@ onUnmounted(() => {
         <!-- Footer -->
         <footer class="border-t bg-muted/40 pt-12 md:pt-16 pb-6 md:pb-8 mt-auto">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
+                <!-- <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
                     <div>
                         <div class="flex items-center gap-3 mb-4">
                             <div class="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">K</div>
@@ -246,7 +246,7 @@ onUnmounted(() => {
                             <li>Bogor, Indonesia</li>
                         </ul>
                     </div>
-                </div>
+                </div> -->
                 <div class="border-t mt-8 pt-6 text-center text-muted-foreground text-sm">&copy; {{ new Date().getFullYear() }} KPM SMART. Hak cipta dilindungi.</div>
             </div>
         </footer>
