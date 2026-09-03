@@ -23,11 +23,14 @@ class DashboardController extends Controller
         $bestScore = $sessions->best ?? 0;
         $averageScore = $sessions->avg_score ?? 0;
 
+        $gamification = app(\App\Http\Controllers\GamificationController::class)->getGamificationData($user->id);
+
         return Inertia::render('Dashboard/UserDashboard', [
             'packages' => $packages,
             'totalAttempts' => $totalAttempts,
             'bestScore' => $bestScore,
             'averageScore' => round($averageScore, 1),
+            'gamification' => $gamification,
         ]);
     }
 

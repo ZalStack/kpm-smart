@@ -1,12 +1,10 @@
 <script setup>
 import { inject, ref, computed } from 'vue';
 import { Head, useForm, usePage, Link } from '@inertiajs/vue3';
-import UserLayout from '@/Layouts/UserLayout.vue';
+import AdminLayout from '@/Layouts/AdminLayout.vue';
 import Input from '@/Components/ui/input/Input.vue';
 import Label from '@/Components/ui/label/Label.vue';
 import Button from '@/Components/ui/button/Button.vue';
-import Select from '@/Components/ui/select/Select.vue';
-import Textarea from '@/Components/ui/textarea/Textarea.vue';
 const route = inject('route');
 
 const page = usePage();
@@ -14,14 +12,8 @@ const user = page.props.auth?.user;
 
 const form = useForm({
     name: user?.name || '',
+    email: user?.email || '',
     phone: user?.phone || '',
-    student_class: user?.student_class || '',
-    bidang: user?.bidang || '',
-    level: user?.level || '',
-    school_name: user?.school_name || '',
-    address: user?.address || '',
-    gender: user?.gender || '',
-    religion: user?.religion || '',
     profile_photo: null,
 });
 
@@ -29,7 +21,7 @@ const photoPreview = ref(null);
 const fileInput = ref(null);
 const photoDragOver = ref(false);
 
-const userInitial = computed(() => (user?.name || 'U').charAt(0).toUpperCase());
+const userInitial = computed(() => (user?.name || 'A').charAt(0).toUpperCase());
 
 const profilePhotoUrl = computed(() => {
     if (photoPreview.value) return photoPreview.value;
@@ -72,20 +64,20 @@ function removePhoto() {
 }
 
 function submit() {
-    form.put(route('profile.update'), {
+    form.put(route('admin.profile.update'), {
         forceFormData: true,
     });
 }
 </script>
 
 <template>
-    <UserLayout>
-        <Head title="Profil Saya - KPM SMART" />
+    <AdminLayout>
+        <Head title="Profil Admin - KPM SMART" />
 
-        <template #header-title>Profil Saya</template>
+        <template #header-title>Profil Admin</template>
         <template #header-sub>Perbarui informasi profil dan keamanan akun Anda</template>
 
-        <div class="space-y-6">
+        <div class="w-full space-y-6">
             <!-- Profile Photo Section -->
             <div class="anim-fade-in-up rounded-2xl border bg-card shadow-card overflow-hidden">
                 <div class="p-6 border-b bg-gradient-to-r from-primary/5 to-transparent">
@@ -97,7 +89,6 @@ function submit() {
                 </div>
                 <div class="p-6">
                     <div class="flex flex-col sm:flex-row items-center gap-6">
-                        <!-- Photo Preview -->
                         <div class="relative group">
                             <div v-if="profilePhotoUrl"
                                  class="w-28 h-28 rounded-2xl overflow-hidden ring-4 ring-primary/10 shadow-card">
@@ -113,7 +104,6 @@ function submit() {
                             </div>
                         </div>
 
-                        <!-- Upload Area -->
                         <div class="flex-1 w-full">
                             <div @dragover.prevent="photoDragOver = true" @dragleave="photoDragOver = false" @drop="handleDrop"
                                  :class="['border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer',
@@ -144,51 +134,18 @@ function submit() {
                         <div class="space-y-2">
                             <Label for="name">Nama Lengkap <span class="text-red-500">*</span></Label>
                             <Input id="name" v-model="form.name" required placeholder="Masukkan nama lengkap" />
+                            <p v-if="form.errors?.name" class="text-xs text-red-500">{{ form.errors.name }}</p>
                         </div>
                         <div class="space-y-2">
-                            <Label for="phone">Nomor Telepon <span class="text-red-500">*</span></Label>
-                            <Input id="phone" v-model="form.phone" required placeholder="Masukkan nomor telepon" />
+                            <Label for="email">Email <span class="text-red-500">*</span></Label>
+                            <Input id="email" v-model="form.email" type="email" required placeholder="Masukkan email" />
+                            <p v-if="form.errors?.email" class="text-xs text-red-500">{{ form.errors.email }}</p>
                         </div>
                         <div class="space-y-2">
-                            <Label for="student_class">Kelas <span class="text-red-500">*</span></Label>
-                            <Input id="student_class" v-model="form.student_class" required placeholder="Masukkan kelas" />
+                            <Label for="phone">Nomor Telepon</Label>
+                            <Input id="phone" v-model="form.phone" placeholder="Masukkan nomor telepon" />
+                            <p v-if="form.errors?.phone" class="text-xs text-red-500">{{ form.errors.phone }}</p>
                         </div>
-                        <div class="space-y-2">
-                            <Label for="school_name">Nama Sekolah <span class="text-red-500">*</span></Label>
-                            <Input id="school_name" v-model="form.school_name" required placeholder="Masukkan nama sekolah" />
-                        </div>
-                        <div class="space-y-2">
-                            <Label for="bidang">Bidang</Label>
-                            <Input id="bidang" v-model="form.bidang" placeholder="Masukkan bidang" />
-                        </div>
-                        <div class="space-y-2">
-                            <Label for="level">Level</Label>
-                            <Input id="level" v-model="form.level" placeholder="Masukkan level" />
-                        </div>
-                        <div class="space-y-2">
-                            <Label for="gender">Jenis Kelamin</Label>
-                            <Select id="gender" v-model="form.gender">
-                                <option value="">Pilih</option>
-                                <option value="Laki-laki">Laki-laki</option>
-                                <option value="Perempuan">Perempuan</option>
-                            </Select>
-                        </div>
-                        <div class="space-y-2">
-                            <Label for="religion">Agama</Label>
-                            <Select id="religion" v-model="form.religion">
-                                <option value="">Pilih</option>
-                                <option value="Islam">Islam</option>
-                                <option value="Kristen">Kristen</option>
-                                <option value="Katolik">Katolik</option>
-                                <option value="Hindu">Hindu</option>
-                                <option value="Buddha">Buddha</option>
-                                <option value="Konghucu">Konghucu</option>
-                            </Select>
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <Label for="address">Alamat</Label>
-                        <Textarea id="address" v-model="form.address" :rows="3" placeholder="Masukkan alamat lengkap" />
                     </div>
 
                     <div v-if="form.errors && Object.keys(form.errors).length > 0" class="bg-red-50 border border-red-200 border-l-4 border-l-red-500 text-red-700 px-4 py-3 rounded-xl text-sm flex items-start gap-2">
@@ -232,7 +189,7 @@ function submit() {
                                 <p class="text-xs text-muted-foreground">Terakhir diubah: tidak diketahui</p>
                             </div>
                         </div>
-                        <Link :href="route('profile.change-password')"
+                        <Link :href="route('admin.profile.change-password')"
                               class="inline-flex items-center gap-2 bg-amber-500 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-amber-600 transition shadow-sm w-full sm:w-auto justify-center">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
                             Ubah Password
@@ -241,5 +198,5 @@ function submit() {
                 </div>
             </div>
         </div>
-    </UserLayout>
+    </AdminLayout>
 </template>

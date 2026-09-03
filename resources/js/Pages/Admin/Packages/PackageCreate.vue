@@ -50,14 +50,14 @@ function submit() {
 
 <template>
     <AdminLayout>
-        <Head title="Tambah Paket - Admin" />
+        <Head title="Tambah Soal - Admin" />
 
-        <template #header-title>Tambah Paket Baru</template>
-        <template #header-sub>Buat paket tugas baru untuk pengguna</template>
+        <template #header-title>Tambah Soal Baru</template>
+        <template #header-sub>Buat soal tugas baru untuk pengguna</template>
 
         <Link :href="route('admin.packages.index')" class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition mb-6">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
-            Kembali ke Daftar Paket
+            Kembali ke Daftar Soal
         </Link>
 
         <div>
@@ -68,13 +68,13 @@ function submit() {
                         <h2 class="text-lg font-semibold mb-4">📝 Informasi Dasar</h2>
                         <div class="space-y-4">
                             <div class="space-y-2">
-                                <Label>Judul Paket <span class="text-destructive">*</span></Label>
-                                <Input v-model="form.title" required placeholder="Contoh: Paket Tugas Matematika Kelas 10" />
+                                <Label>Judul Soal <span class="text-destructive">*</span></Label>
+                                <Input v-model="form.title" required placeholder="Contoh: Soal Tugas Matematika Kelas 10" />
                                 <p v-if="form.errors.title" class="text-xs text-destructive">{{ form.errors.title }}</p>
                             </div>
                             <div class="space-y-2">
                                 <Label>Deskripsi <span class="text-destructive">*</span></Label>
-                                <Textarea v-model="form.description" required :rows="3" placeholder="Deskripsi singkat paket tugas..." />
+                                <Textarea v-model="form.description" required :rows="3" placeholder="Deskripsi singkat soal tugas..." />
                                 <p v-if="form.errors.description" class="text-xs text-destructive">{{ form.errors.description }}</p>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -101,7 +101,7 @@ function submit() {
                             </div>
                             <div class="flex items-center gap-3">
                                 <Switch v-model="form.is_active" />
-                                <Label>Aktifkan paket</Label>
+                                <Label>Aktifkan soal</Label>
                             </div>
                         </div>
                     </div>
@@ -152,7 +152,7 @@ function submit() {
                     <!-- Actions -->
                     <div class="p-6 border-t flex items-center justify-end gap-3">
                         <Link :href="route('admin.packages.index')" variant="outline">Batal</Link>
-                        <Button type="submit" :disabled="form.processing">{{ form.processing ? 'Menyimpan...' : 'Simpan Paket' }}</Button>
+                        <Button type="submit" :disabled="form.processing">{{ form.processing ? 'Menyimpan...' : 'Simpan Soal' }}</Button>
                     </div>
                 </form>
             </div>

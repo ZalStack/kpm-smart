@@ -134,7 +134,7 @@ function submit() {
                             <option v-for="c in cards" :key="c.id" :value="c.id">{{ c.title }}</option>
                         </Select>
                         <p v-if="cards.length === 0" class="text-xs text-destructive">
-                            ⚠️ Paket ini belum memiliki Card. Silakan buat Card terlebih dahulu di tab Card sebelum import soal.
+                            ⚠️ Soal ini belum memiliki Card. Silakan buat Card terlebih dahulu di tab Card sebelum import soal.
                         </p>
                     </div>
 

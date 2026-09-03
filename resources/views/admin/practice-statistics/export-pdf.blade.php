@@ -41,7 +41,7 @@
     <div class="info-grid">
         <div class="info-item"><div class="label">Total Sesi</div><div class="value">{{ number_format($totalSessions) }}</div></div>
         <div class="info-item"><div class="label">Total User</div><div class="value">{{ number_format($totalUsers) }}</div></div>
-        <div class="info-item"><div class="label">Total Paket</div><div class="value">{{ number_format($totalPackages) }}</div></div>
+        <div class="info-item"><div class="label">Total Soal</div><div class="value">{{ number_format($totalPackages) }}</div></div>
         <div class="info-item"><div class="label">Rata-rata Nilai</div><div class="value">{{ $avgScore }}%</div></div>
     </div>
 
@@ -50,7 +50,7 @@
             <tr>
                 <th>No</th>
                 <th>User</th>
-                <th>Paket</th>
+                <th>Soal</th>
                 <th>Status</th>
                 <th>Soal</th>
                 <th>Benar</th>

@@ -24,7 +24,7 @@ const kelas = ref(props.filters?.kelas || '');
 const bidang = ref(props.filters?.bidang || '');
 const deleteDialog = ref({ open: false, package: null });
 
-const deleteDialogMessage = computed(() => `Apakah Anda yakin ingin menghapus paket '${deleteDialog.value.package?.title || ''}'?`);
+const deleteDialogMessage = computed(() => `Apakah Anda yakin ingin menghapus soal '${deleteDialog.value.package?.title || ''}'?`);
 
 function applyFilters() {
     router.get(route('admin.packages.index'), {
@@ -43,18 +43,21 @@ function confirmDelete(pkg) {
 
 function doDelete() {
     if (deleteDialog.value.package) {
-        router.delete(route('admin.packages.destroy', deleteDialog.value.package.id));
-        deleteDialog.value = { open: false, package: null };
+        router.delete(route('admin.packages.destroy', deleteDialog.value.package.id), {
+            onSuccess: () => {
+                deleteDialog.value = { open: false, package: null };
+            },
+        });
     }
 }
 </script>
 
 <template>
     <AdminLayout>
-        <Head title="Kelola Paket - Admin" />
+        <Head title="Kelola Soal - Admin" />
 
-        <template #header-title>Paket Tugas</template>
-        <template #header-sub>Kelola paket tugas dengan mudah</template>
+        <template #header-title>Soal Tugas</template>
+        <template #header-sub>Kelola soal tugas dengan mudah</template>
 
         <!-- Stats -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -79,7 +82,7 @@ function doDelete() {
         <!-- Toolbar -->
         <div class="bg-card rounded-lg p-4 shadow-sm border mb-6">
             <form @submit.prevent="applyFilters" class="flex flex-col sm:flex-row gap-3">
-                <Input v-model="search" placeholder="Cari paket..." class="flex-1" />
+                <Input v-model="search" placeholder="Cari soal..." class="flex-1" />
                 <Select v-model="status" class="w-full sm:w-36">
                     <option value="">Semua Status</option>
                     <option value="aktif">Aktif</option>
@@ -97,7 +100,7 @@ function doDelete() {
                     <Button type="submit" size="sm">Cari</Button>
                     <Button type="button" variant="ghost" size="sm" @click="resetFilters">Reset</Button>
                     <Link :href="route('admin.packages.create')" class="inline-flex items-center justify-center bg-fern text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-fern/90 transition ml-2">
-                        + Tambah Paket
+                        + Tambah Soal
                     </Link>
                 </div>
             </form>
@@ -110,7 +113,7 @@ function doDelete() {
                     <thead>
                         <tr>
                             <th class="text-left px-4 py-3">#</th>
-                            <th class="text-left px-4 py-3">Paket</th>
+                            <th class="text-left px-4 py-3">Soal</th>
                             <th class="text-left px-4 py-3">Bidang</th>
                             <th class="text-left px-4 py-3">Level</th>
                             <th class="text-left px-4 py-3">Status</th>
@@ -119,7 +122,7 @@ function doDelete() {
                     </thead>
                     <tbody>
                         <tr v-if="packages.data.length === 0">
-                            <td colspan="6" class="px-4 py-8 text-center text-muted-foreground">Belum ada paket</td>
+                            <td colspan="6" class="px-4 py-8 text-center text-muted-foreground">Belum ada soal</td>
                         </tr>
                         <tr v-for="(pkg, idx) in packages.data" :key="pkg.id" class="hover:bg-muted/50 transition-colors">
                             <td class="px-4 py-3 text-muted-foreground">{{ packages.from + idx }}</td>
@@ -162,7 +165,7 @@ function doDelete() {
         <!-- Mobile Cards -->
         <div class="md:hidden space-y-4 mb-6">
             <div v-if="packages.data.length === 0" class="text-center py-12 bg-card rounded-lg shadow-sm border">
-                <p class="text-muted-foreground">Belum ada paket</p>
+                <p class="text-muted-foreground">Belum ada soal</p>
             </div>
             <div v-for="(pkg, idx) in packages.data" :key="pkg.id" class="bg-card rounded-lg shadow-sm border p-4">
                 <div class="flex items-start gap-3 mb-3">
@@ -189,6 +192,6 @@ function doDelete() {
 
         <Pagination :links="packages.links" />
 
-        <ConfirmDialog :open="deleteDialog.open" title="Hapus Paket" :message="deleteDialogMessage" confirm-text="Ya, Hapus" @update:open="deleteDialog.open = $event" @confirm="doDelete" />
+        <ConfirmDialog :open="deleteDialog.open" title="Hapus Soal" :message="deleteDialogMessage" confirm-text="Ya, Hapus" @update:open="deleteDialog.open = $event" @confirm="doDelete" />
     </AdminLayout>
 </template>

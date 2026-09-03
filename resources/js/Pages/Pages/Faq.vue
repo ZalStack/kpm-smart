@@ -14,18 +14,18 @@ const faqGroups = [
         ],
     },
     {
-        icon: '🔑', title: 'Akses & Paket', color: '#f97316',
+        icon: '🔑', title: 'Akses & Soal', color: '#f97316',
         items: [
-            { q: 'Bagaimana cara mulai belajar?', a: 'Setelah login, buka menu <strong>Paket</strong> untuk melihat daftar paket yang tersedia. Pilih paket yang sesuai, lalu mulai latihan.' },
-            { q: 'Apakah semua paket bisa diakses gratis?', a: 'Ya! Semua paket soal bisa diakses langsung oleh pengguna yang sudah terdaftar. Kerjakan soal sepuasmu.' },
-            { q: 'Berapa kali saya bisa mengerjakan paket yang sama?', a: 'Setiap paket hanya bisa dikerjakan satu kali. Pastikan kamu sudah siap sebelum memulai.' },
+            { q: 'Bagaimana cara mulai belajar?', a: 'Setelah login, buka menu <strong>Soal</strong> untuk melihat daftar soal yang tersedia. Pilih soal yang sesuai, lalu mulai latihan.' },
+            { q: 'Apakah semua soal bisa diakses gratis?', a: 'Ya! Semua soal bisa diakses langsung oleh pengguna yang sudah terdaftar. Kerjakan soal sepuasmu.' },
+            { q: 'Berapa kali saya bisa mengerjakan soal yang sama?', a: 'Setiap soal hanya bisa dikerjakan satu kali. Pastikan kamu sudah siap sebelum memulai.' },
             { q: 'Bagaimana jika saya belum selesai mengerjakan?', a: 'Jika kamu keluar sebelum selesai, sesi latihan akan disimpan sebagai "in_progress" dan kamu bisa melanjutkannya nanti.' },
         ],
     },
     {
         icon: '📝', title: 'Latihan Soal', color: '#009a4b',
         items: [
-            { q: 'Apakah ada batas waktu mengerjakan?', a: 'Bergantung pada pengaturan paket. Beberapa paket memiliki batas waktu, beberapa tidak. Waktu akan ditampilkan saat kamu mulai latihan.' },
+            { q: 'Apakah ada batas waktu mengerjakan?', a: 'Bergantung pada pengaturan soal. Beberapa soal memiliki batas waktu, beberapa tidak. Waktu akan ditampilkan saat kamu mulai latihan.' },
             { q: 'Bisakah mengulang soal yang salah?', a: 'Ya! Setelah menyelesaikan latihan, kamu bisa melihat pembahasan lengkap untuk setiap soal di halaman hasil.' },
             { q: 'Di mana saya bisa melihat riwayat latihan?', a: 'Buka menu <strong>Latihan</strong> untuk melihat semua sesi latihan yang sudah kamu kerjakan beserta nilainya.' },
             { q: 'Bagaimana cara melihat statistik belajar?', a: 'Klik menu <strong>Statistik</strong> di dropdown profil untuk melihat ringkasan performa belajarmu.' },

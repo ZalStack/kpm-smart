@@ -48,12 +48,12 @@ function formatDate(dateStr) {
         <Head :title="package.title + ' - KPM SMART'" />
 
         <template #header-title>{{ package.title }}</template>
-        <template #header-sub>Detail paket tugas</template>
+        <template #header-sub>Detail soal tugas</template>
 
         <!-- Back Link -->
         <Link :href="route('packages.index')" class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition mb-5">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
-            Kembali ke Daftar Paket
+            Kembali ke Daftar Soal
         </Link>
 
         <!-- Schedule Warnings -->
@@ -61,14 +61,14 @@ function formatDate(dateStr) {
             <span class="text-2xl flex-shrink-0">⛔</span>
             <div>
                 <p class="text-sm font-semibold text-red-800">Jadwal Telah Berakhir</p>
-                <p class="text-xs text-red-600 mt-0.5">Paket ini sudah tidak tersedia untuk dikerjakan.</p>
+                <p class="text-xs text-red-600 mt-0.5">Soal ini sudah tidak tersedia untuk dikerjakan.</p>
             </div>
         </div>
         <div v-else-if="package.schedule_status === 'upcoming'" class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5 flex items-start gap-3">
             <span class="text-2xl flex-shrink-0">⏳</span>
             <div>
                 <p class="text-sm font-semibold text-amber-800">Belum Tersedia</p>
-                <p class="text-xs text-amber-600 mt-0.5">Paket ini akan tersedia sesuai jadwal yang ditentukan.</p>
+                <p class="text-xs text-amber-600 mt-0.5">Soal ini akan tersedia sesuai jadwal yang ditentukan.</p>
             </div>
         </div>
 
@@ -91,7 +91,7 @@ function formatDate(dateStr) {
             <div class="lg:col-span-2 space-y-6">
 
                 <!-- Hero Card -->
-                <div class="bg-card border rounded-2xl overflow-hidden shadow-card">
+                <div class="bg-card border rounded-2xl overflow-hidden shadow-card anim-fade-in-up">
                     <div v-if="package.thumbnail" class="h-48 overflow-hidden">
                         <img :src="'/storage/' + package.thumbnail" :alt="package.title" class="w-full h-full object-cover" />
                     </div>
@@ -107,7 +107,7 @@ function formatDate(dateStr) {
                 </div>
 
                 <!-- Cards Grid -->
-                <div v-if="package.cards && package.cards.length > 0">
+                <div v-if="package.cards && package.cards.length > 0" class="anim-fade-in-up">
                     <h2 class="text-base font-semibold mb-3 flex items-center gap-2">
                         📋 Card Tugas
                         <span class="text-xs text-muted-foreground font-normal">({{ package.cards.length }} card)</span>
@@ -155,21 +155,21 @@ function formatDate(dateStr) {
                                         <!-- Completed: view result only, no retry -->
                                         <template v-if="isCardCompleted(card.id)">
                                             <Link :href="route('practice.show', cardSessionId(card.id))"
-                                                  class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition">
+                                                  class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-2.5 rounded-lg hover:bg-emerald-100 transition">
                                                 📊 Lihat Hasil
                                             </Link>
                                         </template>
                                         <!-- In Progress: continue -->
                                         <template v-else-if="isCardInProgress(card.id)">
                                             <Link :href="route('practice.show', cardSessionId(card.id))"
-                                                  class="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition">
+                                                  class="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 bg-blue-50 px-3 py-2.5 rounded-lg hover:bg-blue-100 transition">
                                                 ▶️ Lanjutkan
                                             </Link>
                                         </template>
                                         <!-- Available to start -->
                                         <template v-else-if="canStart">
                                             <button @click="startPractice(card.id)"
-                                                    class="inline-flex items-center gap-1 text-xs font-semibold text-primary-foreground bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition">
+                                                    class="inline-flex items-center gap-1 text-xs font-semibold text-primary-foreground bg-primary px-3 py-2.5 rounded-lg hover:bg-primary/90 transition">
                                                 📖 Kerjakan
                                             </button>
                                         </template>
@@ -194,7 +194,7 @@ function formatDate(dateStr) {
 
                 <!-- No Cards: Single Start Button -->
                 <div v-else-if="canStart" class="bg-card border rounded-2xl p-6 text-center">
-                    <p class="text-sm text-muted-foreground mb-4">Paket ini tidak memiliki card. Klik mulai untuk mengerjakan semua soal.</p>
+                    <p class="text-sm text-muted-foreground mb-4">Soal ini tidak memiliki card. Klik mulai untuk mengerjakan semua soal.</p>
                     <button @click="startPractice(null)"
                             class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition">
                         📖 Mulai Mengerjakan
@@ -203,10 +203,10 @@ function formatDate(dateStr) {
             </div>
 
             <!-- Sidebar -->
-            <div class="space-y-4">
+            <div class="space-y-4 anim-fade-in-up">
                 <!-- Stats -->
                 <div class="bg-card border rounded-2xl p-5 shadow-card">
-                    <h3 class="font-semibold text-sm mb-4">📦 Informasi Paket</h3>
+                    <h3 class="font-semibold text-sm mb-4">📦 Informasi Soal</h3>
                     <div class="space-y-3">
                         <div class="flex items-center justify-between text-sm">
                             <span class="text-muted-foreground">Total Card</span>

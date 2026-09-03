@@ -58,40 +58,39 @@ function submit() {
     <UserLayout>
         <Head title="Ajukan Izin" />
 
-        <div class="max-w-xl mx-auto px-4 py-6">
-            <h1 class="text-xl font-bold mb-1">Ajukan Izin</h1>
-            <p class="text-sm text-muted-foreground mb-6">Isi form di bawah untuk mengajukan izin</p>
+        <template #header-title>Ajukan Izin</template>
+        <template #header-sub>Isi form di bawah untuk mengajukan izin</template>
 
-            <div v-if="errorMsg" class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3 mb-4">
-                {{ errorMsg }}
+        <div v-if="errorMsg" class="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-2xl p-3 mb-4">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+            {{ errorMsg }}
+        </div>
+
+        <div class="bg-card rounded-2xl border p-6 space-y-4 anim-fade-in-up">
+            <div>
+                <label class="block text-sm font-medium mb-1.5">Alasan Izin <span class="text-red-500">*</span></label>
+                <textarea v-model="form.reason" rows="4" maxlength="500"
+                          class="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          placeholder="Tuliskan alasan pengajuan izin..."></textarea>
+                <p class="text-xs text-muted-foreground mt-1 text-right">{{ (form.reason || '').length }}/500</p>
             </div>
 
-            <div class="bg-card rounded-xl border p-6 space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1.5">Alasan Izin <span class="text-red-500">*</span></label>
-                    <textarea v-model="form.reason" rows="4" maxlength="500"
-                              class="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                              placeholder="Tuliskan alasan pengajuan izin..."></textarea>
-                    <p class="text-xs text-muted-foreground mt-1 text-right">{{ (form.reason || '').length }}/500</p>
+            <div>
+                <label class="block text-sm font-medium mb-1.5">Lampiran (opsional)</label>
+                <p class="text-xs text-muted-foreground mb-2">Format: JPG, PNG, PDF. Maksimal 2MB.</p>
+                <div v-if="fileName" class="flex items-center gap-2 bg-muted rounded-lg p-2 mb-2">
+                    <span class="text-sm truncate flex-1">📎 {{ fileName }}</span>
+                    <button @click="removeFile" class="text-xs text-red-500 hover:underline">Hapus</button>
                 </div>
+                <input ref="fileInput" type="file" accept=".jpg,.jpeg,.png,.pdf" @change="handleFile"
+                       class="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer" />
+            </div>
 
-                <div>
-                    <label class="block text-sm font-medium mb-1.5">Lampiran (opsional)</label>
-                    <p class="text-xs text-muted-foreground mb-2">Format: JPG, PNG, PDF. Maksimal 2MB.</p>
-                    <div v-if="fileName" class="flex items-center gap-2 bg-muted rounded-lg p-2 mb-2">
-                        <span class="text-sm truncate flex-1">📎 {{ fileName }}</span>
-                        <button @click="removeFile" class="text-xs text-red-500 hover:underline">Hapus</button>
-                    </div>
-                    <input ref="fileInput" type="file" accept=".jpg,.jpeg,.png,.pdf" @change="handleFile"
-                           class="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer" />
-                </div>
-
-                <div class="flex gap-3 pt-2">
-                    <Button variant="ghost" @click="router.visit(route('leave-requests.index'))">Batal</Button>
-                    <Button @click="submit" :disabled="submitting" class="flex-1">
-                        {{ submitting ? 'Mengirim...' : 'Kirim Pengajuan' }}
-                    </Button>
-                </div>
+            <div class="flex gap-3 pt-2">
+                <Button variant="ghost" @click="router.visit(route('leave-requests.index'))">Batal</Button>
+                <Button @click="submit" :disabled="submitting" class="flex-1">
+                    {{ submitting ? 'Mengirim...' : 'Kirim Pengajuan' }}
+                </Button>
             </div>
         </div>
     </UserLayout>

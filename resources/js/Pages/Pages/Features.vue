@@ -19,7 +19,7 @@ const features = [
 
 const steps = [
     { num: '01', title: 'Daftar Akun', desc: 'Registrasi gratis dengan email aktif' },
-    { num: '02', title: 'Pilih Paket', desc: 'Pilih bank soal yang sesuai kebutuhanmu' },
+    { num: '02', title: 'Pilih Soal', desc: 'Pilih bank soal yang sesuai kebutuhanmu' },
     { num: '03', title: 'Mulai Belajar', desc: 'Akses langsung dan kerjakan soal' },
 ];
 </script>

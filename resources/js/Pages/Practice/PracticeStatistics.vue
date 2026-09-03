@@ -62,7 +62,7 @@ const accuracyOffset = computed(() => circumference - (numAccuracy.value / 100) 
             <h3 class="text-xl font-bold text-foreground mb-2">Belum Ada Statistik</h3>
             <p class="text-sm text-muted-foreground mb-6 text-center max-w-xs">Kerjakan tugas terlebih dahulu untuk melihat statistikmu!</p>
             <Link :href="route('packages.index')" class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition">
-                📦 Lihat Paket Tugas
+                📦 Lihat Soal Tugas
             </Link>
         </div>
 
@@ -116,7 +116,7 @@ const accuracyOffset = computed(() => circumference - (numAccuracy.value / 100) 
                         <div class="relative flex-shrink-0">
                             <svg class="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
                                 <circle cx="50" cy="50" r="40" fill="none" stroke="hsl(var(--muted))" stroke-width="10"/>
-                                <circle cx="50" cy="50" r="40" fill="none" stroke="#588157"
+                                <circle cx="50" cy="50" r="40" fill="none" stroke="hsl(var(--primary))"
                                         stroke-width="10" stroke-linecap="round"
                                         :stroke-dasharray="circumference"
                                         :stroke-dashoffset="accuracyOffset"
@@ -165,8 +165,8 @@ const accuracyOffset = computed(() => circumference - (numAccuracy.value / 100) 
             <!-- Per Package Stats -->
             <div v-if="sessionsByPackage.length > 0" class="bg-card border rounded-2xl p-6">
                 <div class="flex items-center justify-between mb-5">
-                    <h3 class="font-semibold">📦 Statistik per Paket</h3>
-                    <span class="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">{{ sessionsByPackage.length }} paket</span>
+                    <h3 class="font-semibold">📦 Statistik per Soal</h3>
+                    <span class="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">{{ sessionsByPackage.length }} soal</span>
                 </div>
                 <div class="space-y-5">
                     <div v-for="pkg in sessionsByPackage" :key="pkg.package">

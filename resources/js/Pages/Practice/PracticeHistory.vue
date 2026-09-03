@@ -2,6 +2,9 @@
 import { inject, ref, computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import UserLayout from '@/Layouts/UserLayout.vue';
+import Input from '@/Components/ui/input/Input.vue';
+import Select from '@/Components/ui/select/Select.vue';
+import { timeAgo } from '@/lib/utils';
 const route = inject('route');
 
 const props = defineProps({
@@ -10,13 +13,6 @@ const props = defineProps({
 
 const search = ref('');
 const sortBy = ref('newest');
-
-function formatDate(dateStr) {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}, ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-}
 
 function formatDuration(seconds) {
     if (!seconds) return '0 mnt';
@@ -81,19 +77,19 @@ const bestScore = computed(() => {
 
         <!-- Summary Stats -->
         <div v-if="sessions.length > 0" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <div class="bg-card border rounded-xl p-4 text-center hover:shadow-card-hover transition-shadow">
+            <div class="bg-card border rounded-2xl p-4 text-center hover:shadow-card-hover transition-shadow">
                 <p class="text-2xl font-bold text-primary">{{ sessions.length }}</p>
                 <p class="text-xs text-muted-foreground mt-0.5">Total Tugas</p>
             </div>
-            <div class="bg-card border rounded-xl p-4 text-center hover:shadow-card-hover transition-shadow">
+            <div class="bg-card border rounded-2xl p-4 text-center hover:shadow-card-hover transition-shadow">
                 <p class="text-2xl font-bold text-yellow-600">{{ bestScore.toFixed(0) }}</p>
                 <p class="text-xs text-muted-foreground mt-0.5">Nilai Tertinggi</p>
             </div>
-            <div class="bg-card border rounded-xl p-4 text-center hover:shadow-card-hover transition-shadow">
+            <div class="bg-card border rounded-2xl p-4 text-center hover:shadow-card-hover transition-shadow">
                 <p class="text-2xl font-bold text-fern">{{ avgScore.toFixed(0) }}</p>
                 <p class="text-xs text-muted-foreground mt-0.5">Rata-rata</p>
             </div>
-            <div class="bg-card border rounded-xl p-4 text-center hover:shadow-card-hover transition-shadow">
+            <div class="bg-card border rounded-2xl p-4 text-center hover:shadow-card-hover transition-shadow">
                 <Link :href="route('practice.statistics')" class="block">
                     <p class="text-2xl font-bold text-pine-teal">📊</p>
                     <p class="text-xs text-muted-foreground mt-0.5">Lihat Statistik</p>
@@ -105,14 +101,14 @@ const bestScore = computed(() => {
         <div v-if="sessions.length > 0" class="flex flex-col sm:flex-row gap-3 mb-5">
             <div class="relative flex-1">
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35"/></svg>
-                <input v-model="search" type="text" placeholder="Cari paket..." class="w-full pl-9 pr-4 py-2 text-sm border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring" />
+                <Input v-model="search" type="text" placeholder="Cari soal..." class="pl-9" />
             </div>
-            <select v-model="sortBy" class="px-3 py-2 text-sm border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring min-w-[140px]">
+            <Select v-model="sortBy" class="min-w-[140px]">
                 <option value="newest">Terbaru</option>
                 <option value="oldest">Terlama</option>
                 <option value="highest">Nilai Tertinggi</option>
                 <option value="lowest">Nilai Terendah</option>
-            </select>
+            </Select>
         </div>
 
         <!-- Empty State -->
@@ -123,7 +119,7 @@ const bestScore = computed(() => {
             <h3 class="text-xl font-bold text-foreground mb-2">Belum Ada Riwayat</h3>
             <p class="text-sm text-muted-foreground mb-6 text-center max-w-xs">Kamu belum mengerjakan tugas apapun. Yuk mulai sekarang!</p>
             <Link :href="route('packages.index')" class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition">
-                📦 Lihat Paket Tugas
+                📦 Lihat Soal Tugas
             </Link>
         </div>
 
@@ -138,7 +134,7 @@ const bestScore = computed(() => {
         <!-- Sessions Grid -->
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             <div v-for="(session, idx) in filteredSessions" :key="session.id"
-                 class="group bg-card border rounded-2xl overflow-hidden hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200">
+                 class="anim-fade-in-up group bg-card border rounded-2xl overflow-hidden hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200">
 
                 <!-- Score Header Bar -->
                 <div class="h-1.5 w-full bg-muted">
@@ -152,7 +148,7 @@ const bestScore = computed(() => {
                         <h3 class="font-semibold text-sm leading-tight line-clamp-2 mb-1">{{ session.package?.title || 'Tugas' }}</h3>
                         <p class="text-xs text-muted-foreground flex items-center gap-1">
                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5"/></svg>
-                            {{ formatDate(session.created_at) }}
+                            {{ timeAgo(session.created_at) }}
                         </p>
                     </div>
 

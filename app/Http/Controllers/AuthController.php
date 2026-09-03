@@ -142,6 +142,110 @@ class AuthController extends Controller
         return back()->with('success', 'Profil berhasil diperbarui!');
     }
 
+    public function showChangePassword()
+    {
+        return Inertia::render('Profile/ChangePassword');
+    }
+
+    public function changePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator);
+        }
+
+        $user = Auth::user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Password lama salah!']);
+        }
+
+        $user->forceFill([
+            'password' => $request->password,
+        ])->save();
+
+        return back()->with('success', 'Password berhasil diperbarui!');
+    }
+
+    // ============ ADMIN PROFILE ============
+
+    public function adminShowProfile()
+    {
+        $user = Auth::user();
+        return Inertia::render('Admin/Profile/Edit', [
+            'user' => $user,
+        ]);
+    }
+
+    public function adminUpdateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string',
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        if ($request->email !== $user->email) {
+            $emailExists = User::where('email', $request->email)->where('id', '!=', $user->id)->exists();
+            if ($emailExists) {
+                return back()->withErrors(['email' => 'Email sudah digunakan oleh user lain.'])->withInput();
+            }
+        }
+
+        $data = $request->only(['name', 'email', 'phone']);
+
+        if ($request->hasFile('profile_photo')) {
+            if ($user->profile_photo) {
+                Storage::disk('public')->delete($user->profile_photo);
+            }
+            $data['profile_photo'] = $request->file('profile_photo')->store('profile_photos', 'public');
+        }
+
+        $user->update($data);
+
+        return back()->with('success', 'Profil admin berhasil diperbarui!');
+    }
+
+    public function adminShowChangePassword()
+    {
+        return Inertia::render('Admin/Profile/ChangePassword');
+    }
+
+    public function adminChangePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator);
+        }
+
+        $user = Auth::user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Password lama salah!']);
+        }
+
+        $user->forceFill([
+            'password' => $request->password,
+        ])->save();
+
+        return back()->with('success', 'Password admin berhasil diperbarui!');
+    }
+
     /*
     |--------------------------------------------------------------------
     | LUPA PASSWORD (2 langkah, berbasis token yang dikirim via email)

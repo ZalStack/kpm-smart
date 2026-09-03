@@ -72,7 +72,7 @@ const mobileMenuOpen = ref(false);
                         <h4 class="font-semibold mb-4 text-sm">Menu</h4>
                         <ul class="space-y-2 text-muted-foreground text-sm">
                             <li><Link :href="route('pages.features')" class="hover:text-foreground transition-all duration-200">Fitur Unggulan</Link></li>
-                            <li><Link :href="user ? route('packages.index') : '/#packages'" class="hover:text-foreground transition-all duration-200">Paket Tugas</Link></li>
+                            <li><Link :href="user ? route('packages.index') : '/#packages'" class="hover:text-foreground transition-all duration-200">Soal Tugas</Link></li>
                             <li v-if="user"><Link :href="route('practice.history')" class="hover:text-foreground transition-all duration-200">Tugas</Link></li>
                         </ul>
                     </div>

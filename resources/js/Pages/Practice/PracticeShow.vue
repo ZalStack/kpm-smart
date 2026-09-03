@@ -1,6 +1,7 @@
 <script setup>
 import { inject, onMounted, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
+import confetti from 'canvas-confetti';
 const route = inject('route');
 
 import { Head, Link } from '@inertiajs/vue3';
@@ -20,8 +21,19 @@ const allHidden = computed(() => !props.showScore && !props.showAnswerKey && !pr
 
 onMounted(() => {
     if (allHidden.value) {
-        alert('Detail riwayat tidak tersedia. Pengatur paket telah menonaktifkan semua tampilan hasil.');
+        alert('Detail riwayat tidak tersedia. Pengatur soal telah menonaktifkan semua tampilan hasil.');
         router.visit(route('practice.history'));
+    }
+
+    if (props.session?.total_score >= 80) {
+        const duration = 2000;
+        const end = Date.now() + duration;
+        const colors = ['#16a34a', '#22c55e', '#facc15', '#f59e0b', '#10b981'];
+        (function frame() {
+            confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors });
+            confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors });
+            if (Date.now() < end) requestAnimationFrame(frame);
+        })();
     }
 });
 
@@ -47,16 +59,16 @@ function formatDate(dateStr) {
         <template v-if="!allHidden">
             <div class="max-w-3xl mx-auto space-y-6">
                 <!-- Summary -->
-                <Card class="p-5">
-                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
-                        <div><p class="text-xs text-muted-foreground">Paket</p><p class="text-sm font-semibold truncate">{{ session.package?.title }}</p></div>
+                <Card class="p-5 shadow-card">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center">
+                        <div><p class="text-xs text-muted-foreground">Soal</p><p class="text-sm font-semibold truncate">{{ session.package?.title }}</p></div>
                         <div v-if="showScore"><p class="text-xs text-muted-foreground">Skor</p><p class="text-2xl font-bold text-primary">{{ Number(session.total_score || 0).toFixed(1) }}</p></div>
                         <div v-if="showAnswerKey"><p class="text-xs text-muted-foreground">Benar</p><p class="text-2xl font-bold text-green-600">{{ session.correct_answer }}</p></div>
                         <div v-if="showAnswerKey"><p class="text-xs text-muted-foreground">Salah</p><p class="text-2xl font-bold text-red-500">{{ session.wrong_answer }}</p></div>
                         <div><p class="text-xs text-muted-foreground">Tanggal</p><p class="text-sm font-medium">{{ formatDate(session.created_at) }}</p></div>
                     </div>
                     <div v-if="!showScore || !showAnswerKey" class="mt-3 text-center">
-                        <span class="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">🔒 Beberapa informasi disembunyikan oleh pengatur paket</span>
+                        <span class="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">🔒 Beberapa informasi disembunyikan oleh pengatur soal</span>
                     </div>
                 </Card>
 
@@ -64,7 +76,8 @@ function formatDate(dateStr) {
                 <div v-if="showAnswerKey" class="space-y-3">
                     <h3 class="text-lg font-semibold">📋 Detail Jawaban</h3>
                     <div v-for="(result, idx) in results" :key="idx"
-                         :class="['bg-card rounded-xl border p-4 border-l-4', result.is_correct ? 'border-l-green-500' : 'border-l-red-500']">
+                         :class="['bg-card anim-fade-in-up rounded-2xl border p-4 border-l-4', result.is_correct ? 'border-l-green-500' : 'border-l-red-500']"
+                         :style="{ animationDelay: (idx * 0.08) + 's' }">
                         <div class="flex items-start gap-3">
                             <span class="flex-shrink-0 w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs font-bold">{{ idx + 1 }}</span>
                             <div class="flex-1 min-w-0">
@@ -81,9 +94,18 @@ function formatDate(dateStr) {
                     </div>
                 </div>
 
-                <div v-else class="bg-card rounded-xl border p-8 text-center">
+                <div v-else class="bg-card rounded-2xl border p-8 text-center">
                     <div class="text-4xl mb-3">🔒</div>
-                    <p class="text-muted-foreground">Kunci Jawaban Disembunyikan oleh Pengatur Paket</p>
+                    <p class="text-muted-foreground">Kunci Jawaban Disembunyikan oleh Pengatur Soal</p>
+                </div>
+
+                <!-- Certificate Download -->
+                <div v-if="session.status === 'completed'" class="flex justify-center">
+                    <a :href="route('practice.certificate', session.id)"
+                       class="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-5 py-3 rounded-2xl text-sm font-semibold hover:from-emerald-600 hover:to-emerald-700 transition shadow-sm">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                        Unduh Sertifikat
+                    </a>
                 </div>
             </div>
         </template>

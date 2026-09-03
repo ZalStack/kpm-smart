@@ -7,15 +7,15 @@ import PublicLayout from '@/Layouts/PublicLayout.vue';
 
 const steps = [
     { icon: '📝', color: '#00a2e9', title: 'Daftar / Masuk', desc: 'Klik "Masuk" di pojok kanan atas, isi email dan password. Belum punya akun? Hubungi admin untuk membuatkan akun.' },
-    { icon: '📦', color: '#009a4b', title: 'Pilih Paket', desc: 'Buka menu <strong>Paket</strong> untuk melihat daftar paket soal yang tersedia. Pilih paket yang sesuai dengan kebutuhanmu.' },
-    { icon: '🚀', color: '#ec4899', title: 'Mulai Belajar!', desc: 'Klik "Mulai Latihan" pada paket yang dipilih. Kerjakan soal, lihat pembahasan, dan pantau progress belajarmu di dashboard.' },
+    { icon: '📦', color: '#009a4b', title: 'Pilih Soal', desc: 'Buka menu <strong>Soal</strong> untuk melihat daftar soal yang tersedia. Pilih soal yang sesuai dengan kebutuhanmu.' },
+    { icon: '🚀', color: '#ec4899', title: 'Mulai Belajar!', desc: 'Klik "Mulai Latihan" pada soal yang dipilih. Kerjakan soal, lihat pembahasan, dan pantau progress belajarmu di dashboard.' },
 ];
 
 const topics = [
     {
         icon: '🧑‍🎓', title: 'Mengerjakan Latihan Soal',
         items: [
-            'Buka menu <strong>Paket</strong> lalu pilih paket yang ingin kamu kerjakan.',
+            'Buka menu <strong>Soal</strong> lalu pilih soal yang ingin kamu kerjakan.',
             'Klik <strong>"Mulai Latihan"</strong> untuk memulai sesi latihan baru.',
             'Jawab soal satu per satu — navigasi soal ada di panel kiri.',
             'Klik <strong>"Selesai"</strong> untuk mengumpulkan jawabanmu.',
@@ -27,7 +27,7 @@ const topics = [
         items: [
             'Buka dropdown profil di pojok kanan atas, pilih <strong>Statistik</strong>.',
             'Lihat ringkasan: total latihan, nilai terbaik, rata-rata skor.',
-            'Pantau progress per paket dengan grafik visual.',
+            'Pantau progress per soal dengan grafik visual.',
             'Gunakan tips belajar yang tersedia untuk meningkatkan performa.',
         ],
     },

@@ -78,12 +78,20 @@ async function uploadInlineImage(e) {
             headers: { 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
             body: formData,
         });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            alert(err.message || 'Upload gambar gagal. Silakan coba lagi.');
+            return;
+        }
         const result = await response.json();
         if (result.url) {
             insertUploadedImage(result.url);
+        } else {
+            alert('Upload gambar gagal. URL tidak ditemukan.');
         }
     } catch (error) {
         console.error('Upload gagal:', error);
+        alert('Upload gambar gagal. Periksa koneksi internet Anda.');
     }
     e.target.value = '';
 }
@@ -95,7 +103,9 @@ function addOption() {
 function removeOption(index) {
     if (form.options.length > 2) {
         form.options.splice(index, 1);
-        if (form.correct_option_index >= index && form.correct_option_index > 0) {
+        if (form.correct_option_index === index) {
+            form.correct_option_index = index > 0 ? index - 1 : 0;
+        } else if (form.correct_option_index > index) {
             form.correct_option_index--;
         }
     }
@@ -107,32 +117,33 @@ function submit() {
         return;
     }
 
-    const data = new FormData();
-    data.append('card_id', form.card_id);
-    data.append('question', form.question);
-    data.append('explanation', form.explanation || '');
-    if (form.image) data.append('image', form.image);
+    form.transform((data) => {
+        const fd = new FormData();
+        fd.append('card_id', data.card_id);
+        fd.append('question', data.question);
+        fd.append('explanation', data.explanation || '');
 
-    const validOptions = form.options.map(o => o.trim());
-    validOptions.forEach((opt, i) => {
-        data.append(`options[${i}]`, opt);
-    });
+        if (data.image) fd.append('image', data.image);
 
-    const chosenAnswer = validOptions[form.correct_option_index] !== undefined
-        ? validOptions[form.correct_option_index]
-        : validOptions[0] || '';
-    data.append('correct_answer', chosenAnswer);
-
-    if (isEdit.value) {
-        data.append('_method', 'PUT');
-        router.post(route('admin.packages.update-question', [props.package.id, props.question.id]), data, {
-            forceFormData: true,
+        const validOptions = data.options.map(o => o.trim());
+        validOptions.forEach((opt, i) => {
+            fd.append(`options[${i}]`, opt);
         });
-    } else {
-        router.post(route('admin.packages.add-question', props.package.id), data, {
-            forceFormData: true,
-        });
-    }
+
+        const chosenAnswer = validOptions[data.correct_option_index] !== undefined
+            ? validOptions[data.correct_option_index]
+            : validOptions[0] || '';
+        fd.append('correct_answer', chosenAnswer);
+
+        if (isEdit.value) fd.append('_method', 'PUT');
+
+        return fd;
+    }).post(
+        isEdit.value
+            ? route('admin.packages.update-question', [props.package.id, props.question.id])
+            : route('admin.packages.add-question', props.package.id),
+        { forceFormData: true }
+    );
 }
 </script>
 
@@ -160,7 +171,7 @@ function submit() {
                                 <option v-for="c in cards" :key="c.id" :value="c.id">{{ c.title }}</option>
                             </Select>
                             <p v-if="cards.length === 0" class="text-xs text-destructive">
-                                Belum ada card pada paket ini. Silakan buat card terlebih dahulu di tab Card.
+                                Belum ada card pada soal ini. Silakan buat card terlebih dahulu di tab Card.
                             </p>
                             <p v-if="form.errors.card_id" class="text-xs text-destructive">{{ form.errors.card_id }}</p>
                         </div>

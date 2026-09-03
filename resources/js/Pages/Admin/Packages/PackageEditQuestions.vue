@@ -67,6 +67,9 @@ function doDelete() {
             onSuccess: () => {
                 deleteDialog.value = { open: false, questionId: null };
             },
+            onError: () => {
+                alert('Gagal menghapus soal. Silakan coba lagi.');
+            },
         });
     }
 }
@@ -83,7 +86,7 @@ function doDelete() {
         <div class="space-y-4 mb-6">
             <Link :href="route('admin.packages.index')" class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
-                Kembali ke Daftar Paket
+                Kembali ke Daftar Soal
             </Link>
 
             <div class="flex flex-wrap gap-2 pt-2">
@@ -119,7 +122,7 @@ function doDelete() {
                 </p>
             </div>
             <div class="stat-tile p-4">
-                <p class="text-xs text-muted-foreground">Status Paket</p>
+                <p class="text-xs text-muted-foreground">Status Soal</p>
                 <p class="text-2xl font-bold mt-1" :class="package.is_active ? 'text-green-600' : 'text-red-500'">
                     {{ package.is_active ? 'Aktif' : 'Nonaktif' }}
                 </p>

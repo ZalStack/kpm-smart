@@ -140,14 +140,14 @@ class PackageController extends Controller
         $package = Package::create([
             'title' => $request->title,
             'description' => $request->description,
-            'kelas' => $request->kelas,
-            'bidang' => $request->bidang,
-            'level' => $request->level,
+            'kelas' => $request->kelas ?: null,
+            'bidang' => $request->bidang ?: null,
+            'level' => $request->level ?: null,
             'is_active' => $request->is_active ?? true,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-            'start_time' => $request->start_time,
-            'end_time' => $request->end_time,
+            'start_date' => $request->start_date ?: null,
+            'end_date' => $request->end_date ?: null,
+            'start_time' => $request->start_time ?: null,
+            'end_time' => $request->end_time ?: null,
             'show_answer_key' => $request->boolean('show_answer_key'),
             'show_explanation' => $request->boolean('show_explanation', true),
             'show_score' => $request->boolean('show_score', true),
@@ -210,7 +210,14 @@ class PackageController extends Controller
 
     public function update(Request $request, Package $package)
     {
-        $validator = Validator::make($request->all(), [
+        $input = $request->all();
+        foreach (['kelas', 'bidang', 'level', 'start_date', 'end_date', 'start_time', 'end_time'] as $field) {
+            if (isset($input[$field]) && trim((string) $input[$field]) === '') {
+                $input[$field] = null;
+            }
+        }
+
+        $validated = Validator::make($input, [
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'kelas' => 'nullable|string|max:255',
@@ -227,29 +234,18 @@ class PackageController extends Controller
             'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ], [
             'end_date.after_or_equal' => 'Tanggal berakhir harus sama atau setelah tanggal mulai.',
-        ]);
+        ])->validate();
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
+        $validated['show_answer_key'] = $request->boolean('show_answer_key');
+        $validated['show_explanation'] = $request->boolean('show_explanation', true);
+        $validated['show_score'] = $request->boolean('show_score', true);
 
-        $package->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'kelas' => $request->kelas,
-            'bidang' => $request->bidang,
-            'level' => $request->level,
-            'is_active' => $request->is_active ?? true,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-            'start_time' => $request->start_time,
-            'end_time' => $request->end_time,
-            'show_answer_key' => $request->boolean('show_answer_key'),
-            'show_explanation' => $request->boolean('show_explanation', true),
-            'show_score' => $request->boolean('show_score', true),
-        ]);
+        $package->update($validated);
 
         if ($request->hasFile('thumbnail')) {
+            if ($package->thumbnail) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($package->thumbnail);
+            }
             $path = $request->file('thumbnail')->store('thumbnails', 'public');
             $package->update(['thumbnail' => $path]);
         }
@@ -303,12 +299,15 @@ class PackageController extends Controller
             return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
         }
 
-        $package->update([
-            'start_date' => $request->start_date ?: null,
-            'end_date'   => $request->end_date   ?: null,
-            'start_time' => $request->start_time ?: null,
-            'end_time'   => $request->end_time   ?: null,
-        ]);
+        $data = [];
+        if ($request->has('start_date')) $data['start_date'] = $request->start_date ?: null;
+        if ($request->has('end_date')) $data['end_date'] = $request->end_date ?: null;
+        if ($request->has('start_time')) $data['start_time'] = $request->start_time ?: null;
+        if ($request->has('end_time')) $data['end_time'] = $request->end_time ?: null;
+
+        if (!empty($data)) {
+            $package->update($data);
+        }
 
         // Refresh model
         $package->refresh();
@@ -433,9 +432,17 @@ class PackageController extends Controller
             return $card['id'] !== $cardId;
         });
 
-        $package->update(['cards' => array_values($cards)]);
+        $questions = $package->questions ?? [];
+        $questions = array_values(array_filter($questions, function ($q) use ($cardId) {
+            return $q['card_id'] !== $cardId;
+        }));
 
-        return redirect()->route('admin.packages.edit.cards', $package)->with('success', 'Card berhasil dihapus!');
+        $package->update([
+            'cards' => array_values($cards),
+            'questions' => $questions,
+        ]);
+
+        return redirect()->route('admin.packages.edit.cards', $package)->with('success', 'Card berhasil dihapus! Soal pada card tersebut juga telah dihapus.');
     }
 
     // ===================== QUESTION METHODS =====================

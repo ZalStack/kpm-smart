@@ -11,6 +11,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\LoginLogController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\LeaveRequestController;
+use App\Http\Controllers\GamificationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -71,6 +72,9 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
         Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
         Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
+        Route::get('/users/import-excel', [AdminUserController::class, 'showImportExcel'])->name('users.import-excel');
+        Route::post('/users/import-excel', [AdminUserController::class, 'importExcel'])->name('users.import-excel.process');
+        Route::post('/users/reset-imported', [AdminUserController::class, 'resetImportedUsers'])->name('users.reset-imported');
         Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
         Route::get('/users/{user}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
         Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
@@ -160,6 +164,12 @@ Route::middleware(['auth', 'role:admin'])
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
         Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
         Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+
+        // Admin Profile
+        Route::get('/profile', [AuthController::class, 'adminShowProfile'])->name('profile.edit');
+        Route::put('/profile', [AuthController::class, 'adminUpdateProfile'])->name('profile.update');
+        Route::get('/profile/change-password', [AuthController::class, 'adminShowChangePassword'])->name('profile.change-password');
+        Route::put('/profile/change-password', [AuthController::class, 'adminChangePassword'])->name('profile.change-password.update');
     });
 
 // User Routes
@@ -169,6 +179,8 @@ Route::middleware(['auth', 'role:user'])->group(function () {
     // Profile
     Route::get('/profile', [AuthController::class, 'showProfile'])->name('profile.edit');
     Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/profile/change-password', [AuthController::class, 'showChangePassword'])->name('profile.change-password');
+    Route::put('/profile/change-password', [AuthController::class, 'changePassword'])->name('profile.change-password.update');
 
     // Packages
     Route::get('/packages', [PackageController::class, 'index'])->name('packages.index');
@@ -192,6 +204,11 @@ Route::middleware(['auth', 'role:user'])->group(function () {
         return redirect()->route('practice.show', $session);
     });
     Route::get('/practice/{session}', [PracticeController::class, 'show'])->name('practice.show');
+
+    // Gamification
+    Route::get('/leaderboard', [GamificationController::class, 'leaderboard'])->name('leaderboard');
+    Route::get('/analytics', [GamificationController::class, 'analytics'])->name('analytics');
+    Route::get('/practice/{session}/certificate', [GamificationController::class, 'certificate'])->name('practice.certificate');
 
     // Notifications (User)
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

@@ -116,9 +116,9 @@ const accuracyPct = () => {
                     <input v-model="end" type="date" class="px-3 py-2 text-sm border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-40" />
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label class="text-xs text-muted-foreground">Paket</label>
+                    <label class="text-xs text-muted-foreground">Soal</label>
                     <select v-model="packageId" class="px-3 py-2 text-sm border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-48">
-                        <option value="">Semua Paket</option>
+                        <option value="">Semua Soal</option>
                         <option v-for="pkg in packages" :key="pkg.id" :value="pkg.id">{{ pkg.title }}</option>
                     </select>
                 </div>
@@ -164,7 +164,7 @@ const accuracyPct = () => {
                         <tr class="border-b bg-muted/30">
                             <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground whitespace-nowrap">#</th>
                             <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground whitespace-nowrap">Pengguna</th>
-                            <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground whitespace-nowrap">Paket Soal</th>
+                            <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground whitespace-nowrap">Soal</th>
                             <th class="text-center px-4 py-3 text-xs font-semibold text-muted-foreground whitespace-nowrap">Soal</th>
                             <th class="text-center px-4 py-3 text-xs font-semibold text-muted-foreground whitespace-nowrap">Benar</th>
                             <th class="text-center px-4 py-3 text-xs font-semibold text-muted-foreground whitespace-nowrap">Nilai</th>

@@ -35,14 +35,14 @@ function getScheduleStatus(pkg) {
 
 <template>
     <AdminLayout>
-        <Head :title="package.title + ' - Detail Paket'" />
+        <Head :title="package.title + ' - Detail Soal'" />
 
-        <template #header-title>Detail Paket</template>
-        <template #header-sub>Informasi lengkap mengenai paket tugas</template>
+        <template #header-title>Detail Soal</template>
+        <template #header-sub>Informasi lengkap mengenai soal tugas</template>
 
         <Link :href="route('admin.packages.index')" class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition mb-6">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
-            Kembali ke Daftar Paket
+            Kembali ke Daftar Soal
         </Link>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -122,7 +122,7 @@ function getScheduleStatus(pkg) {
             <div class="space-y-4">
                 <!-- Quick Stats -->
                 <div class="bg-card rounded-xl border shadow-sm p-5">
-                    <h3 class="font-semibold text-sm mb-3">📊 Statistik Paket</h3>
+                    <h3 class="font-semibold text-sm mb-3">📊 Statistik Soal</h3>
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between"><span class="text-muted-foreground">Total Card</span><span class="font-medium">{{ package.cards?.length || 0 }}</span></div>
                         <div class="flex justify-between"><span class="text-muted-foreground">Total Soal</span><span class="font-medium">{{ package.questions?.length || 0 }}</span></div>
@@ -163,7 +163,7 @@ function getScheduleStatus(pkg) {
 
                 <!-- Actions -->
                 <div class="bg-card rounded-xl border shadow-sm p-5 space-y-2">
-                    <Link :href="route('admin.packages.edit.informasi', package.id)" class="block w-full text-center bg-primary text-primary-foreground py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition">✏️ Edit Paket</Link>
+                    <Link :href="route('admin.packages.edit.informasi', package.id)" class="block w-full text-center bg-primary text-primary-foreground py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition">✏️ Edit Soal</Link>
                     <Link :href="route('admin.packages.edit.cards', package.id)" class="block w-full text-center bg-muted text-foreground py-2 rounded-md text-sm font-medium hover:bg-muted/80 transition">📋 Kelola Card</Link>
                     <Link :href="route('admin.packages.edit.questions', package.id)" class="block w-full text-center bg-muted text-foreground py-2 rounded-md text-sm font-medium hover:bg-muted/80 transition">❓ Kelola Soal</Link>
                 </div>

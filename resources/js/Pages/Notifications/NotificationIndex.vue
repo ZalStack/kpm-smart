@@ -4,6 +4,7 @@ import { Head } from '@inertiajs/vue3';
 import UserLayout from '@/Layouts/UserLayout.vue';
 import Button from '@/Components/ui/button/Button.vue';
 import Pagination from '@/Components/shared/Pagination.vue';
+import { timeAgo } from '@/lib/utils';
 const route = inject('route');
 
 const props = defineProps({
@@ -65,14 +66,15 @@ function markAllRead() {
         </div>
 
         <div class="space-y-3">
-            <div v-if="localNotifications.length === 0" class="text-center py-16 bg-card rounded-xl border">
-                <div class="text-5xl mb-4">🔔</div>
-                <h3 class="text-lg font-bold text-muted-foreground">Tidak Ada Notifikasi</h3>
+            <div v-if="localNotifications.length === 0" class="text-center py-20 bg-card rounded-2xl border">
+                <div class="text-6xl mb-5">🔔</div>
+                <h3 class="text-xl font-bold text-muted-foreground mb-2">Tidak Ada Notifikasi</h3>
+                <p class="text-sm text-muted-foreground">Semua notifikasi sudah dibaca atau belum ada notifikasi baru.</p>
             </div>
 
             <div v-for="(notif, idx) in localNotifications" :key="notif.id"
                  @click="markAsRead(notif.id, idx)"
-                 :class="['bg-card rounded-xl border p-4 cursor-pointer transition-all hover:shadow-md', !notif.is_read ? 'border-l-4 border-l-primary' : '']">
+                 :class="['anim-fade-in-up bg-card rounded-2xl border p-4 cursor-pointer transition-all shadow-card hover:shadow-card-hover', !notif.is_read ? 'border-l-4 border-l-primary' : '']">
                 <div class="flex items-start gap-3">
                     <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0', getIconBg(notif.type)]">
                         {{ getIcon(notif.type) }}
@@ -83,7 +85,7 @@ function markAllRead() {
                             <div v-if="!notif.is_read" class="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0 mt-1"></div>
                         </div>
                         <p class="text-sm text-muted-foreground mt-0.5 line-clamp-2">{{ notif.message }}</p>
-                        <p class="text-xs text-muted-foreground mt-2">{{ notif.created_at }}</p>
+                        <p class="text-xs text-muted-foreground mt-2">{{ timeAgo(notif.created_at) }}</p>
                     </div>
                 </div>
             </div>

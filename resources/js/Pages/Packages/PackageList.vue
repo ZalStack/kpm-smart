@@ -69,18 +69,18 @@ function getScheduleLabel(pkg) {
 
 <template>
     <UserLayout>
-        <Head title="Paket Tugas - KPM SMART" />
+        <Head title="Soal Tugas - KPM SMART" />
 
-        <template #header-title>Paket Tugas</template>
-        <template #header-sub>Pilih paket tugas yang sesuai untuk dikerjakan</template>
+        <template #header-title>Soal Tugas</template>
+        <template #header-sub>Pilih soal tugas yang sesuai untuk dikerjakan</template>
 
         <div class="space-y-6">
             <!-- Filters -->
-            <div class="bg-card rounded-lg p-4 shadow-sm border border-border">
+            <div class="bg-card rounded-2xl p-4 shadow-card border border-border">
                 <form @submit.prevent="applyFilters" class="flex flex-col sm:flex-row gap-3">
                     <div class="flex-1 relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">🔍</span>
-                        <Input v-model="search" placeholder="Cari paket..." class="pl-9" />
+                        <Input v-model="search" placeholder="Cari soal..." class="pl-9" />
                     </div>
                     <Select v-model="bidang" class="w-full sm:w-40">
                         <option value="">Semua Bidang</option>
@@ -97,12 +97,12 @@ function getScheduleLabel(pkg) {
                 </form>
             </div>
 
-            <p class="text-sm text-muted-foreground">{{ packages.total }} paket tersedia</p>
+            <p class="text-sm text-muted-foreground">{{ packages.total }} soal tersedia</p>
 
             <!-- Packages Grid -->
             <div v-if="packages.data.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
                 <div v-for="(pkg, index) in packages.data" :key="pkg.id"
-                     class="relative bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1.5 border border-border/80 hover:border-primary/30 flex flex-col">
+                     class="relative bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1.5 border border-border/80 hover:border-primary/30 flex flex-col anim-fade-in-up">
                     <!-- Gradient Header -->
                     <div class="relative h-40 md:h-44 overflow-hidden">
                         <img v-if="pkg.thumbnail" :src="'/storage/' + pkg.thumbnail" :alt="pkg.title"
@@ -157,16 +157,16 @@ function getScheduleLabel(pkg) {
                         </div>
 
                         <div class="mt-auto pt-3 border-t border-border">
-                            <span v-if="pkg.schedule_status === 'expired'" class="block w-full text-center bg-muted text-muted-foreground py-2 rounded-md font-semibold text-xs md:text-sm cursor-not-allowed">⛔ Jadwal Berakhir</span>
-                            <span v-else-if="pkg.schedule_status === 'upcoming'" class="block w-full text-center bg-yellow-100 text-yellow-700 py-2 rounded-md font-semibold text-xs md:text-sm cursor-not-allowed">⏳ Belum Dimulai</span>
-                            <Link v-else :href="route('packages.show', pkg.id)" class="block w-full text-center bg-green-600 text-white py-2 rounded-md font-semibold hover:bg-green-700 hover:shadow-lg transition-all duration-300 text-xs md:text-sm">📖 Kerjakan Tugas</Link>
+                            <span v-if="pkg.schedule_status === 'expired'" class="block w-full text-center bg-muted text-muted-foreground py-2 rounded-xl font-semibold text-xs md:text-sm cursor-not-allowed">⛔ Jadwal Berakhir</span>
+                            <span v-else-if="pkg.schedule_status === 'upcoming'" class="block w-full text-center bg-yellow-100 text-yellow-700 py-2 rounded-xl font-semibold text-xs md:text-sm cursor-not-allowed">⏳ Belum Dimulai</span>
+                            <Link v-else :href="route('packages.show', pkg.id)" class="block w-full text-center bg-primary text-white py-2 rounded-xl font-semibold hover:bg-primary/90 hover:shadow-lg transition-all duration-300 text-xs md:text-sm">📖 Kerjakan Tugas</Link>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Empty State -->
-            <div v-else class="text-center py-12 md:py-16 bg-card rounded-lg shadow-sm border border-border">
+            <div v-else class="text-center py-12 md:py-16 bg-card rounded-2xl shadow-sm border border-border anim-fade-in-up">
                 <div class="text-6xl md:text-7xl mb-6">📭</div>
                 <h3 class="text-xl md:text-2xl font-bold text-muted-foreground">Belum Ada Tugas</h3>
                 <p class="text-muted-foreground mt-2 text-sm md:text-base">Tugas akan segera tersedia</p>
