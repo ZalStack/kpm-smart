@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,38 +6,38 @@
 
 @layer base {
     :root {
-        --background: 60 9% 96%;
-        --foreground: 142 14% 14%;
+        --background: 60 20% 97%;
+        --foreground: 80 15% 12%;
         --card: 0 0% 100%;
-        --card-foreground: 142 14% 14%;
+        --card-foreground: 80 15% 12%;
         --popover: 0 0% 100%;
-        --popover-foreground: 142 14% 14%;
-        --primary: 122 28% 41%;
-        --primary-foreground: 60 9% 98%;
-        --secondary: 84 19% 58%;
-        --secondary-foreground: 142 14% 14%;
-        --muted: 60 9% 91%;
-        --muted-foreground: 142 10% 40%;
-        --accent: 84 19% 58%;
-        --accent-foreground: 142 14% 14%;
+        --popover-foreground: 80 15% 12%;
+        --primary: 83 67% 37%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 83 62% 50%;
+        --secondary-foreground: 0 0% 100%;
+        --muted: 60 15% 93%;
+        --muted-foreground: 80 10% 40%;
+        --accent: 48 100% 65%;
+        --accent-foreground: 80 15% 12%;
         --destructive: 0 84% 60%;
-        --destructive-foreground: 60 9% 98%;
-        --border: 60 9% 86%;
-        --input: 60 9% 86%;
-        --ring: 122 28% 41%;
+        --destructive-foreground: 0 0% 100%;
+        --border: 60 12% 88%;
+        --input: 60 12% 88%;
+        --ring: 83 67% 37%;
         --radius: 0.5rem;
 
-        --chart-1: 122 28% 41%;
-        --chart-2: 84 19% 58%;
-        --chart-3: 142 25% 26%;
-        --chart-4: 156 30% 26%;
-        --chart-5: 44 75% 50%;
+        --chart-1: 83 67% 37%;
+        --chart-2: 83 62% 50%;
+        --chart-3: 48 100% 65%;
+        --chart-4: 25 100% 65%;
+        --chart-5: 0 84% 60%;
     }
 
     *,
     *::before,
     *::after {
-        font-family: 'Inter', system-ui, sans-serif;
+        font-family: 'Poppins', system-ui, sans-serif;
         border-color: hsl(var(--border));
     }
 
@@ -79,27 +79,27 @@
 @layer components {
     /* ===== Gradient Text ===== */
     .gradient-text {
-        @apply bg-gradient-to-r from-fern to-hunter-green bg-clip-text text-transparent;
+        @apply bg-gradient-to-r from-olive to-lime-vibrant bg-clip-text text-transparent;
     }
 
     /* ===== Brand Panel (Auth) ===== */
     .brand-panel {
         background:
-            radial-gradient(95% 65% at 88% 8%, rgba(88,129,87,.3), transparent 58%),
-            radial-gradient(70% 55% at 0% 92%, rgba(163,177,138,.16), transparent 60%),
-            radial-gradient(60% 50% at 65% 100%, rgba(52,78,65,.14), transparent 62%),
-            linear-gradient(150deg, #344e41 0%, #3a5a40 46%, #588157 100%);
+            radial-gradient(95% 65% at 88% 8%, rgba(161,203,53,.35), transparent 58%),
+            radial-gradient(70% 55% at 0% 92%, rgba(255,222,78,.15), transparent 60%),
+            radial-gradient(60% 50% at 65% 100%, rgba(255,157,77,.12), transparent 62%),
+            linear-gradient(150deg, #3D5A14 0%, #5A7A1E 35%, #769826 65%, #A1CB35 100%);
     }
 
     .grid-dots {
-        background-image: radial-gradient(rgba(255,255,255,.13) 1px, transparent 1px);
+        background-image: radial-gradient(rgba(255,255,255,.15) 1px, transparent 1px);
         background-size: 22px 22px;
     }
 
     .right-bg {
         background:
-            radial-gradient(45% 40% at 8% 0%, rgba(88,129,87,.07), transparent 60%),
-            radial-gradient(42% 38% at 100% 92%, rgba(163,177,138,.08), transparent 60%),
+            radial-gradient(45% 40% at 8% 0%, rgba(161,203,53,.08), transparent 60%),
+            radial-gradient(42% 38% at 100% 92%, rgba(255,222,78,.06), transparent 60%),
             hsl(var(--background));
     }
 
@@ -109,7 +109,7 @@
         -webkit-backdrop-filter: blur(16px);
         backdrop-filter: blur(16px);
         border: 1px solid hsl(var(--border));
-        box-shadow: 0 24px 60px -24px rgba(52,78,65,.18), 0 0 0 1px rgba(255,255,255,.5) inset;
+        box-shadow: 0 24px 60px -24px rgba(118,152,38,.15), 0 0 0 1px rgba(255,255,255,.5) inset;
     }
 
     .btn-auth {
@@ -117,13 +117,13 @@
         overflow: hidden;
         background: hsl(var(--primary));
         color: hsl(var(--primary-foreground));
-        box-shadow: 0 10px 24px -10px rgba(58,90,64,.55);
+        box-shadow: 0 10px 24px -10px rgba(118,152,38,.45);
         transition: transform .2s ease, box-shadow .25s ease;
     }
 
     .btn-auth:hover {
         transform: translateY(-2px);
-        box-shadow: 0 16px 32px -12px rgba(88,129,87,.55);
+        box-shadow: 0 16px 32px -12px rgba(161,203,53,.5);
     }
 
     .btn-auth:active {
@@ -148,7 +148,7 @@
 
     /* ===== Modern Sidebar ===== */
     .sidebar-modern {
-        background: linear-gradient(180deg, #344e41 0%, #3a5a40 40%, #588157 100%);
+        background: linear-gradient(180deg, #3D5A14 0%, #5A7A1E 30%, #769826 65%, #8AB52E 100%);
     }
 
     .sidebar-modern::before {
@@ -156,14 +156,14 @@
         position: absolute;
         inset: 0;
         background:
-            radial-gradient(circle at 100% 0%, rgba(163,177,138,.08) 0%, transparent 50%),
-            radial-gradient(circle at 0% 100%, rgba(58,90,64,.04) 0%, transparent 50%);
+            radial-gradient(circle at 100% 0%, rgba(161,203,53,.12) 0%, transparent 50%),
+            radial-gradient(circle at 0% 100%, rgba(255,222,78,.06) 0%, transparent 50%);
         pointer-events: none;
     }
 
     /* ===== Navigation ===== */
     .nav-active {
-        @apply bg-white/10 text-white;
+        @apply bg-white/15 text-white;
     }
 
     .sidebar-scroll::-webkit-scrollbar {
@@ -245,7 +245,7 @@
     }
 
     .filter-chip.active {
-        @apply bg-fern text-white border-fern;
+        @apply bg-olive text-white border-olive;
     }
 
     /* ===== Stat Tile ===== */
@@ -254,7 +254,7 @@
         background: hsl(var(--card));
         border-radius: var(--radius);
         border: 1px solid hsl(var(--border));
-        box-shadow: 0 1px 2px rgba(52,78,65,.04);
+        box-shadow: 0 1px 2px rgba(118,152,38,.05);
         transition: transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s, border-color .3s;
         overflow: hidden;
     }
@@ -271,7 +271,7 @@
 
     .stat-tile:hover {
         transform: translateY(-4px);
-        box-shadow: 0 12px 32px -8px rgba(52,78,65,.14);
+        box-shadow: 0 12px 32px -8px rgba(118,152,38,.12);
         border-color: var(--tile-accent, hsl(var(--primary)));
     }
 

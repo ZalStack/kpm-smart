@@ -142,7 +142,13 @@ class PracticeController extends Controller
 
         foreach ($questions as $index => $question) {
             $userAnswer = $answers[$index] ?? null;
-            $isCorrect = $userAnswer === $question['correct_answer'];
+            $questionType = $question['type'] ?? 'pilihan_ganda';
+
+            if ($questionType === 'isian_singkat') {
+                $isCorrect = strtolower(trim($userAnswer ?? '')) === strtolower(trim($question['correct_answer']));
+            } else {
+                $isCorrect = $userAnswer === $question['correct_answer'];
+            }
 
             if ($userAnswer === null) {
                 $unanswered++;
@@ -155,6 +161,7 @@ class PracticeController extends Controller
             $resultItem = [
                 'question' => $question['question'],
                 'options' => $question['options'],
+                'type' => $questionType,
                 'correct_answer' => $question['correct_answer'],
                 'user_answer' => $userAnswer,
                 'is_correct' => $isCorrect,
@@ -282,7 +289,13 @@ class PracticeController extends Controller
 
         foreach ($questions as $index => $question) {
             $userAnswer = $answers[$index] ?? null;
-            $isCorrect = $userAnswer === $question['correct_answer'];
+            $questionType = $question['type'] ?? 'pilihan_ganda';
+
+            if ($questionType === 'isian_singkat') {
+                $isCorrect = strtolower(trim($userAnswer ?? '')) === strtolower(trim($question['correct_answer']));
+            } else {
+                $isCorrect = $userAnswer === $question['correct_answer'];
+            }
 
             if ($userAnswer === null) {
                 $unanswered++;
@@ -295,6 +308,7 @@ class PracticeController extends Controller
             $results[] = [
                 'question' => $question['question'],
                 'options' => $question['options'],
+                'type' => $questionType,
                 'correct_answer' => $question['correct_answer'],
                 'user_answer' => $userAnswer,
                 'is_correct' => $isCorrect,
@@ -322,8 +336,8 @@ class PracticeController extends Controller
             ->get();
 
         $totalAttempts = $sessions->count();
-        $bestScore = $sessions->max('total_score') ?? 0;
-        $averageScore = $sessions->avg('total_score') ?? 0;
+        $bestScore = (float) ($sessions->max('total_score') ?? 0);
+        $averageScore = (float) ($sessions->avg('total_score') ?? 0);
         $totalQuestions = $sessions->sum('total_question');
         $correctAnswers = $sessions->sum('correct_answer');
         $accuracy = $totalQuestions > 0 ? ($correctAnswers / $totalQuestions) * 100 : 0;

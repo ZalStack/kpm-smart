@@ -52,7 +52,7 @@ function toggleActive(userId) {
         <!-- Stats -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
             <!-- Total Users -->
-            <div class="stat-tile group p-4 sm:p-5 anim-fade-in-up anim-delay-1" style="--tile-accent: #588157;">
+            <div class="stat-tile group p-4 sm:p-5 anim-fade-in-up anim-delay-1" style="--tile-accent: #769826;">
                 <div class="flex items-center gap-3">
                     <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center flex-shrink-0 group-hover:from-primary/25 group-hover:to-primary/10 transition-all duration-300">
                         <svg class="w-5 h-5 sm:w-5.5 sm:h-5.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

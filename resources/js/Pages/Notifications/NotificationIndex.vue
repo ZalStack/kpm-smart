@@ -5,6 +5,7 @@ import UserLayout from '@/Layouts/UserLayout.vue';
 import Button from '@/Components/ui/button/Button.vue';
 import Pagination from '@/Components/shared/Pagination.vue';
 import { timeAgo } from '@/lib/utils';
+import { Icon } from '@iconify/vue';
 const route = inject('route');
 
 const props = defineProps({
@@ -16,8 +17,8 @@ const localNotifications = ref(props.notifications.data || []);
 const processing = ref(false);
 
 function getIcon(type) {
-    const icons = { order: '🛒', testimonial: '💬', support: '🆘', enroll: '🎓', video: '📹' };
-    return icons[type] || '🔔';
+    const icons = { order: 'mdi:cart-outline', testimonial: 'mdi:chat-outline', support: 'mdi:lifebuoy', enroll: 'mdi:graduation-cap', video: 'mdi:video-outline' };
+    return icons[type] || 'mdi:bell-outline';
 }
 
 function getIconBg(type) {
@@ -61,13 +62,14 @@ function markAllRead() {
 
         <div class="flex items-center justify-end mb-6">
             <Button variant="outline" size="sm" @click="markAllRead" :disabled="processing">
-                {{ processing ? 'Memproses...' : '✅ Tandai Semua Dibaca' }}
+                <template v-if="processing">Memproses...</template>
+                <template v-else><Icon icon="mdi:check-circle" class="w-4 h-4 mr-1 inline-block align-middle" /> Tandai Semua Dibaca</template>
             </Button>
         </div>
 
         <div class="space-y-3">
             <div v-if="localNotifications.length === 0" class="text-center py-20 bg-card rounded-2xl border">
-                <div class="text-6xl mb-5">🔔</div>
+                <div class="text-6xl mb-5"><Icon icon="mdi:bell-outline" class="w-14 h-14 text-muted-foreground" /></div>
                 <h3 class="text-xl font-bold text-muted-foreground mb-2">Tidak Ada Notifikasi</h3>
                 <p class="text-sm text-muted-foreground">Semua notifikasi sudah dibaca atau belum ada notifikasi baru.</p>
             </div>
@@ -77,7 +79,7 @@ function markAllRead() {
                  :class="['anim-fade-in-up bg-card rounded-2xl border p-4 cursor-pointer transition-all shadow-card hover:shadow-card-hover', !notif.is_read ? 'border-l-4 border-l-primary' : '']">
                 <div class="flex items-start gap-3">
                     <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0', getIconBg(notif.type)]">
-                        {{ getIcon(notif.type) }}
+                        <Icon :icon="getIcon(notif.type)" class="w-5 h-5" />
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-start justify-between gap-2">

@@ -40,7 +40,7 @@ function submit() {
             </Link>
 
             <!-- Password Form -->
-            <div class="anim-fade-in-up anim-delay-1 rounded-2xl border bg-card shadow-card overflow-hidden">
+            <div class="anim-fade-in-up anim-delay-1 rounded-2xl border bg-card shadow-card overflow-hidden hover:shadow-lg transition-shadow duration-300">
                 <div class="p-6 border-b bg-gradient-to-r from-amber-500/5 to-transparent">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
@@ -107,7 +107,7 @@ function submit() {
                     </div>
 
                     <!-- Password Requirements -->
-                    <div class="bg-muted/40 rounded-2xl p-4 space-y-2">
+                    <div class="bg-muted/40 rounded-2xl p-4 space-y-2 border border-border/50">
                         <p class="text-xs font-semibold text-foreground flex items-center gap-1.5">
                             <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
                             Persyaratan Password
@@ -145,10 +145,10 @@ function submit() {
                     <!-- Actions -->
                     <div class="flex flex-col sm:flex-row justify-end gap-3 pt-2">
                         <Link :href="route('profile.edit')"
-                              class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-medium hover:bg-muted transition">
+                              class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-medium hover:bg-muted hover:shadow-sm active:scale-95 transition-all duration-200 min-h-10">
                             Batal
                         </Link>
-                        <Button type="submit" :disabled="form.processing" class="sm:w-auto w-full">
+                        <Button type="submit" :disabled="form.processing" class="sm:w-auto w-full hover:shadow-md active:scale-[0.98] transition-all duration-200 min-h-12">
                             <svg v-if="form.processing" class="w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                             {{ form.processing ? 'Menyimpan...' : 'Simpan Password Baru' }}
                         </Button>

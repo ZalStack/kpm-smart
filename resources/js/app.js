@@ -21,7 +21,7 @@ createInertiaApp({
             .mount(el);
     },
     progress: {
-        color: '#588157',
+        color: '#769826',
         showSpinner: false,
     },
 });

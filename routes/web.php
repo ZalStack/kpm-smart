@@ -66,6 +66,7 @@ Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        Route::redirect('/', '/admin/dashboard');
         Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('dashboard');
 
         // Users Management (Full CRUD)

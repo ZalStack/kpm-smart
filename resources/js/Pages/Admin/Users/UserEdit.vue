@@ -137,7 +137,7 @@ function submit() {
                     <div class="p-5 sm:p-6 space-y-4">
                         <div class="space-y-2">
                             <Label class="text-sm font-semibold">Nama Lengkap <span class="text-destructive">*</span></Label>
-                            <Input v-model="form.name" required class="h-11 rounded-xl" />
+                            <Input v-model="form.name" required class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200" />
                             <p v-if="form.errors.name" class="text-xs text-destructive flex items-center gap-1.5 mt-1">
                                 <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
                                 {{ form.errors.name }}
@@ -145,7 +145,7 @@ function submit() {
                         </div>
                         <div class="space-y-2">
                             <Label class="text-sm font-semibold">Email <span class="text-destructive">*</span></Label>
-                            <Input v-model="form.email" type="email" required class="h-11 rounded-xl" />
+                            <Input v-model="form.email" type="email" required class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200" />
                             <p v-if="form.errors.email" class="text-xs text-destructive flex items-center gap-1.5 mt-1">
                                 <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
                                 {{ form.errors.email }}
@@ -154,11 +154,11 @@ function submit() {
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="space-y-2">
                                 <Label class="text-sm font-semibold">Password Baru</Label>
-                                <Input v-model="form.password" type="password" placeholder="Kosongkan jika tidak diubah" class="h-11 rounded-xl" />
+                                <Input v-model="form.password" type="password" placeholder="Kosongkan jika tidak diubah" class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200" />
                             </div>
                             <div class="space-y-2">
                                 <Label class="text-sm font-semibold">Konfirmasi Password</Label>
-                                <Input v-model="form.password_confirmation" type="password" placeholder="Ulangi password baru" class="h-11 rounded-xl" />
+                                <Input v-model="form.password_confirmation" type="password" placeholder="Ulangi password baru" class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200" />
                             </div>
                         </div>
                     </div>
@@ -183,19 +183,19 @@ function submit() {
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="space-y-2">
                                 <Label class="text-sm font-semibold">Kelas</Label>
-                                <Input v-model="form.student_class" class="h-11 rounded-xl" />
+                                <Input v-model="form.student_class" class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200" />
                             </div>
                             <div class="space-y-2">
                                 <Label class="text-sm font-semibold">Bidang</Label>
-                                <Input v-model="form.bidang" class="h-11 rounded-xl" />
+                                <Input v-model="form.bidang" class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200" />
                             </div>
                             <div class="space-y-2">
                                 <Label class="text-sm font-semibold">Level</Label>
-                                <Input v-model="form.level" class="h-11 rounded-xl" />
+                                <Input v-model="form.level" class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200" />
                             </div>
                             <div class="space-y-2">
                                 <Label class="text-sm font-semibold">Sekolah</Label>
-                                <Input v-model="form.school_name" class="h-11 rounded-xl" />
+                                <Input v-model="form.school_name" class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200" />
                             </div>
                         </div>
                     </div>
@@ -220,11 +220,11 @@ function submit() {
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="space-y-2">
                                 <Label class="text-sm font-semibold">No. HP/WA</Label>
-                                <Input v-model="form.phone" class="h-11 rounded-xl" />
+                                <Input v-model="form.phone" class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200" />
                             </div>
                             <div class="space-y-2">
                                 <Label class="text-sm font-semibold">Jenis Kelamin</Label>
-                                <Select v-model="form.gender" class="h-11 rounded-xl">
+                                <Select v-model="form.gender" class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200">
                                     <option value="">Pilih Jenis Kelamin</option>
                                     <option value="Laki-laki">Laki-laki</option>
                                     <option value="Perempuan">Perempuan</option>
@@ -233,7 +233,7 @@ function submit() {
                         </div>
                         <div class="space-y-2">
                             <Label class="text-sm font-semibold">Agama</Label>
-                            <Select v-model="form.religion" class="h-11 rounded-xl">
+                            <Select v-model="form.religion" class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200">
                                 <option value="">Pilih Agama</option>
                                 <option value="Islam">Islam</option>
                                 <option value="Kristen">Kristen</option>
@@ -245,7 +245,7 @@ function submit() {
                         </div>
                         <div class="space-y-2">
                             <Label class="text-sm font-semibold">Alamat</Label>
-                            <Textarea v-model="form.address" :rows="2" class="resize-none rounded-xl" />
+                            <Textarea v-model="form.address" :rows="2" class="resize-none rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200" />
                         </div>
                     </div>
                 </div>

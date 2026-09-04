@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Smalot\PdfParser\Parser;
+use thiagoalessio\TesseractOCR;
 use ZipArchive;
 
 class PackageController extends Controller
@@ -500,7 +501,8 @@ class PackageController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'question' => 'required|string',
-            'options' => 'required|array|min:2',
+            'type' => 'nullable|string|in:pilihan_ganda,isian_singkat',
+            'options' => 'required_unless:type,isian_singkat|array',
             'correct_answer' => 'required|string',
             'explanation' => 'nullable|string',
             'card_id' => 'required|string',
@@ -516,12 +518,14 @@ class PackageController extends Controller
             $imagePath = $request->file('image')->store('question_images/' . $package->id, 'public');
         }
 
+        $questionType = $request->type ?: 'pilihan_ganda';
         $questions = $package->questions ?? [];
         $questions[] = [
             'id' => (string) Str::uuid(),
             'card_id' => $request->card_id,
             'question' => $request->question,
-            'options' => $request->options,
+            'type' => $questionType,
+            'options' => $questionType === 'isian_singkat' ? [] : $request->options,
             'correct_answer' => $request->correct_answer,
             'explanation' => $request->explanation,
             'image' => $imagePath,
@@ -538,7 +542,8 @@ class PackageController extends Controller
         $validator = Validator::make($request->all(), [
             'card_id' => 'required|string',
             'question' => 'required|string',
-            'options' => 'required|array|min:2',
+            'type' => 'nullable|string|in:pilihan_ganda,isian_singkat',
+            'options' => 'required_unless:type,isian_singkat|array',
             'correct_answer' => 'required|string',
             'explanation' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
@@ -571,9 +576,11 @@ class PackageController extends Controller
                 $imagePath = $request->file('image')->store('question_images/' . $package->id, 'public');
             }
 
+            $questionType = $request->type ?: 'pilihan_ganda';
             $questions[$i]['card_id'] = $request->card_id;
             $questions[$i]['question'] = $request->question;
-            $questions[$i]['options'] = $request->options;
+            $questions[$i]['type'] = $questionType;
+            $questions[$i]['options'] = $questionType === 'isian_singkat' ? [] : $request->options;
             $questions[$i]['correct_answer'] = $request->correct_answer;
             $questions[$i]['explanation'] = $request->explanation;
             $questions[$i]['image'] = $imagePath;
@@ -641,23 +648,31 @@ class PackageController extends Controller
 
         try {
             $parser = new Parser();
-            $pdf = $parser->parseFile($request->file('pdf_file')->getPathname());
+            $pdfPath = $request->file('pdf_file')->getPathname();
+            $pdf = $parser->parseFile($pdfPath);
             $text = $pdf->getText();
 
             if (trim($text) === '') {
-                return back()->with('error', 'PDF tidak mengandung teks yang bisa dibaca. Jika PDF ini hasil scan/foto, convert dulu ke PDF berbasis teks sebelum di-import (fitur ini sengaja tidak memakai OCR).');
+                $text = $this->ocrPdfText($pdfPath);
+            }
+
+            if (trim($text) === '') {
+                return back()->with('error', 'PDF tidak mengandung teks yang bisa dibaca dan OCR juga tidak menemukan teks. Pastikan PDF berisi teks atau gambar yang jelas.');
             }
 
             $questions = $this->extractQuestionsFromText($text);
 
             if (empty($questions)) {
-                return back()->with('error', 'Tidak dapat mengekstrak soal dari PDF. Pastikan format PDF sesuai template: setiap soal diawali nomor + titik (contoh "1. Ibu kota Indonesia adalah...."), lalu pilihan jawaban di baris terpisah diawali huruf A-E + titik (contoh "A. Jakarta"), dan nomor soal berurutan (1, 2, 3, dst).');
+                return back()->with('error', 'Tidak dapat mengekstrak soal dari PDF. Pastikan format PDF sesuai template: setiap soal diawali nomor + titik (contoh "1. Ibu kota Indonesia adalah...."). Untuk pilihan ganda, pilihan jawaban di baris terpisah diawali huruf A-E + titik. Untuk isian singkat, tanpa pilihan A-E lalu beri jawaban di baris berikut (contoh "Jawaban: Jakarta"). Nomor soal harus berurutan (1, 2, 3, dst).');
             }
 
             $answerKey = [];
             if ($request->hasFile('answer_key_pdf')) {
                 $answerPdf = $parser->parseFile($request->file('answer_key_pdf')->getPathname());
                 $answerText = $answerPdf->getText();
+                if (trim($answerText) === '') {
+                    $answerText = $this->ocrPdfText($request->file('answer_key_pdf')->getPathname());
+                }
                 $answerKey = $this->extractAnswerKey($answerText);
             }
 
@@ -666,9 +681,28 @@ class PackageController extends Controller
                 $imageMap = $this->extractImagesZip($request->file('images_zip'), $package->id);
             }
 
-            $embeddedImages = $this->extractEmbeddedImagesFromPdf($request->file('pdf_file')->getPathname(), $package->id);
-            $questionPageMap = $this->mapQuestionNumbersToPages($request->file('pdf_file')->getPathname(), $questions);
+            $pdfPath = $request->file('pdf_file')->getPathname();
+            $embeddedImages = $this->extractEmbeddedImagesFromPdf($pdfPath, $package->id);
+            $questionPageMap = $this->mapQuestionNumbersToPages($pdfPath, $questions);
             $autoImageMap = $this->assignAutoImagesToQuestions($embeddedImages, $questionPageMap, $questions);
+
+            $pageImages = [];
+            $questionsNeedingImages = array_diff(
+                array_column($questions, 'number'),
+                array_keys($autoImageMap)
+            );
+            if (!empty($questionsNeedingImages)) {
+                $rawPageImages = $this->renderPdfPagesAsImages($pdfPath, $package->id, $questionPageMap);
+                $pageImages = [];
+                foreach ($rawPageImages as $pi) {
+                    $pageImages[$pi['page']] = $pi;
+                }
+                foreach ($questionsNeedingImages as $qNum) {
+                    if (isset($questionPageMap[$qNum]) && isset($pageImages[$questionPageMap[$qNum]])) {
+                        $autoImageMap[$qNum] = $pageImages[$questionPageMap[$qNum]]['path'];
+                    }
+                }
+            }
 
             $existingQuestions = $package->questions ?? [];
             $newQuestions = [];
@@ -701,10 +735,12 @@ class PackageController extends Controller
                     $autoAttachedCount++;
                 }
 
+                $questionType = $question['type'] ?? 'pilihan_ganda';
                 $newQuestions[] = [
                     'id' => (string) Str::uuid(),
                     'card_id' => $request->card_id,
                     'question' => $question['question'],
+                    'type' => $questionType,
                     'options' => $options,
                     'correct_answer' => $correctAnswer,
                     'explanation' => $question['explanation'] ?? '',
@@ -721,15 +757,15 @@ class PackageController extends Controller
             $message = 'Berhasil mengimport ' . count($newQuestions) . ' soal dari PDF!';
 
             if ($autoAttachedCount > 0) {
-                $message .= ' 📸 ' . $autoAttachedCount . ' gambar otomatis terdeteksi & terpasang.';
+                $message .= ' ' . $autoAttachedCount . ' gambar otomatis terdeteksi & terpasang.';
             }
 
             if ($skippedNoAnswer > 0) {
-                $message .= ' ⚠️ ' . $skippedNoAnswer . ' soal belum punya jawaban benar (tidak ditemukan di PDF kunci jawaban) — cek & lengkapi manual di daftar soal.';
+                $message .= ' ' . $skippedNoAnswer . ' soal belum punya jawaban benar (tidak ditemukan di PDF kunci jawaban) — cek & lengkapi manual di daftar soal.';
             }
 
             if (!empty($missingImages)) {
-                $message .= ' ⚠️ Gambar tidak ditemukan di ZIP untuk: ' . implode(', ', array_unique($missingImages)) . '.';
+                $message .= ' Gambar tidak ditemukan di ZIP untuk: ' . implode(', ', array_unique($missingImages)) . '.';
             }
 
             return redirect()->route('admin.packages.edit.questions', $package)->with('success', $message);
@@ -787,6 +823,53 @@ class PackageController extends Controller
         return $map;
     }
 
+    private function ocrPdfText($pdfPath)
+    {
+        $tesseractPath = trim((string) exec('which tesseract'));
+        if ($tesseractPath === '' || !function_exists('shell_exec')) {
+            return '';
+        }
+
+        $tmpDir = sys_get_temp_dir() . '/kpm_ocr_' . Str::random(8);
+        @mkdir($tmpDir, 0755, true);
+
+        $gsPath = trim((string) exec('which gs'));
+        if ($gsPath === '' || !file_exists($gsPath)) {
+            return '';
+        }
+
+        $cmd = sprintf(
+            'gs -dNOPAUSE -dBATCH -sDEVICE=png16m -r200 -sOutputFile=%s/%%d.png %s 2>&1',
+            escapeshellarg($tmpDir),
+            escapeshellarg($pdfPath)
+        );
+        exec($cmd, $gsOutput, $gsReturn);
+
+        $allText = [];
+
+        $pages = glob($tmpDir . '/*.png');
+        sort($pages);
+
+        foreach ($pages as $pageImage) {
+            try {
+                $ocr = new TesseractOCR($pageImage);
+                $pageText = $ocr->run();
+                if (!empty(trim($pageText))) {
+                    $allText[] = $pageText;
+                }
+            } catch (\Exception $e) {
+                continue;
+            }
+        }
+
+        foreach ($pages as $pageImage) {
+            @unlink($pageImage);
+        }
+        @rmdir($tmpDir);
+
+        return implode("\n\n", $allText);
+    }
+
     private function extractEmbeddedImagesFromPdf($pdfPath, $packageId)
     {
         $images = [];
@@ -815,6 +898,10 @@ class PackageController extends Controller
                     continue;
                 }
 
+                if (strlen($imageData['content']) < 200) {
+                    continue;
+                }
+
                 $filename = 'auto_' . Str::uuid() . '.' . $imageData['ext'];
                 $storedPath = $targetDir . '/' . $filename;
                 Storage::disk('public')->put($storedPath, $imageData['content']);
@@ -824,6 +911,52 @@ class PackageController extends Controller
                     'path' => $storedPath,
                     'ext' => $imageData['ext'],
                     'size' => strlen($imageData['content']),
+                ];
+            }
+        }
+
+        return $images;
+    }
+
+    private function renderPdfPagesAsImages($pdfPath, $packageId, array $questionPageMap)
+    {
+        $images = [];
+        $targetDir = 'question_images/' . $packageId . '/pages';
+        Storage::disk('public')->makeDirectory($targetDir);
+
+        $gsPath = trim((string) exec('which gs'));
+        if ($gsPath === '' || !file_exists($gsPath)) {
+            return $images;
+        }
+
+        $pageNumbers = array_unique(array_values($questionPageMap));
+        sort($pageNumbers);
+
+        if (empty($pageNumbers)) {
+            return $images;
+        }
+
+        foreach ($pageNumbers as $pageIndex) {
+            $pageNum = $pageIndex + 1;
+            $outputFile = $targetDir . '/page_' . $pageNum . '_' . Str::uuid() . '.jpg';
+            $fullPath = Storage::disk('public')->path($outputFile);
+
+            $cmd = sprintf(
+                'gs -dNOPAUSE -dBATCH -sDEVICE=jpeg -dJPEGQ=85 -r200 -dFirstPage=%d -dLastPage=%d -sOutputFile=%s %s 2>&1',
+                $pageNum,
+                $pageNum,
+                escapeshellarg($fullPath),
+                escapeshellarg($pdfPath)
+            );
+
+            exec($cmd, $output, $returnCode);
+
+            if ($returnCode === 0 && file_exists($fullPath) && filesize($fullPath) > 500) {
+                $images[] = [
+                    'page' => $pageIndex,
+                    'path' => $outputFile,
+                    'ext' => 'jpg',
+                    'size' => filesize($fullPath),
                 ];
             }
         }
@@ -1110,6 +1243,10 @@ class PackageController extends Controller
             return '';
         }
 
+        if (empty($options)) {
+            return $rawAnswer;
+        }
+
         if (preg_match('/^[A-Za-z]$/', $rawAnswer)) {
             $index = ord(strtoupper($rawAnswer)) - ord('A');
 
@@ -1142,8 +1279,8 @@ class PackageController extends Controller
 
         $phase = null;
         $expectedNumber = null;
-        $expectedOptionOrd = null;
         $lastLineWasTable = false;
+        $foundAnyOption = false;
 
         $flush = function () use (
             &$questions, &$currentQuestion, &$currentOptions, &$currentNumber,
@@ -1152,9 +1289,11 @@ class PackageController extends Controller
             if ($currentQuestion === null) {
                 return;
             }
+            $type = empty($currentOptions) ? 'isian_singkat' : 'pilihan_ganda';
             $questions[] = [
                 'number' => $currentNumber,
                 'question' => trim($currentQuestion),
+                'type' => $type,
                 'options' => $currentOptions,
                 'correct_answer' => $currentAnswer,
                 'explanation' => trim(implode("\n", $currentExplanations)),
@@ -1166,6 +1305,9 @@ class PackageController extends Controller
             $line = rtrim($line);
             $trimmed = trim($line);
             if ($trimmed === '') {
+                if ($phase === 'options' && $foundAnyOption) {
+                    $phase = 'post_options';
+                }
                 continue;
             }
 
@@ -1181,13 +1323,15 @@ class PackageController extends Controller
                 }
             }
 
-            $isTableRow = (bool) preg_match('/^\|.*\|$/', $trimmed);
+            $isTableRow = (bool) preg_match('/^\|.*\|$/', $trimmed) || preg_match('/\t/', $trimmed);
 
             $isNewQuestion = false;
             $newNumber = null;
-            if (!$isTableRow && preg_match('/^(\d{1,4})[\.\)]\s+(?=\S)/', $trimmed, $matches)) {
+            if (!$isTableRow && preg_match('/^(\d{1,4})\.\s+(?=\S)/', $trimmed, $matches)) {
                 $newNumber = (int) $matches[1];
                 if ($expectedNumber === null || $newNumber === $expectedNumber) {
+                    $isNewQuestion = true;
+                } elseif ($newNumber > $expectedNumber && $currentQuestion !== null) {
                     $isNewQuestion = true;
                 }
             }
@@ -1203,8 +1347,8 @@ class PackageController extends Controller
                 $currentExplanations = [];
                 $currentImageFilename = $lineImageFilename;
                 $phase = 'question';
-                $expectedOptionOrd = ord('A');
                 $lastLineWasTable = false;
+                $foundAnyOption = false;
                 continue;
             }
 
@@ -1212,35 +1356,41 @@ class PackageController extends Controller
                 continue;
             }
 
-            if (!$isTableRow && preg_match('/^(jawaban|kunci\s*jawaban|kunci)\s*[:\-]?\s*([A-Za-z])\b/i', $trimmed, $matches)) {
-                $currentAnswer = strtoupper($matches[2]);
-                $currentExplanations[] = $trimmed;
+            if (!$isTableRow && preg_match('/^(jawaban|kunci\s*jawaban|kunci|solusi)\s*[:\-]?\s*(.+)/i', $trimmed, $matches)) {
+                $answerValue = trim($matches[2]);
+                $answerValue = preg_replace('/^pilihan\s*/i', '', $answerValue);
+                $answerValue = trim($answerValue);
+                if (preg_match('/^[A-Za-z]$/', $answerValue)) {
+                    $currentAnswer = strtoupper($answerValue);
+                } else {
+                    $currentAnswer = $answerValue;
+                }
                 if ($lineImageFilename !== null) {
                     $currentImageFilename = $lineImageFilename;
                 }
-                $phase = 'explanation';
                 $lastLineWasTable = false;
                 continue;
             }
 
-            if (!$isTableRow && $phase !== 'explanation'
-                && preg_match('/^([A-Za-z])[\.\)]\s+(?=\S)/', $trimmed, $matches)) {
+            if (!$isTableRow && $phase !== 'explanation' && $phase !== 'post_options'
+                && preg_match('/^([A-Za-z])[\.\)]\s*(.+)/', $trimmed, $matches)) {
                 $letterOrd = ord(strtoupper($matches[1]));
-                if ($letterOrd === $expectedOptionOrd) {
-                    $optionText = preg_replace('/^([A-Za-z])[\.\)]\s+/', '', $trimmed);
-                    $currentOptions[] = $optionText;
-                    $expectedOptionOrd = $letterOrd + 1;
-                    $phase = 'options';
-                    if ($lineImageFilename !== null) {
-                        $currentImageFilename = $lineImageFilename;
-                    }
-                    $lastLineWasTable = false;
-                    continue;
+                $optionText = trim($matches[2]);
+                if ($optionText === '') {
+                    $optionText = '—';
                 }
+                $currentOptions[] = $optionText;
+                $phase = 'options';
+                $foundAnyOption = true;
+                if ($lineImageFilename !== null) {
+                    $currentImageFilename = $lineImageFilename;
+                }
+                $lastLineWasTable = false;
+                continue;
             }
 
             if (!$isTableRow && $phase !== 'explanation' && stripos($trimmed, 'pembahasan') === 0) {
-                $currentExplanations[] = $trimmed;
+                $currentExplanations[] = preg_replace('/^pembahasan\s*[:\-]?\s*/i', '', $trimmed);
                 if ($lineImageFilename !== null) {
                     $currentImageFilename = $lineImageFilename;
                 }
@@ -1297,15 +1447,23 @@ class PackageController extends Controller
 
         foreach ($lines as $line) {
             $line = trim($line);
-            if (preg_match('/^(\d{1,4})[\.\)]\s+([A-Za-z])\b/', $line, $matches)) {
+            if (preg_match('/^(\d{1,4})[\.\)]\s+(.+)/', $line, $matches)) {
                 $number = (int) $matches[1];
-                $answer = strtoupper($matches[2]);
-                $answerKey[$number] = $answer;
+                $answer = trim($matches[2]);
+                if (preg_match('/^[A-Za-z]$/', $answer)) {
+                    $answerKey[$number] = strtoupper($answer);
+                } else {
+                    $answerKey[$number] = $answer;
+                }
             }
-            elseif (preg_match('/^(\d{1,4})\s*[=:]\s*([A-Za-z])\b/', $line, $matches)) {
+            elseif (preg_match('/^(\d{1,4})\s*[=:]\s*(.+)/', $line, $matches)) {
                 $number = (int) $matches[1];
-                $answer = strtoupper($matches[2]);
-                $answerKey[$number] = $answer;
+                $answer = trim($matches[2]);
+                if (preg_match('/^[A-Za-z]$/', $answer)) {
+                    $answerKey[$number] = strtoupper($answer);
+                } else {
+                    $answerKey[$number] = $answer;
+                }
             }
         }
 

@@ -21,13 +21,13 @@ function submit() {
     <GuestLayout>
         <Head title="Lupa Kata Sandi - KPM SMART" />
 
-        <div class="auth-card rounded-[1.75rem] p-5 sm:p-9">
+        <div class="auth-card rounded-[1.75rem] p-5 sm:p-9 anim-fade-in-up">
             <div class="mb-7">
                 <h1 class="text-xl sm:text-[1.8rem] font-bold text-foreground">Lupa kata sandi?</h1>
                 <p class="text-muted-foreground text-sm mt-1.5">Masukkan email Anda dan kami akan mengirimkan tautan reset password.</p>
             </div>
 
-            <div v-if="form.errors && Object.keys(form.errors).length > 0" class="bg-destructive/10 border border-destructive/20 border-l-4 border-l-destructive text-destructive px-4 py-3 rounded-md mb-6 text-sm" role="alert">
+            <div v-if="form.errors && Object.keys(form.errors).length > 0" class="bg-destructive/10 border border-destructive/20 border-l-4 border-l-destructive text-destructive px-4 py-3 rounded-xl mb-6 text-sm" role="alert">
                 <ul class="space-y-1">
                     <li v-for="(error, key) in form.errors" :key="key">{{ error }}</li>
                 </ul>
@@ -46,7 +46,7 @@ function submit() {
                     />
                 </div>
 
-                <Button type="submit" class="btn-auth w-full py-3.5 text-[15px] font-semibold" :disabled="form.processing">
+                <Button type="submit" class="btn-auth w-full py-3.5 text-[15px] font-semibold hover:shadow-md active:scale-[0.98] transition-all duration-200 min-h-12" :disabled="form.processing">
                     <span v-if="!form.processing">Kirim Tautan Reset</span>
                     <span v-else class="flex items-center gap-2">Mengirim… <span class="spinner" /></span>
                 </Button>

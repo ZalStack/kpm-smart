@@ -32,7 +32,7 @@ function submit() {
     <GuestLayout>
         <Head title="Masuk - KPM SMART" />
 
-        <div class="auth-card rounded-[1.75rem] p-5 sm:p-9">
+        <div class="auth-card rounded-[1.75rem] p-5 sm:p-9 anim-fade-in-up">
             <div class="mb-7">
                 <h1 class="text-xl sm:text-[1.8rem] font-bold text-foreground">Selamat datang kembali</h1>
                 <p class="text-muted-foreground text-sm mt-1.5">Masuk untuk melanjutkan proses belajarmu.</p>
@@ -44,7 +44,7 @@ function submit() {
                 </Alert>
             </div>
 
-            <div v-if="form.errors && Object.keys(form.errors).length > 0" class="bg-destructive/10 border border-destructive/20 border-l-4 border-l-destructive text-destructive px-4 py-3 rounded-md mb-6 text-sm" role="alert">
+            <div v-if="form.errors && Object.keys(form.errors).length > 0" class="bg-destructive/10 border border-destructive/20 border-l-4 border-l-destructive text-destructive px-4 py-3 rounded-xl mb-6 text-sm" role="alert">
                 <div class="flex items-start gap-2.5">
                     <svg class="w-4 h-4 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
                     <ul class="space-y-1">
@@ -99,7 +99,7 @@ function submit() {
                     <Link :href="route('password.request')" class="text-sm text-primary hover:text-primary/80 font-semibold transition">Lupa kata sandi?</Link>
                 </div>
 
-                <Button type="submit" class="btn-auth w-full py-3.5 text-[15px] font-semibold" :disabled="form.processing">
+                <Button type="submit" class="btn-auth w-full py-3.5 text-[15px] font-semibold hover:shadow-md active:scale-[0.98] transition-all duration-200 min-h-12" :disabled="form.processing">
                     <span v-if="!form.processing">Masuk</span>
                     <span v-else class="flex items-center gap-2">Memproses… <span class="spinner" /></span>
                 </Button>

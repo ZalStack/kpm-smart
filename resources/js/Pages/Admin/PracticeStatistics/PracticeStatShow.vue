@@ -3,6 +3,7 @@ import { inject, computed } from 'vue';
 const route = inject('route');
 
 import { Head, Link } from '@inertiajs/vue3';
+import { Icon } from '@iconify/vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import Badge from '@/Components/ui/badge/Badge.vue';
 import Card from '@/Components/ui/card/Card.vue';
@@ -28,10 +29,10 @@ function formatDuration(s) {
 }
 
 function scoreGrade(score) {
-    if (score >= 90) return { label: 'Sangat Baik', emoji: '🏆', color: 'text-emerald-600', bg: 'bg-emerald-50', ring: 'ring-emerald-200' };
-    if (score >= 75) return { label: 'Baik', emoji: '✅', color: 'text-blue-600', bg: 'bg-blue-50', ring: 'ring-blue-200' };
-    if (score >= 60) return { label: 'Cukup', emoji: '📊', color: 'text-yellow-600', bg: 'bg-yellow-50', ring: 'ring-yellow-200' };
-    return { label: 'Perlu Latihan', emoji: '📚', color: 'text-red-500', bg: 'bg-red-50', ring: 'ring-red-200' };
+    if (score >= 90) return { label: 'Sangat Baik', icon: 'mdi:trophy', color: 'text-emerald-600', bg: 'bg-emerald-50', ring: 'ring-emerald-200' };
+    if (score >= 75) return { label: 'Baik', icon: 'mdi:check-circle', color: 'text-blue-600', bg: 'bg-blue-50', ring: 'ring-blue-200' };
+    if (score >= 60) return { label: 'Cukup', icon: 'mdi:chart-bar', color: 'text-yellow-600', bg: 'bg-yellow-50', ring: 'ring-yellow-200' };
+    return { label: 'Perlu Latihan', icon: 'mdi:book-open-page-variant', color: 'text-red-500', bg: 'bg-red-50', ring: 'ring-red-200' };
 }
 
 const grade = computed(() => scoreGrade(Number(props.session.total_score) || 0));
@@ -77,12 +78,12 @@ const scoreOffset = computed(() => circumference - (Math.min(Number(props.sessio
                             </div>
                         </div>
                         <div class="text-center sm:text-left flex-1">
-                            <p class="text-3xl mb-1">{{ grade.emoji }}</p>
+                            <p class="text-3xl mb-1"><Icon :icon="grade.icon" class="w-8 h-8" /></p>
                             <h2 class="text-xl font-bold">{{ grade.label }}</h2>
                             <p class="text-white/80 text-sm mt-1">{{ session.package?.title || '-' }}</p>
                             <div class="flex items-center gap-3 mt-2 text-white/60 text-xs">
-                                <span>👤 {{ session.user?.name || '-' }}</span>
-                                <span>📧 {{ session.user?.email || '' }}</span>
+                                <span class="inline-flex items-center gap-1"><Icon icon="mdi:account-outline" class="w-4 h-4 inline-block align-middle" /> {{ session.user?.name || '-' }}</span>
+                                <span class="inline-flex items-center gap-1"><Icon icon="mdi:email-outline" class="w-4 h-4 inline-block align-middle" /> {{ session.user?.email || '' }}</span>
                             </div>
                         </div>
                     </div>
@@ -108,47 +109,60 @@ const scoreOffset = computed(() => circumference - (Math.min(Number(props.sessio
             </div>
 
             <!-- Session Info - 4 Column Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-card rounded-xl border shadow-sm p-5 text-center">
-                    <p class="text-xs text-muted-foreground mb-1">Tanggal</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div class="bg-card rounded-2xl border border-border/60 shadow-sm p-5 text-center hover:shadow-md transition-all duration-300 anim-fade-in-up anim-delay-1">
+                    <p class="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">Tanggal</p>
                     <p class="text-sm font-semibold">{{ formatDate(session.created_at) }}</p>
                 </div>
-                <div class="bg-card rounded-xl border shadow-sm p-5 text-center">
-                    <p class="text-xs text-muted-foreground mb-1">Status</p>
-                    <Badge :variant="session.status === 'completed' ? 'success' : 'warning'" class="text-[10px]">{{ session.status === 'completed' ? 'Selesai' : 'Berlangsung' }}</Badge>
+                <div class="bg-card rounded-2xl border border-border/60 shadow-sm p-5 text-center hover:shadow-md transition-all duration-300 anim-fade-in-up anim-delay-2">
+                    <p class="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">Status</p>
+                    <Badge :variant="session.status === 'completed' ? 'success' : 'warning'" class="text-[10px] gap-1 px-2.5 py-1 rounded-lg font-semibold"><span class="w-1.5 h-1.5 rounded-full" :class="session.status === 'completed' ? 'bg-emerald-500' : 'bg-amber-500'"></span>{{ session.status === 'completed' ? 'Selesai' : 'Berlangsung' }}</Badge>
                 </div>
-                <div class="bg-card rounded-xl border shadow-sm p-5 text-center">
-                    <p class="text-xs text-muted-foreground mb-1">Card</p>
+                <div class="bg-card rounded-2xl border border-border/60 shadow-sm p-5 text-center hover:shadow-md transition-all duration-300 anim-fade-in-up anim-delay-3">
+                    <p class="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">Card</p>
                     <p class="text-sm font-semibold">{{ session.card_id || '-' }}</p>
                 </div>
-                <div class="bg-card rounded-xl border shadow-sm p-5 text-center">
-                    <p class="text-xs text-muted-foreground mb-1">Waktu Limit</p>
+                <div class="bg-card rounded-2xl border border-border/60 shadow-sm p-5 text-center hover:shadow-md transition-all duration-300 anim-fade-in-up anim-delay-4">
+                    <p class="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">Waktu Limit</p>
                     <p class="text-sm font-semibold">{{ timeLimitMinutes > 0 ? timeLimitMinutes + ' menit' : 'Tanpa batas' }}</p>
                 </div>
             </div>
 
             <!-- Answer Details - 4 Column Grid -->
             <div>
-                <h3 class="text-lg font-semibold mb-4">📋 Detail Jawaban</h3>
+                <h3 class="text-lg font-bold mb-4 inline-flex items-center gap-2 anim-fade-in-up">
+                    <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center"><Icon icon="mdi:clipboard-text-outline" class="w-4 h-4 text-primary" /></div>
+                    Detail Jawaban
+                </h3>
 
-                <div v-if="results.length === 0" class="bg-card rounded-xl border p-8 text-center">
-                    <div class="text-4xl mb-3">📝</div>
-                    <p class="text-muted-foreground">Tidak ada data jawaban tersedia</p>
+                <div v-if="results.length === 0" class="bg-card rounded-2xl border border-border/60 p-10 text-center anim-fade-in-up">
+                    <div class="flex flex-col items-center gap-4">
+                        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
+                            <Icon icon="mdi:pencil-outline" class="w-10 h-10 text-muted-foreground/40" />
+                        </div>
+                        <div>
+                            <p class="font-semibold text-muted-foreground">Tidak ada data jawaban tersedia</p>
+                            <p class="text-sm text-muted-foreground/60 mt-1">Data jawaban akan muncul di sini</p>
+                        </div>
+                    </div>
                 </div>
 
-                <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     <div v-for="(result, idx) in results" :key="idx"
-                         :class="['bg-card rounded-xl border p-4 border-l-4 transition-all hover:shadow-sm',
-                                  result.is_correct ? 'border-l-green-500' : (result.user_answer ? 'border-l-red-500' : 'border-l-yellow-400')]">
+                         :class="['bg-card rounded-2xl border border-border/60 p-4 border-l-4 transition-all duration-300 hover:shadow-md hover:border-primary/20',
+                                  result.is_correct ? 'border-l-emerald-500' : (result.user_answer ? 'border-l-red-500' : 'border-l-amber-400')]"
+                         :style="{ animationDelay: `${idx * 30}ms` }">
                         <div class="flex items-center gap-2 mb-2">
-                            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs font-bold">{{ idx + 1 }}</span>
-                            <Badge :variant="result.is_correct ? 'success' : (result.user_answer ? 'destructive' : 'outline')" class="text-[10px]">
-                                {{ result.is_correct ? '✅ Benar' : (result.user_answer ? '❌ Salah' : '⬜ Kosong') }}
+                            <span class="flex-shrink-0 w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-xs font-bold">{{ idx + 1 }}</span>
+                            <Badge :variant="result.is_correct ? 'success' : (result.user_answer ? 'destructive' : 'outline')" class="text-[10px] gap-1 px-2 py-0.5 rounded-lg font-semibold">
+                                <template v-if="result.is_correct"><Icon icon="mdi:check-circle" class="w-3 h-3 inline-block align-middle" /> Benar</template>
+                                <template v-else-if="result.user_answer"><Icon icon="mdi:close-circle" class="w-3 h-3 inline-block align-middle" /> Salah</template>
+                                <template v-else><Icon icon="mdi:checkbox-blank-circle-outline" class="w-3 h-3 inline-block align-middle" /> Kosong</template>
                             </Badge>
                         </div>
 
                         <div v-if="result.image" class="mb-2">
-                            <img :src="result.image" alt="Gambar soal" class="w-full h-auto rounded-lg border max-h-32 object-contain" @error="$event.target.style.display='none'" />
+                            <img :src="result.image" alt="Gambar soal" class="w-full h-auto rounded-xl border max-h-32 object-contain" @error="$event.target.style.display='none'" />
                         </div>
 
                         <p class="text-xs leading-relaxed mb-2 line-clamp-4" v-html="result.question"></p>
@@ -156,18 +170,18 @@ const scoreOffset = computed(() => circumference - (Math.min(Number(props.sessio
                         <div class="space-y-1 text-xs">
                             <p>
                                 <span class="text-muted-foreground">User:</span>
-                                <span :class="result.is_correct ? 'text-green-600 font-medium' : 'text-red-500'">
+                                <span :class="result.is_correct ? 'text-emerald-600 font-semibold' : 'text-red-500 font-semibold'">
                                     {{ result.user_answer || '-' }}
                                 </span>
                             </p>
                             <p v-if="showAnswerKey && !result.is_correct">
                                 <span class="text-muted-foreground">Benar:</span>
-                                <span class="text-green-600 font-medium">{{ result.correct_answer }}</span>
+                                <span class="text-emerald-600 font-semibold">{{ result.correct_answer }}</span>
                             </p>
                         </div>
 
-                        <div v-if="showExplanation && result.explanation" class="mt-2 flex items-start gap-1.5 bg-blue-50 border border-blue-100 rounded-lg p-2">
-                            <span class="text-blue-500 flex-shrink-0 text-xs">💡</span>
+                        <div v-if="showExplanation && result.explanation" class="mt-2 flex items-start gap-1.5 bg-blue-50 border border-blue-100 rounded-xl p-2.5">
+                            <span class="text-blue-500 flex-shrink-0 text-xs"><Icon icon="mdi:lightbulb-on-outline" class="w-3 h-3" /></span>
                             <p class="text-[10px] text-blue-800 leading-relaxed line-clamp-3">{{ result.explanation }}</p>
                         </div>
                     </div>

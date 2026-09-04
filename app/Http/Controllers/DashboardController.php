@@ -20,8 +20,8 @@ class DashboardController extends Controller
             ->first();
 
         $totalAttempts = $sessions->total ?? 0;
-        $bestScore = $sessions->best ?? 0;
-        $averageScore = $sessions->avg_score ?? 0;
+        $bestScore = (float) ($sessions->best ?? 0);
+        $averageScore = (float) ($sessions->avg_score ?? 0);
 
         $gamification = app(\App\Http\Controllers\GamificationController::class)->getGamificationData($user->id);
 

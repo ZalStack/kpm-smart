@@ -84,10 +84,10 @@ function confirmReset() {
 
             <div class="space-y-6">
                 <!-- Upload Section -->
-                <div class="anim-fade-in-up rounded-2xl border bg-card shadow-card overflow-hidden">
-                    <div class="p-6 border-b bg-gradient-to-r from-primary/5 to-transparent">
-                        <h2 class="text-lg font-semibold flex items-center gap-2">
-                            <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                <div class="anim-fade-in-up rounded-2xl border border-border/60 bg-card shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-border/60 bg-gradient-to-r from-primary/5 to-transparent">
+                        <h2 class="text-lg font-bold flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center"><svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg></div>
                             Upload File Excel
                         </h2>
                         <p class="text-sm text-muted-foreground mt-1">Pilih file Excel yang berisi data pengguna</p>
@@ -95,8 +95,8 @@ function confirmReset() {
                     <div class="p-6">
                         <!-- Drop Zone -->
                         <div @dragover.prevent="dragOver = true" @dragleave="dragOver = false" @drop="handleDrop"
-                             :class="['border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center transition-all cursor-pointer',
-                                      dragOver ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50 hover:bg-muted/30']"
+                             :class="['border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center transition-all duration-300 cursor-pointer',
+                                      dragOver ? 'border-primary bg-primary/5 shadow-md' : 'border-border hover:border-primary/50 hover:bg-muted/30 hover:shadow-sm']"
                              @click="$refs.fileInput.click()">
 
                             <template v-if="!fileName">
@@ -136,7 +136,7 @@ function confirmReset() {
                         <!-- Submit Button -->
                         <div class="flex justify-end mt-6">
                             <Button @click="submit" :disabled="!form.file || form.processing"
-                                    class="gap-2 px-6 py-2.5 rounded-xl font-semibold">
+                                    class="gap-2 px-6 py-2.5 rounded-xl font-semibold shadow-sm hover:shadow-md hover:shadow-primary/20 transition-all duration-300 active:scale-[0.97]">
                                 <svg v-if="form.processing" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                                 <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
                                 {{ form.processing ? 'Mengimport...' : 'Import Sekarang' }}
@@ -146,10 +146,10 @@ function confirmReset() {
                 </div>
 
                 <!-- Format Instructions -->
-                <div class="anim-fade-in-up anim-delay-1 rounded-2xl border bg-card shadow-card overflow-hidden">
-                    <div class="p-6 border-b bg-gradient-to-r from-amber-500/5 to-transparent">
-                        <h2 class="text-lg font-semibold flex items-center gap-2">
-                            <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+                <div class="anim-fade-in-up anim-delay-1 rounded-2xl border border-border/60 bg-card shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-border/60 bg-gradient-to-r from-amber-500/5 to-transparent">
+                        <h2 class="text-lg font-bold flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center"><svg class="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg></div>
                             Format File Excel
                         </h2>
                         <p class="text-sm text-muted-foreground mt-1">Pastikan file Excel sesuai dengan format berikut</p>
@@ -159,14 +159,14 @@ function confirmReset() {
                         <div class="overflow-x-auto mb-6">
                             <table class="w-full text-sm border border-border/60 rounded-xl overflow-hidden">
                                 <thead>
-                                    <tr class="bg-muted/40 border-b border-border/60">
-                                        <th class="text-left px-4 py-3 font-semibold text-xs text-muted-foreground uppercase">No</th>
-                                        <th class="text-left px-4 py-3 font-semibold text-xs text-muted-foreground uppercase">Nama</th>
-                                        <th class="text-left px-4 py-3 font-semibold text-xs text-muted-foreground uppercase">Kelas</th>
-                                        <th class="text-left px-4 py-3 font-semibold text-xs text-muted-foreground uppercase">Bidang</th>
-                                        <th class="text-left px-4 py-3 font-semibold text-xs text-muted-foreground uppercase">Asal Sekolah</th>
-                                        <th class="text-left px-4 py-3 font-semibold text-xs text-muted-foreground uppercase">Password</th>
-                                        <th class="text-left px-4 py-3 font-semibold text-xs text-muted-foreground uppercase">Level</th>
+                                    <tr class="bg-gradient-to-r from-muted/40 to-muted/20 border-b border-border/60">
+                                        <th class="text-left px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider">No</th>
+                                        <th class="text-left px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Nama</th>
+                                        <th class="text-left px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Kelas</th>
+                                        <th class="text-left px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Bidang</th>
+                                        <th class="text-left px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Asal Sekolah</th>
+                                        <th class="text-left px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Password</th>
+                                        <th class="text-left px-4 py-3 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Level</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -270,7 +270,7 @@ function confirmReset() {
                 </div>
 
                 <!-- Reset Data Section -->
-                <div class="anim-fade-in-up anim-delay-2 rounded-2xl border border-red-200 bg-red-50/50 shadow-card overflow-hidden">
+                <div class="anim-fade-in-up anim-delay-2 rounded-2xl border border-red-200 bg-red-50/50 shadow-sm overflow-hidden">
                     <div class="p-6">
                         <div class="flex items-start gap-4">
                             <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
@@ -280,7 +280,7 @@ function confirmReset() {
                                 <h3 class="text-sm font-semibold text-red-800">Reset Data Import</h3>
                                 <p class="text-xs text-red-600/80 mt-1">Menghapus semua data user yang diimport dari Excel. Admin tidak akan terhapus.</p>
                                 <button @click="showResetConfirm = true"
-                                        class="mt-3 px-4 py-2 text-xs font-semibold text-red-600 bg-white border border-red-300 rounded-lg hover:bg-red-50 transition">
+                                        class="mt-3 px-4 py-2 text-xs font-semibold text-red-600 bg-white border border-red-300 rounded-xl hover:bg-red-50 hover:shadow-sm transition-all duration-200 active:scale-[0.97]">
                                     Reset Semua Data
                                 </button>
                             </div>
@@ -305,11 +305,11 @@ function confirmReset() {
                             <p class="text-sm text-muted-foreground mb-6">Tindakan ini tidak dapat dibatalkan. Data user hasil import akan hilang selamanya.</p>
                             <div class="flex justify-end gap-3">
                                 <button @click="showResetConfirm = false"
-                                        class="px-4 py-2 text-sm font-medium text-muted-foreground bg-muted rounded-xl hover:bg-muted/80 transition">
+                                        class="px-4 py-2 text-sm font-medium text-muted-foreground bg-muted rounded-xl hover:bg-muted/80 transition-all duration-200 active:scale-[0.97]">
                                     Batal
                                 </button>
                                 <button @click="confirmReset" :disabled="resetForm.processing"
-                                        class="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 transition disabled:opacity-50">
+                                        class="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 hover:shadow-md transition-all duration-200 disabled:opacity-50 active:scale-[0.97]">
                                     {{ resetForm.processing ? 'Menghapus...' : 'Ya, Hapus Semua' }}
                                 </button>
                             </div>

@@ -40,7 +40,7 @@ function deleteUser() {
         <!-- Profile Header -->
         <div class="bg-card rounded-2xl border border-border/60 shadow-sm overflow-hidden mb-6 sm:mb-8 anim-fade-in-up">
             <!-- Cover Banner -->
-            <div class="h-32 sm:h-44 bg-gradient-to-br from-[#344e41] via-[#3a5a40] to-primary relative overflow-hidden">
+            <div class="h-32 sm:h-44 bg-gradient-to-br from-[#3D5A14] via-[#5A7A1E] to-primary relative overflow-hidden">
                 <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.12),transparent)]"></div>
                 <div class="absolute inset-0 grid-dots opacity-20"></div>
                 <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl"></div>

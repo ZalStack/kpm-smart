@@ -3,6 +3,7 @@ import { inject, computed } from 'vue';
 const route = inject('route');
 
 import { Head, Link, router } from '@inertiajs/vue3';
+import { Icon } from '@iconify/vue';
 import UserLayout from '@/Layouts/UserLayout.vue';
 import Badge from '@/Components/ui/badge/Badge.vue';
 
@@ -51,21 +52,21 @@ function formatDate(dateStr) {
         <template #header-sub>Detail soal tugas</template>
 
         <!-- Back Link -->
-        <Link :href="route('packages.index')" class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition mb-5">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+        <Link :href="route('packages.index')" class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-all duration-200 mb-5 group">
+            <svg class="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
             Kembali ke Daftar Soal
         </Link>
 
         <!-- Schedule Warnings -->
         <div v-if="package.schedule_status === 'expired'" class="bg-red-50 border border-red-200 rounded-xl p-4 mb-5 flex items-start gap-3">
-            <span class="text-2xl flex-shrink-0">⛔</span>
+            <span class="text-2xl flex-shrink-0"><Icon icon="mdi:close-octagon" class="w-6 h-6 text-red-500" /></span>
             <div>
                 <p class="text-sm font-semibold text-red-800">Jadwal Telah Berakhir</p>
                 <p class="text-xs text-red-600 mt-0.5">Soal ini sudah tidak tersedia untuk dikerjakan.</p>
             </div>
         </div>
         <div v-else-if="package.schedule_status === 'upcoming'" class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5 flex items-start gap-3">
-            <span class="text-2xl flex-shrink-0">⏳</span>
+            <span class="text-2xl flex-shrink-0"><Icon icon="mdi:clock-outline" class="w-6 h-6 text-amber-500" /></span>
             <div>
                 <p class="text-sm font-semibold text-amber-800">Belum Tersedia</p>
                 <p class="text-xs text-amber-600 mt-0.5">Soal ini akan tersedia sesuai jadwal yang ditentukan.</p>
@@ -75,7 +76,7 @@ function formatDate(dateStr) {
         <!-- In Progress Global Session -->
         <div v-if="inProgressSession && !package.cards?.length" class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5 flex items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-                <span class="text-2xl">📝</span>
+                <span class="text-2xl"><Icon icon="mdi:pencil-outline" class="w-6 h-6 text-blue-500" /></span>
                 <div>
                     <p class="text-sm font-semibold text-blue-800">Tugas Sedang Berlangsung</p>
                     <p class="text-xs text-blue-600">Lanjutkan sesi yang belum selesai.</p>
@@ -91,7 +92,7 @@ function formatDate(dateStr) {
             <div class="lg:col-span-2 space-y-6">
 
                 <!-- Hero Card -->
-                <div class="bg-card border rounded-2xl overflow-hidden shadow-card anim-fade-in-up">
+                <div class="bg-card border rounded-2xl overflow-hidden shadow-card anim-fade-in-up hover:shadow-lg transition-shadow duration-300">
                     <div v-if="package.thumbnail" class="h-48 overflow-hidden">
                         <img :src="'/storage/' + package.thumbnail" :alt="package.title" class="w-full h-full object-cover" />
                     </div>
@@ -99,9 +100,9 @@ function formatDate(dateStr) {
                         <h1 class="text-xl font-bold mb-2">{{ package.title }}</h1>
                         <p class="text-muted-foreground text-sm mb-4 leading-relaxed">{{ package.description }}</p>
                         <div class="flex flex-wrap gap-2">
-                            <Badge v-if="package.bidang" variant="outline" class="text-xs">📂 {{ package.bidang }}</Badge>
-                            <Badge v-if="package.level" variant="outline" class="text-xs">🎯 {{ package.level }}</Badge>
-                            <Badge v-if="package.kelas" variant="outline" class="text-xs">🏫 {{ package.kelas }}</Badge>
+                            <Badge v-if="package.bidang" variant="outline" class="text-xs inline-flex items-center gap-1"><Icon icon="mdi:folder-outline" class="w-4 h-4" /> {{ package.bidang }}</Badge>
+                            <Badge v-if="package.level" variant="outline" class="text-xs inline-flex items-center gap-1"><Icon icon="mdi:target" class="w-4 h-4 text-emerald-500" /> {{ package.level }}</Badge>
+                            <Badge v-if="package.kelas" variant="outline" class="text-xs inline-flex items-center gap-1"><Icon icon="mdi:school-outline" class="w-4 h-4" /> {{ package.kelas }}</Badge>
                         </div>
                     </div>
                 </div>
@@ -109,16 +110,17 @@ function formatDate(dateStr) {
                 <!-- Cards Grid -->
                 <div v-if="package.cards && package.cards.length > 0" class="anim-fade-in-up">
                     <h2 class="text-base font-semibold mb-3 flex items-center gap-2">
-                        📋 Card Tugas
+                        <Icon icon="mdi:clipboard-text-outline" class="w-5 h-5 inline-block align-middle mr-1.5" /> Card Tugas
                         <span class="text-xs text-muted-foreground font-normal">({{ package.cards.length }} card)</span>
                     </h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div v-for="card in package.cards" :key="card.id"
+                        <div v-for="(card, index) in package.cards" :key="card.id"
+                             :style="{ animationDelay: (index * 80) + 'ms' }"
                              :class="[
-                                 'bg-card border rounded-2xl overflow-hidden transition-all duration-200',
+                                 'bg-card border rounded-2xl overflow-hidden transition-all duration-300 anim-fade-in-up opacity-0 [animation-fill-mode:forwards]',
                                  isCardCompleted(card.id) ? 'border-emerald-200 shadow-sm' :
                                  isCardInProgress(card.id) ? 'border-blue-200 shadow-sm' :
-                                 'border-border hover:shadow-card-hover hover:-translate-y-0.5'
+                                 'border-border hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/30'
                              ]">
 
                             <!-- Status Bar -->
@@ -134,11 +136,11 @@ function formatDate(dateStr) {
                                     <!-- Status Badge -->
                                     <span v-if="isCardCompleted(card.id)"
                                           class="flex-shrink-0 ml-2 inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-semibold px-2 py-0.5 rounded-full ring-1 ring-emerald-200">
-                                        ✅ Selesai
+                                         <Icon icon="mdi:check-circle" class="w-4 h-4 text-green-600" /> Selesai
                                     </span>
                                     <span v-else-if="isCardInProgress(card.id)"
                                           class="flex-shrink-0 ml-2 inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-[10px] font-semibold px-2 py-0.5 rounded-full ring-1 ring-blue-200">
-                                        ⏳ Berlangsung
+                                         <Icon icon="mdi:clock-outline" class="w-4 h-4" /> Berlangsung
                                     </span>
                                 </div>
 
@@ -155,22 +157,22 @@ function formatDate(dateStr) {
                                         <!-- Completed: view result only, no retry -->
                                         <template v-if="isCardCompleted(card.id)">
                                             <Link :href="route('practice.show', cardSessionId(card.id))"
-                                                  class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-2.5 rounded-lg hover:bg-emerald-100 transition">
-                                                📊 Lihat Hasil
+                                                  class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-2.5 rounded-lg hover:bg-emerald-100 transition-all duration-200">
+                                                <Icon icon="mdi:chart-bar" class="w-4 h-4" /> Lihat Hasil
                                             </Link>
                                         </template>
                                         <!-- In Progress: continue -->
                                         <template v-else-if="isCardInProgress(card.id)">
                                             <Link :href="route('practice.show', cardSessionId(card.id))"
-                                                  class="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 bg-blue-50 px-3 py-2.5 rounded-lg hover:bg-blue-100 transition">
-                                                ▶️ Lanjutkan
+                                                  class="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 bg-blue-50 px-3 py-2.5 rounded-lg hover:bg-blue-100 transition-all duration-200">
+                                                <Icon icon="mdi:play" class="w-4 h-4" /> Lanjutkan
                                             </Link>
                                         </template>
                                         <!-- Available to start -->
                                         <template v-else-if="canStart">
                                             <button @click="startPractice(card.id)"
-                                                    class="inline-flex items-center gap-1 text-xs font-semibold text-primary-foreground bg-primary px-3 py-2.5 rounded-lg hover:bg-primary/90 transition">
-                                                📖 Kerjakan
+                                                    class="inline-flex items-center gap-1 text-xs font-semibold text-primary-foreground bg-primary px-3 py-2.5 rounded-lg hover:bg-primary/90 hover:shadow-md transition-all duration-200">
+                                                <Icon icon="mdi:book-open-page-variant" class="w-4 h-4" /> Kerjakan
                                             </button>
                                         </template>
                                         <!-- Not available -->
@@ -196,8 +198,8 @@ function formatDate(dateStr) {
                 <div v-else-if="canStart" class="bg-card border rounded-2xl p-6 text-center">
                     <p class="text-sm text-muted-foreground mb-4">Soal ini tidak memiliki card. Klik mulai untuk mengerjakan semua soal.</p>
                     <button @click="startPractice(null)"
-                            class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition">
-                        📖 Mulai Mengerjakan
+                            class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 hover:shadow-md transition-all duration-200">
+                        <Icon icon="mdi:book-open-page-variant" class="w-4 h-4" /> Mulai Mengerjakan
                     </button>
                 </div>
             </div>
@@ -205,8 +207,8 @@ function formatDate(dateStr) {
             <!-- Sidebar -->
             <div class="space-y-4 anim-fade-in-up">
                 <!-- Stats -->
-                <div class="bg-card border rounded-2xl p-5 shadow-card">
-                    <h3 class="font-semibold text-sm mb-4">📦 Informasi Soal</h3>
+                <div class="bg-card border rounded-2xl p-5 shadow-card hover:shadow-md transition-shadow duration-300">
+                    <h3 class="font-semibold text-sm mb-4"><Icon icon="mdi:package-variant" class="w-5 h-5 inline-block align-middle mr-1.5" /> Informasi Soal</h3>
                     <div class="space-y-3">
                         <div class="flex items-center justify-between text-sm">
                             <span class="text-muted-foreground">Total Card</span>
@@ -224,8 +226,8 @@ function formatDate(dateStr) {
                 </div>
 
                 <!-- Schedule -->
-                <div v-if="package.start_date || package.end_date" class="bg-card border rounded-2xl p-5 shadow-card">
-                    <h3 class="font-semibold text-sm mb-4">📅 Jadwal</h3>
+                <div v-if="package.start_date || package.end_date" class="bg-card border rounded-2xl p-5 shadow-card hover:shadow-md transition-shadow duration-300">
+                    <h3 class="font-semibold text-sm mb-4"><Icon icon="mdi:calendar-outline" class="w-5 h-5 inline-block align-middle mr-1.5" /> Jadwal</h3>
                     <div class="space-y-2.5 text-sm">
                         <div v-if="package.start_date" class="flex items-center justify-between">
                             <span class="text-muted-foreground">Mulai</span>
@@ -247,25 +249,25 @@ function formatDate(dateStr) {
                 </div>
 
                 <!-- Settings -->
-                <div class="bg-card border rounded-2xl p-5 shadow-card">
-                    <h3 class="font-semibold text-sm mb-4">⚙️ Pengaturan</h3>
+                <div class="bg-card border rounded-2xl p-5 shadow-card hover:shadow-md transition-shadow duration-300">
+                    <h3 class="font-semibold text-sm mb-4"><Icon icon="mdi:cog-outline" class="w-5 h-5 inline-block align-middle mr-1.5" /> Pengaturan</h3>
                     <div class="space-y-2.5 text-sm">
                         <div class="flex items-center justify-between">
                             <span class="text-muted-foreground">Kunci Jawaban</span>
-                            <span :class="package.show_answer_key ? 'text-emerald-600 font-medium' : 'text-muted-foreground'">
-                                {{ package.show_answer_key ? '✅ Ya' : '❌ Tidak' }}
+                            <span :class="package.show_answer_key ? 'text-emerald-600 font-medium inline-flex items-center gap-1' : 'text-muted-foreground inline-flex items-center gap-1'">
+                                 <template v-if="package.show_answer_key"><Icon icon="mdi:check-circle" class="w-4 h-4 text-green-600" /> Ya</template><template v-else><Icon icon="mdi:close-circle" class="w-4 h-4 text-red-500" /> Tidak</template>
                             </span>
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-muted-foreground">Pembahasan</span>
-                            <span :class="package.show_explanation ? 'text-emerald-600 font-medium' : 'text-muted-foreground'">
-                                {{ package.show_explanation ? '✅ Ya' : '❌ Tidak' }}
+                            <span :class="package.show_explanation ? 'text-emerald-600 font-medium inline-flex items-center gap-1' : 'text-muted-foreground inline-flex items-center gap-1'">
+                                 <template v-if="package.show_explanation"><Icon icon="mdi:check-circle" class="w-4 h-4 text-green-600" /> Ya</template><template v-else><Icon icon="mdi:close-circle" class="w-4 h-4 text-red-500" /> Tidak</template>
                             </span>
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-muted-foreground">Tampil Skor</span>
-                            <span :class="package.show_score ? 'text-emerald-600 font-medium' : 'text-muted-foreground'">
-                                {{ package.show_score ? '✅ Ya' : '❌ Tidak' }}
+                            <span :class="package.show_score ? 'text-emerald-600 font-medium inline-flex items-center gap-1' : 'text-muted-foreground inline-flex items-center gap-1'">
+                                 <template v-if="package.show_score"><Icon icon="mdi:check-circle" class="w-4 h-4 text-green-600" /> Ya</template><template v-else><Icon icon="mdi:close-circle" class="w-4 h-4 text-red-500" /> Tidak</template>
                             </span>
                         </div>
                     </div>
@@ -274,7 +276,7 @@ function formatDate(dateStr) {
                 <!-- 1-Attempt Notice -->
                 <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4">
                     <div class="flex items-start gap-2.5">
-                        <span class="text-xl flex-shrink-0">⚠️</span>
+                        <span class="text-xl flex-shrink-0"><Icon icon="mdi:alert-outline" class="w-5 h-5 text-amber-500" /></span>
                         <div>
                             <p class="text-xs font-semibold text-amber-800">Peraturan Penting</p>
                             <p class="text-xs text-amber-700 mt-1">Setiap card soal hanya bisa dikerjakan <strong>1 kali</strong>. Pastikan kamu siap sebelum memulai!</p>

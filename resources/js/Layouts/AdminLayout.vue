@@ -134,19 +134,19 @@ onUnmounted(() => {
         </Transition>
 
         <!-- Sidebar -->
-        <aside :class="['fixed top-0 left-0 h-full w-[272px] sidebar-modern text-white z-50 overflow-hidden transition-all duration-300 flex flex-col shadow-sidebar', sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0']">
+        <aside :class="['fixed top-0 left-0 h-full w-[272px] sidebar-modern text-white z-50 overflow-hidden flex flex-col shadow-sidebar transition-transform duration-300 ease-in-out', sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0']">
             <div class="absolute inset-0 overflow-hidden pointer-events-none">
                 <div class="absolute -top-20 -right-20 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
                 <div class="absolute bottom-20 -left-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
             </div>
 
             <!-- Brand -->
-            <div class="relative flex items-center gap-3 px-5 py-5 border-b border-white/10 flex-shrink-0">
-                <div class="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+            <div class="relative flex items-center gap-3.5 px-5 py-5 border-b border-white/10 flex-shrink-0">
+                <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0 shadow-sm shadow-white/5">
                     <span class="text-white text-sm font-bold">K</span>
                 </div>
                 <div class="min-w-0">
-                    <span class="text-sm font-semibold text-white block leading-tight">KPM SMART</span>
+                    <span class="text-sm font-semibold text-white block leading-tight tracking-tight">KPM SMART</span>
                     <span class="text-[10px] text-white/40 font-medium">Admin Panel</span>
                 </div>
             </div>
@@ -160,11 +160,13 @@ onUnmounted(() => {
                         :key="item.href"
                         :href="item.href"
                         :class="[
-                            'flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 mb-0.5',
-                            route().current(item.route) ? 'nav-active' : 'text-white/55 hover:bg-white/5 hover:text-white'
+                            'flex items-center gap-3 px-3 py-2 rounded-md mb-0.5 transition-all duration-200 ease-in-out',
+                            route().current(item.route)
+                                ? 'nav-active bg-white/10 text-white shadow-sm shadow-white/5 border-l-2 border-white/60'
+                                : 'text-white/55 hover:bg-white/5 hover:text-white hover:border-l-2 border-l-2 border-transparent'
                         ]"
                     >
-                        <div :class="['w-8 h-8 rounded-md flex items-center justify-center text-sm flex-shrink-0 transition-colors', route().current(item.route) ? 'bg-white/10' : 'bg-white/5']">
+                        <div :class="['w-8 h-8 rounded-md flex items-center justify-center text-sm flex-shrink-0 transition-colors duration-200', route().current(item.route) ? 'bg-white/15' : 'bg-white/5']">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" :d="item.icon"/></svg>
                         </div>
                         <span class="text-[13px] font-medium">{{ item.label }}</span>
@@ -189,8 +191,8 @@ onUnmounted(() => {
         <!-- Main Content -->
         <div class="lg:ml-[272px] min-h-screen flex flex-col">
             <!-- Top Header -->
-            <header class="sticky top-0 z-30 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div class="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16">
+            <header class="sticky top-0 z-30 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm shadow-black/5">
+                <div class="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-14">
                     <div class="flex items-center gap-3 min-w-0">
                         <button @click="openSidebar" class="lg:hidden inline-flex items-center justify-center w-9 h-9 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
@@ -224,7 +226,13 @@ onUnmounted(() => {
                                         <button @click="markAllRead" class="text-xs text-muted-foreground hover:text-foreground font-medium transition">Tandai semua dibaca</button>
                                     </div>
                                     <div class="max-h-72 overflow-y-auto">
-                                        <div v-if="notifications.length === 0" class="px-4 py-8 text-center text-muted-foreground text-sm">Tidak ada notifikasi</div>
+                                        <div v-if="notifications.length === 0" class="px-4 py-10 text-center">
+                                            <div class="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
+                                                <svg class="w-6 h-6 text-muted-foreground/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+                                            </div>
+                                            <p class="text-sm text-muted-foreground/70 font-medium">Tidak ada notifikasi</p>
+                                            <p class="text-xs text-muted-foreground/50 mt-1">Semua sudah terbaca</p>
+                                        </div>
                                         <Link v-for="n in notifications" :key="n.id" :href="route('admin.notifications.index')" class="flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors" :class="{ 'bg-accent/50': !n.is_read }">
                                             <div class="min-w-0 flex-1">
                                                 <p class="text-sm font-medium truncate">{{ n.title }}</p>
@@ -293,12 +301,13 @@ onUnmounted(() => {
                         v-for="item in mobileNavItems"
                         :key="item.href"
                         :href="item.href"
-                        :class="['mobile-nav-item', route().current(item.route) ? 'active' : '']"
+                        :class="['mobile-nav-item relative', route().current(item.route) ? 'active' : '']"
                     >
+                        <div v-if="route().current(item.route)" class="absolute -top-1 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-primary rounded-full"></div>
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" :d="item.icon"/></svg>
                         <span class="text-[10px] font-medium">{{ item.label }}</span>
                     </Link>
-                    <button @click="openSidebar" class="mobile-nav-item">
+                    <button @click="openSidebar" class="mobile-nav-item relative">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
                         <span class="text-[10px] font-medium">Lainnya</span>
                     </button>
@@ -313,8 +322,23 @@ onUnmounted(() => {
 .overlay-leave-active { transition: opacity 0.3s ease; }
 .overlay-enter-from, .overlay-leave-to { opacity: 0; }
 
-.dropdown-enter-active { transition: all 0.15s ease; }
-.dropdown-leave-active { transition: all 0.1s ease; }
-.dropdown-enter-from { opacity: 0; transform: scale(0.95); }
-.dropdown-leave-to { opacity: 0; transform: scale(0.95); }
+.dropdown-enter-active {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dropdown-leave-active {
+    transition: all 0.15s cubic-bezier(0.4, 0, 1, 1);
+}
+.dropdown-enter-from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+}
+.dropdown-leave-to {
+    opacity: 0;
+    transform: scale(0.97) translateY(-2px);
+}
+
+.nav-active {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
 </style>

@@ -335,8 +335,8 @@ onBeforeUnmount(() => {
                             </div>
                         </div>
 
-                        <!-- Options -->
-                        <div class="mt-4 space-y-2.5">
+                        <!-- Pilihan Ganda Options -->
+                        <div v-if="!q.type || q.type === 'pilihan_ganda'" class="mt-4 space-y-2.5">
                             <label v-for="(opt, optIdx) in q.options" :key="optIdx"
                                    :class="[
                                        'flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200',
@@ -350,6 +350,26 @@ onBeforeUnmount(() => {
                                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                                 </span>
                             </label>
+                        </div>
+
+                        <!-- Isian Singkat Input -->
+                        <div v-else class="mt-4">
+                            <div class="bg-card rounded-xl border-2 p-5 space-y-3">
+                                <div class="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                                    Tulis jawaban Anda:
+                                </div>
+                                <input 
+                                    type="text" 
+                                    v-model="answers[idx]" 
+                                    placeholder="Ketik jawaban di sini..."
+                                    class="w-full px-4 py-3 rounded-lg border-2 bg-background text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 outline-none"
+                                />
+                                <p v-if="answers[idx]" class="text-xs text-primary flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                                    Jawaban tersimpan
+                                </p>
+                            </div>
                         </div>
 
                         <!-- Navigation Buttons -->
@@ -431,13 +451,14 @@ onBeforeUnmount(() => {
                             <button v-for="(q, idx) in questions" :key="idx"
                                     @click="goToQuestion(idx)"
                                     :class="[
-                                        'aspect-square rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center',
+                                        'aspect-square rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center relative',
                                         currentIndex === idx
                                             ? 'bg-primary text-primary-foreground shadow-md scale-105 ring-2 ring-primary/30'
                                             : answers[idx] !== null && answers[idx] !== undefined
                                                 ? 'bg-fern/15 text-fern border border-fern/25 hover:bg-fern/25'
                                                 : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground border border-transparent'
                                     ]">
+                                <span v-if="q.type === 'isian_singkat'" class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-amber-400"></span>
                                 {{ idx + 1 }}
                             </button>
                         </div>
@@ -477,13 +498,14 @@ onBeforeUnmount(() => {
                             <button v-for="(q, idx) in questions" :key="idx"
                                     @click="goToQuestion(idx)"
                                     :class="[
-                                        'aspect-square rounded-xl text-sm font-semibold transition-all flex items-center justify-center',
+                                        'aspect-square rounded-xl text-sm font-semibold transition-all flex items-center justify-center relative',
                                         currentIndex === idx
                                             ? 'bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30'
                                             : answers[idx] !== null && answers[idx] !== undefined
                                                 ? 'bg-fern/15 text-fern border border-fern/25'
                                                 : 'bg-muted text-muted-foreground border border-transparent'
                                     ]">
+                                <span v-if="q.type === 'isian_singkat'" class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-amber-400"></span>
                                 {{ idx + 1 }}
                             </button>
                         </div>
