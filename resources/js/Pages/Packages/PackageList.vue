@@ -13,12 +13,14 @@ const props = defineProps({
     packages: { type: Object, required: true },
     allKelas: { type: Array, default: () => [] },
     allBidang: { type: Array, default: () => [] },
+    allLevel: { type: Array, default: () => [] },
     filters: { type: Object, default: () => ({}) },
 });
 
 const search = ref(props.filters?.search || '');
 const bidang = ref(props.filters?.bidang || '');
 const kelas = ref(props.filters?.kelas || '');
+const level = ref(props.filters?.level || '');
 
 const packageColors = [
     'from-purple-500 to-indigo-500', 'from-green-600 to-green-700', 'from-red-500 to-red-600',
@@ -47,6 +49,7 @@ function applyFilters() {
         search: search.value,
         bidang: bidang.value,
         kelas: kelas.value,
+        level: level.value,
     }, { preserveState: true, replace: true });
 }
 
@@ -54,6 +57,7 @@ function resetFilters() {
     search.value = '';
     bidang.value = '';
     kelas.value = '';
+    level.value = '';
     applyFilters();
 }
 
@@ -99,6 +103,10 @@ function getScheduleLabel(pkg) {
                     <Select v-model="bidang" class="w-full sm:w-44 h-11 rounded-xl">
                         <option value="">Semua Bidang</option>
                         <option v-for="b in allBidang" :key="b" :value="b">{{ b }}</option>
+                    </Select>
+                    <Select v-model="level" class="w-full sm:w-44 h-11 rounded-xl">
+                        <option value="">Semua Level</option>
+                        <option v-for="l in allLevel" :key="l" :value="l">{{ l }}</option>
                     </Select>
                     <Select v-model="kelas" class="w-full sm:w-44 h-11 rounded-xl">
                         <option value="">Semua Kelas</option>

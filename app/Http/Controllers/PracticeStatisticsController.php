@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PracticeSession;
 use App\Models\Package;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -21,6 +22,8 @@ class PracticeStatisticsController extends Controller
         $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
         $packageId = $request->get('package_id', '');
         $status = $request->get('status', '');
+        $bidang = $request->get('bidang', '');
+        $level = $request->get('level', '');
 
         $query = PracticeSession::with(['user', 'package'])
             ->whereBetween('created_at', [
@@ -34,9 +37,22 @@ class PracticeStatisticsController extends Controller
         if ($status) {
             $query->where('status', $status);
         }
+        if ($bidang) {
+            $query->whereHas('user', function ($q) use ($bidang) {
+                $q->where('bidang', $bidang);
+            });
+        }
+        if ($level) {
+            $query->whereHas('user', function ($q) use ($level) {
+                $q->where('level', $level);
+            });
+        }
 
         $sessions = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
         $packages = Package::select('id', 'title')->orderBy('title')->get();
+
+        $allBidang = User::whereNotNull('bidang')->where('bidang', '!=', '')->distinct()->pluck('bidang')->sort()->values();
+        $allLevel = User::whereNotNull('level')->where('level', '!=', '')->distinct()->pluck('level')->sort()->values();
 
         $dateBetween = [
             Carbon::parse($startDate)->startOfDay(),
@@ -48,6 +64,16 @@ class PracticeStatisticsController extends Controller
         }
         if ($status) {
             $baseQuery->where('status', $status);
+        }
+        if ($bidang) {
+            $baseQuery->whereHas('user', function ($q) use ($bidang) {
+                $q->where('bidang', $bidang);
+            });
+        }
+        if ($level) {
+            $baseQuery->whereHas('user', function ($q) use ($level) {
+                $q->where('level', $level);
+            });
         }
 
         $totalSessions = $sessions->total();
@@ -61,6 +87,8 @@ class PracticeStatisticsController extends Controller
             'packages' => $packages,
             'startDate' => $startDate,
             'endDate' => $endDate,
+            'allBidang' => $allBidang,
+            'allLevel' => $allLevel,
             'stats' => [
                 'totalSessions' => $totalSessions,
                 'totalUsers' => $totalUsers,
@@ -68,6 +96,7 @@ class PracticeStatisticsController extends Controller
                 'totalCorrect' => $totalCorrect,
                 'totalQuestions' => $totalQuestions,
             ],
+            'filters' => $request->only(['start_date', 'end_date', 'package_id', 'status', 'bidang', 'level']),
         ]);
     }
 
@@ -111,6 +140,8 @@ class PracticeStatisticsController extends Controller
             $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
             $packageId = $request->get('package_id', '');
             $status = $request->get('status', '');
+            $bidang = $request->get('bidang', '');
+            $level = $request->get('level', '');
 
             $query = PracticeSession::with(['user', 'package'])
                 ->whereBetween('created_at', [
@@ -124,6 +155,18 @@ class PracticeStatisticsController extends Controller
 
             if ($status) {
                 $query->where('status', $status);
+            }
+
+            if ($bidang) {
+                $query->whereHas('user', function ($q) use ($bidang) {
+                    $q->where('bidang', $bidang);
+                });
+            }
+
+            if ($level) {
+                $query->whereHas('user', function ($q) use ($level) {
+                    $q->where('level', $level);
+                });
             }
 
             $sessions = $query->orderBy('created_at', 'desc')->get();
@@ -331,6 +374,8 @@ class PracticeStatisticsController extends Controller
             $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
             $packageId = $request->get('package_id', '');
             $status = $request->get('status', '');
+            $bidang = $request->get('bidang', '');
+            $level = $request->get('level', '');
 
             $query = PracticeSession::with(['user', 'package'])
                 ->whereBetween('created_at', [
@@ -344,6 +389,18 @@ class PracticeStatisticsController extends Controller
 
             if ($status) {
                 $query->where('status', $status);
+            }
+
+            if ($bidang) {
+                $query->whereHas('user', function ($q) use ($bidang) {
+                    $q->where('bidang', $bidang);
+                });
+            }
+
+            if ($level) {
+                $query->whereHas('user', function ($q) use ($level) {
+                    $q->where('level', $level);
+                });
             }
 
             $sessions = $query->orderBy('created_at', 'desc')->get();

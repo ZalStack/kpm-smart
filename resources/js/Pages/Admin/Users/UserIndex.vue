@@ -15,10 +15,17 @@ const props = defineProps({
     status: { type: String, default: '' },
     totalUsers: { type: Number, default: 0 },
     activeUsers: { type: Number, default: 0 },
+    allBidang: { type: Array, default: () => [] },
+    allLevel: { type: Array, default: () => [] },
+    allKelas: { type: Array, default: () => [] },
+    filters: { type: Object, default: () => ({}) },
 });
 
-const searchVal = ref(props.search);
-const statusVal = ref(props.status);
+const searchVal = ref(props.filters?.search || props.search || '');
+const statusVal = ref(props.filters?.status || props.status || '');
+const bidangVal = ref(props.filters?.bidang || '');
+const levelVal = ref(props.filters?.level || '');
+const kelasVal = ref(props.filters?.kelas || '');
 
 const inactiveUsers = computed(() => props.totalUsers - props.activeUsers);
 
@@ -26,12 +33,18 @@ function applyFilters() {
     router.get(route('admin.users.index'), {
         search: searchVal.value,
         status: statusVal.value,
+        bidang: bidangVal.value,
+        level: levelVal.value,
+        kelas: kelasVal.value,
     }, { preserveState: true, replace: true });
 }
 
 function resetFilters() {
     searchVal.value = '';
     statusVal.value = '';
+    bidangVal.value = '';
+    levelVal.value = '';
+    kelasVal.value = '';
     applyFilters();
 }
 
@@ -114,35 +127,65 @@ function toggleActive(userId) {
 
         <!-- Toolbar -->
         <div class="bg-card rounded-2xl p-4 sm:p-5 shadow-sm border border-border/60 mb-6 sm:mb-8 anim-fade-in-up anim-delay-3">
-            <form @submit.prevent="applyFilters" class="flex flex-col sm:flex-row gap-3">
-                <div class="relative flex-1">
-                    <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                    </svg>
-                    <Input v-model="searchVal" placeholder="Cari nama, email, sekolah..." class="pl-11 h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-colors" />
-                </div>
-                <div class="flex gap-2 sm:gap-3">
-                    <Select v-model="statusVal" class="w-full sm:w-44 h-11 rounded-xl bg-muted/50 border-border/60">
-                        <option value="">Semua Status</option>
-                        <option value="active">Aktif</option>
-                        <option value="inactive">Nonaktif</option>
-                    </Select>
-                    <Button type="submit" size="sm" class="gap-1.5 h-11 px-5 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <form @submit.prevent="applyFilters" class="flex flex-col gap-3">
+                <!-- Search + Status Row -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-1">
+                        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                         </svg>
-                        Cari
-                    </Button>
-                    <Button type="button" variant="ghost" size="sm" @click="resetFilters" class="h-11 px-4 rounded-xl">
-                        Reset
-                    </Button>
-                    <Link :href="route('admin.users.import-excel')" class="hidden sm:inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-amber-500/25 transition-all duration-300 active:scale-[0.97]">
+                        <Input v-model="searchVal" placeholder="Cari nama, email, sekolah..." class="pl-11 h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-colors" />
+                    </div>
+                    <div class="flex gap-2 sm:gap-3">
+                        <Select v-model="statusVal" class="w-full sm:w-44 h-11 rounded-xl bg-muted/50 border-border/60">
+                            <option value="">Semua Status</option>
+                            <option value="active">Aktif</option>
+                            <option value="inactive">Nonaktif</option>
+                        </Select>
+                        <Button type="submit" size="sm" class="gap-1.5 h-11 px-5 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                            </svg>
+                            Cari
+                        </Button>
+                        <Button type="button" variant="ghost" size="sm" @click="resetFilters" class="h-11 px-4 rounded-xl">
+                            Reset
+                        </Button>
+                    </div>
+                </div>
+                <!-- Bidang + Level + Kelas Row -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <Select v-model="bidangVal" class="w-full sm:w-44 h-11 rounded-xl bg-muted/50 border-border/60">
+                        <option value="">Semua Bidang</option>
+                        <option v-for="b in allBidang" :key="b" :value="b">{{ b }}</option>
+                    </Select>
+                    <Select v-model="levelVal" class="w-full sm:w-44 h-11 rounded-xl bg-muted/50 border-border/60">
+                        <option value="">Semua Level</option>
+                        <option v-for="l in allLevel" :key="l" :value="l">{{ l }}</option>
+                    </Select>
+                    <Select v-model="kelasVal" class="w-full sm:w-44 h-11 rounded-xl bg-muted/50 border-border/60">
+                        <option value="">Semua Kelas</option>
+                        <option v-for="k in allKelas" :key="k" :value="k">{{ k }}</option>
+                    </Select>
+                    <div class="hidden sm:block"></div>
+                    <div class="flex gap-2 sm:hidden">
+                        <Link :href="route('admin.users.import-excel')" class="flex-1 inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-amber-500/25 transition-all duration-300 active:scale-[0.97]">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                            </svg>
+                            Import
+                        </Link>
+                    </div>
+                </div>
+                <!-- Action Buttons (Desktop) -->
+                <div class="hidden sm:flex gap-2 sm:gap-3">
+                    <Link :href="route('admin.users.import-excel')" class="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-amber-500/25 transition-all duration-300 active:scale-[0.97]">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                         </svg>
                         Import Excel
                     </Link>
-                    <Link :href="route('admin.users.create')" class="hidden sm:inline-flex items-center gap-1.5 bg-gradient-to-r from-fern to-hunter-green text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-fern/25 transition-all duration-300 active:scale-[0.97]">
+                    <Link :href="route('admin.users.create')" class="inline-flex items-center gap-1.5 bg-gradient-to-r from-fern to-hunter-green text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-fern/25 transition-all duration-300 active:scale-[0.97]">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>

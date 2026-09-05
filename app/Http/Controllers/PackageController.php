@@ -33,16 +33,21 @@ class PackageController extends Controller
         if (request('bidang')) {
             $query->where('bidang', request('bidang'));
         }
+        if (request('level')) {
+            $query->where('level', request('level'));
+        }
 
         $packages = $query->latest()->paginate(12)->withQueryString();
         $allKelas = Package::where('is_active', true)->whereNotNull('kelas')->where('kelas', '!=', '')->distinct()->pluck('kelas')->sort()->values();
         $allBidang = Package::where('is_active', true)->whereNotNull('bidang')->where('bidang', '!=', '')->distinct()->pluck('bidang')->sort()->values();
+        $allLevel = Package::where('is_active', true)->whereNotNull('level')->where('level', '!=', '')->distinct()->pluck('level')->sort()->values();
 
         return Inertia::render('Packages/PackageList', [
             'packages' => $packages,
             'allKelas' => $allKelas,
             'allBidang' => $allBidang,
-            'filters' => request()->only(['search', 'kelas', 'bidang']),
+            'allLevel' => $allLevel,
+            'filters' => request()->only(['search', 'kelas', 'bidang', 'level']),
         ]);
     }
 
@@ -71,9 +76,14 @@ class PackageController extends Controller
             $query->where('bidang', $request->bidang);
         }
 
+        if ($request->filled('level')) {
+            $query->where('level', $request->level);
+        }
+
         $packages = $query->latest()->paginate(10)->withQueryString();
         $allKelas = Package::whereNotNull('kelas')->where('kelas', '!=', '')->distinct()->pluck('kelas')->sort()->values();
         $allBidang = Package::whereNotNull('bidang')->where('bidang', '!=', '')->distinct()->pluck('bidang')->sort()->values();
+        $allLevel = Package::whereNotNull('level')->where('level', '!=', '')->distinct()->pluck('level')->sort()->values();
 
         $totalQuestions = 0;
         foreach ($packages as $pkg) {
@@ -84,7 +94,8 @@ class PackageController extends Controller
             'packages' => $packages,
             'allKelas' => $allKelas,
             'allBidang' => $allBidang,
-            'filters' => $request->only(['search', 'status', 'kelas', 'bidang']),
+            'allLevel' => $allLevel,
+            'filters' => $request->only(['search', 'status', 'kelas', 'bidang', 'level']),
             'stats' => [
                 'total' => $packages->total(),
                 'active' => Package::where('is_active', true)->count(),

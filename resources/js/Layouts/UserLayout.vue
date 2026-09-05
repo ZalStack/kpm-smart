@@ -6,11 +6,16 @@ import FlashMessage from '@/Components/shared/FlashMessage.vue';
 
 const route = inject('route');
 const page = usePage();
-const user = page.props.auth?.user;
+const user = computed(() => page.props.auth?.user);
 const userDropdownOpen = ref(false);
 const notifDropdownOpen = ref(false);
 const notifications = ref([]);
 const unreadCount = ref(0);
+
+const profilePhotoUrl = computed(() => {
+    if (!user.value?.profile_photo) return null;
+    return '/storage/' + user.value.profile_photo + '?v=' + encodeURIComponent(user.value.profile_photo);
+});
 
 const bottomTabs = computed(() => {
     if (!user || user.role !== 'user') return [];
@@ -70,7 +75,7 @@ async function markAllRead() {
 let pollInterval;
 
 onMounted(() => {
-    if (user) {
+    if (user.value) {
         loadNotifications();
         pollInterval = setInterval(loadNotifications, 10000);
     }
@@ -143,7 +148,10 @@ onUnmounted(() => {
                             <!-- Desktop User Dropdown -->
                             <div class="relative" id="userDropdown">
                                 <button @click="toggleUserDropdown" class="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-200 px-2 py-1.5 rounded-lg hover:bg-accent/70">
-                                    <span class="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-xs font-bold text-primary-foreground shadow-sm">{{ (user.name || 'A').charAt(0).toUpperCase() }}</span>
+                                    <span class="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-xs font-bold text-primary-foreground shadow-sm overflow-hidden">
+                                        <img v-if="profilePhotoUrl" :src="profilePhotoUrl" class="w-full h-full object-cover" />
+                                        <span v-else>{{ (user?.name || 'A').charAt(0).toUpperCase() }}</span>
+                                    </span>
                                     <span class="text-sm">{{ user.name?.substring(0, 15) }}</span>
                                     <Icon icon="mdi:chevron-down" class="w-3.5 h-3.5 transition-transform duration-200" :class="{ 'rotate-180': userDropdownOpen }" />
                                 </button>
@@ -216,8 +224,9 @@ onUnmounted(() => {
                         </Transition>
                     </div>
                     <!-- Mobile Profile Avatar -->
-                    <Link :href="route('profile.edit')" class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-xs font-bold text-primary-foreground shadow-sm">
-                        {{ (user?.name || 'A').charAt(0).toUpperCase() }}
+                    <Link :href="route('profile.edit')" class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-xs font-bold text-primary-foreground shadow-sm overflow-hidden">
+                        <img v-if="profilePhotoUrl" :src="profilePhotoUrl" class="w-full h-full object-cover" />
+                        <span v-else>{{ (user?.name || 'A').charAt(0).toUpperCase() }}</span>
                     </Link>
                 </div>
             </div>

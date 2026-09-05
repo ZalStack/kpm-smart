@@ -13,12 +13,17 @@ const props = defineProps({
     startDate: { type: String, default: '' },
     endDate: { type: String, default: '' },
     stats: { type: Object, default: () => ({}) },
+    allBidang: { type: Array, default: () => [] },
+    allLevel: { type: Array, default: () => [] },
+    filters: { type: Object, default: () => ({}) },
 });
 
 const start = ref(props.startDate);
 const end = ref(props.endDate);
-const packageId = ref('');
-const status = ref('');
+const packageId = ref(props.filters?.package_id || '');
+const status = ref(props.filters?.status || '');
+const bidang = ref(props.filters?.bidang || '');
+const level = ref(props.filters?.level || '');
 
 function applyFilters() {
     router.get(route('admin.practice-statistics.index'), {
@@ -26,6 +31,8 @@ function applyFilters() {
         end_date: end.value,
         package_id: packageId.value,
         status: status.value,
+        bidang: bidang.value,
+        level: level.value,
     }, { preserveState: true, replace: true });
 }
 
@@ -34,6 +41,8 @@ function resetFilters() {
     end.value = '';
     packageId.value = '';
     status.value = '';
+    bidang.value = '';
+    level.value = '';
     applyFilters();
 }
 
@@ -127,6 +136,20 @@ const accuracyPct = () => {
                     </select>
                 </div>
                 <div class="flex flex-col gap-1">
+                    <label class="text-xs text-muted-foreground font-medium">Bidang</label>
+                    <select v-model="bidang" class="px-3 py-2.5 text-sm border border-input rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-40 transition-all duration-200">
+                        <option value="">Semua Bidang</option>
+                        <option v-for="b in allBidang" :key="b" :value="b">{{ b }}</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs text-muted-foreground font-medium">Level</label>
+                    <select v-model="level" class="px-3 py-2.5 text-sm border border-input rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-40 transition-all duration-200">
+                        <option value="">Semua Level</option>
+                        <option v-for="l in allLevel" :key="l" :value="l">{{ l }}</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1">
                     <label class="text-xs text-muted-foreground font-medium">Status</label>
                     <select v-model="status" class="px-3 py-2.5 text-sm border border-input rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-36 transition-all duration-200">
                         <option value="">Semua Status</option>
@@ -142,12 +165,12 @@ const accuracyPct = () => {
                     <button @click="resetFilters" class="inline-flex items-center gap-1.5 px-5 py-2.5 border border-border text-sm font-semibold rounded-xl hover:bg-muted transition-all duration-200 active:scale-[0.97]">
                         Reset
                     </button>
-                    <a :href="route('admin.practice-statistics.export-excel') + '?start_date=' + start + '&end_date=' + end + '&package_id=' + packageId + '&status=' + status"
+                    <a :href="route('admin.practice-statistics.export-excel') + '?start_date=' + start + '&end_date=' + end + '&package_id=' + packageId + '&status=' + status + '&bidang=' + bidang + '&level=' + level"
                        class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 active:scale-[0.97]">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
                         Excel
                     </a>
-                    <a :href="route('admin.practice-statistics.export-pdf') + '?start_date=' + start + '&end_date=' + end + '&package_id=' + packageId + '&status=' + status"
+                    <a :href="route('admin.practice-statistics.export-pdf') + '?start_date=' + start + '&end_date=' + end + '&package_id=' + packageId + '&status=' + status + '&bidang=' + bidang + '&level=' + level"
                        class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-red-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300 active:scale-[0.97]">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
                         PDF

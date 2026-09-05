@@ -183,15 +183,27 @@ function submit() {
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="space-y-2">
                                 <Label class="text-sm font-semibold">Kelas</Label>
-                                <Input v-model="form.student_class" class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200" />
+                                <Select v-model="form.student_class" class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200">
+                                    <option value="">Pilih Kelas</option>
+                                    <option v-for="k in 12" :key="k" :value="String(k)">{{ k }}</option>
+                                </Select>
                             </div>
                             <div class="space-y-2">
                                 <Label class="text-sm font-semibold">Bidang</Label>
-                                <Input v-model="form.bidang" class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200" />
+                                <Select v-model="form.bidang" class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200">
+                                    <option value="">Pilih Bidang</option>
+                                    <option value="MATEMATIKA">MATEMATIKA</option>
+                                    <option value="IPA">IPA</option>
+                                </Select>
                             </div>
                             <div class="space-y-2">
                                 <Label class="text-sm font-semibold">Level</Label>
-                                <Input v-model="form.level" class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200" />
+                                <Select v-model="form.level" class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200">
+                                    <option value="">Pilih Level</option>
+                                    <option value="LEVEL BERBAKAT A">LEVEL BERBAKAT A</option>
+                                    <option value="LEVEL BERBAKAT B">LEVEL BERBAKAT B</option>
+                                    <option value="LEVEL BERBAKAT C">LEVEL BERBAKAT C</option>
+                                </Select>
                             </div>
                             <div class="space-y-2">
                                 <Label class="text-sm font-semibold">Sekolah</Label>

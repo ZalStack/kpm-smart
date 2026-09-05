@@ -6,12 +6,17 @@ import FlashMessage from '@/Components/shared/FlashMessage.vue';
 const route = inject('route');
 
 const page = usePage();
-const user = page.props.auth?.user;
+const user = computed(() => page.props.auth?.user);
 const sidebarOpen = ref(false);
 const profileDropdownOpen = ref(false);
 const notifDropdownOpen = ref(false);
 const notifications = ref([]);
 const unreadCount = ref(0);
+
+const profilePhotoUrl = computed(() => {
+    if (!user.value?.profile_photo) return null;
+    return '/storage/' + user.value.profile_photo + '?v=' + encodeURIComponent(user.value.profile_photo);
+});
 
 const currentDate = new Date().toLocaleDateString('id-ID', {
     weekday: 'long',
@@ -177,8 +182,9 @@ onUnmounted(() => {
             <!-- Sidebar Footer -->
             <div class="relative px-4 py-4 border-t border-white/10 flex-shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-md bg-white/10 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                        {{ (user?.name || 'A').charAt(0).toUpperCase() }}
+                    <div class="w-8 h-8 rounded-md bg-white/10 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden">
+                        <img v-if="profilePhotoUrl" :src="profilePhotoUrl" class="w-full h-full object-cover" />
+                        <span v-else>{{ (user?.name || 'A').charAt(0).toUpperCase() }}</span>
                     </div>
                     <div class="min-w-0 flex-1">
                         <p class="text-[13px] font-medium text-white truncate">{{ user?.name || 'Admin' }}</p>
@@ -251,8 +257,9 @@ onUnmounted(() => {
                         <!-- Profile Dropdown -->
                         <div class="relative" id="profileDropdownWrap">
                             <button @click="toggleProfileDropdown" class="inline-flex items-center gap-2 hover:bg-accent rounded-md px-2 py-1.5 transition">
-                                <div class="w-8 h-8 rounded-md bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
-                                    {{ (user?.name || 'A').charAt(0).toUpperCase() }}
+                                <div class="w-8 h-8 rounded-md bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm overflow-hidden">
+                                    <img v-if="profilePhotoUrl" :src="profilePhotoUrl" class="w-full h-full object-cover" />
+                                    <span v-else>{{ (user?.name || 'A').charAt(0).toUpperCase() }}</span>
                                 </div>
                                 <div class="hidden sm:block text-left">
                                     <p class="text-sm font-medium leading-tight">{{ user?.name || 'Admin' }}</p>

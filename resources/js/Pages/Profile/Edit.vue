@@ -10,18 +10,18 @@ import Textarea from '@/Components/ui/textarea/Textarea.vue';
 const route = inject('route');
 
 const page = usePage();
-const user = page.props.auth?.user;
+const user = computed(() => page.props.auth?.user);
 
 const form = useForm({
-    name: user?.name || '',
-    phone: user?.phone || '',
-    student_class: user?.student_class || '',
-    bidang: user?.bidang || '',
-    level: user?.level || '',
-    school_name: user?.school_name || '',
-    address: user?.address || '',
-    gender: user?.gender || '',
-    religion: user?.religion || '',
+    name: user.value?.name || '',
+    phone: user.value?.phone || '',
+    student_class: user.value?.student_class || '',
+    bidang: user.value?.bidang || '',
+    level: user.value?.level || '',
+    school_name: user.value?.school_name || '',
+    address: user.value?.address || '',
+    gender: user.value?.gender || '',
+    religion: user.value?.religion || '',
     profile_photo: null,
 });
 
@@ -29,11 +29,11 @@ const photoPreview = ref(null);
 const fileInput = ref(null);
 const photoDragOver = ref(false);
 
-const userInitial = computed(() => (user?.name || 'U').charAt(0).toUpperCase());
+const userInitial = computed(() => (user.value?.name || 'U').charAt(0).toUpperCase());
 
 const profilePhotoUrl = computed(() => {
     if (photoPreview.value) return photoPreview.value;
-    if (user?.profile_photo) return '/storage/' + user.profile_photo;
+    if (user.value?.profile_photo) return '/storage/' + user.value.profile_photo + '?v=' + encodeURIComponent(user.value.profile_photo);
     return null;
 });
 
@@ -150,20 +150,20 @@ function submit() {
                             <Input id="phone" v-model="form.phone" required placeholder="Masukkan nomor telepon" />
                         </div>
                         <div class="space-y-2">
-                            <Label for="student_class">Kelas <span class="text-red-500">*</span></Label>
-                            <Input id="student_class" v-model="form.student_class" required placeholder="Masukkan kelas" />
+                            <Label for="student_class">Kelas <span class="text-muted-foreground text-xs font-normal">(ditentukan admin)</span></Label>
+                            <Input id="student_class" :value="form.student_class || '-'" disabled class="opacity-70 cursor-not-allowed bg-muted/30" />
                         </div>
                         <div class="space-y-2">
                             <Label for="school_name">Nama Sekolah <span class="text-red-500">*</span></Label>
                             <Input id="school_name" v-model="form.school_name" required placeholder="Masukkan nama sekolah" />
                         </div>
                         <div class="space-y-2">
-                            <Label for="bidang">Bidang</Label>
-                            <Input id="bidang" v-model="form.bidang" placeholder="Masukkan bidang" />
+                            <Label for="bidang">Bidang <span class="text-muted-foreground text-xs font-normal">(ditentukan admin)</span></Label>
+                            <Input id="bidang" :value="form.bidang || '-'" disabled class="opacity-70 cursor-not-allowed bg-muted/30" />
                         </div>
                         <div class="space-y-2">
-                            <Label for="level">Level</Label>
-                            <Input id="level" v-model="form.level" placeholder="Masukkan level" />
+                            <Label for="level">Level <span class="text-muted-foreground text-xs font-normal">(ditentukan admin)</span></Label>
+                            <Input id="level" :value="form.level || '-'" disabled class="opacity-70 cursor-not-allowed bg-muted/30" />
                         </div>
                         <div class="space-y-2">
                             <Label for="gender">Jenis Kelamin</Label>

@@ -35,6 +35,18 @@ class AdminUserController extends Controller
             $query->where('is_active', $status === 'active');
         }
 
+        if ($bidang = $request->get('bidang')) {
+            $query->where('bidang', $bidang);
+        }
+
+        if ($level = $request->get('level')) {
+            $query->where('level', $level);
+        }
+
+        if ($kelas = $request->get('kelas')) {
+            $query->where('student_class', $kelas);
+        }
+
         $users = $query->latest()->paginate(10)->withQueryString();
 
         $totalUsers = User::where('role', 'user')->count();
@@ -42,12 +54,20 @@ class AdminUserController extends Controller
         $inactiveUsers = $totalUsers - $activeUsers;
         $newThisMonth = User::where('role', 'user')->whereMonth('created_at', now()->month)->count();
 
+        $allBidang = User::where('role', 'user')->whereNotNull('bidang')->where('bidang', '!=', '')->distinct()->pluck('bidang')->sort()->values();
+        $allLevel = User::where('role', 'user')->whereNotNull('level')->where('level', '!=', '')->distinct()->pluck('level')->sort()->values();
+        $allKelas = User::where('role', 'user')->whereNotNull('student_class')->where('student_class', '!=', '')->distinct()->pluck('student_class')->sort()->values();
+
         return Inertia::render('Admin/Users/UserIndex', [
             'users' => $users,
             'search' => $search ?? '',
             'status' => $status ?? '',
             'totalUsers' => $totalUsers,
             'activeUsers' => $activeUsers,
+            'allBidang' => $allBidang,
+            'allLevel' => $allLevel,
+            'allKelas' => $allKelas,
+            'filters' => $request->only(['search', 'status', 'bidang', 'level', 'kelas']),
         ]);
     }
 

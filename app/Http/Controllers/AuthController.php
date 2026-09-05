@@ -111,9 +111,6 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'phone' => 'required|string',
-            'student_class' => 'required|string',
-            'bidang' => 'nullable|string',
-            'level' => 'nullable|string',
             'school_name' => 'required|string',
             'address' => 'nullable|string',
             'gender' => 'nullable|string',
@@ -126,8 +123,7 @@ class AuthController extends Controller
         }
 
         $data = $request->only([
-            'name', 'phone', 'student_class',
-            'bidang', 'level', 'school_name', 'address', 'gender', 'religion'
+            'name', 'phone', 'school_name', 'address', 'gender', 'religion'
         ]);
 
         if ($request->hasFile('profile_photo')) {

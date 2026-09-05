@@ -15,6 +15,7 @@ const props = defineProps({
     packages: { type: Object, required: true },
     allKelas: { type: Array, default: () => [] },
     allBidang: { type: Array, default: () => [] },
+    allLevel: { type: Array, default: () => [] },
     filters: { type: Object, default: () => ({}) },
     stats: { type: Object, default: () => ({}) },
 });
@@ -23,18 +24,19 @@ const search = ref(props.filters?.search || '');
 const status = ref(props.filters?.status || '');
 const kelas = ref(props.filters?.kelas || '');
 const bidang = ref(props.filters?.bidang || '');
+const level = ref(props.filters?.level || '');
 const deleteDialog = ref({ open: false, package: null });
 
 const deleteDialogMessage = computed(() => `Apakah Anda yakin ingin menghapus soal '${deleteDialog.value.package?.title || ''}'?`);
 
 function applyFilters() {
     router.get(route('admin.packages.index'), {
-        search: search.value, status: status.value, kelas: kelas.value, bidang: bidang.value,
+        search: search.value, status: status.value, kelas: kelas.value, bidang: bidang.value, level: level.value,
     }, { preserveState: true, replace: true });
 }
 
 function resetFilters() {
-    search.value = ''; status.value = ''; kelas.value = ''; bidang.value = '';
+    search.value = ''; status.value = ''; kelas.value = ''; bidang.value = ''; level.value = '';
     applyFilters();
 }
 
@@ -92,6 +94,10 @@ function doDelete() {
                 <Select v-model="bidang" class="w-full sm:w-36 transition-shadow focus:shadow-md focus:ring-2 focus:ring-primary/20">
                     <option value="">Semua Bidang</option>
                     <option v-for="b in allBidang" :key="b" :value="b">{{ b }}</option>
+                </Select>
+                <Select v-model="level" class="w-full sm:w-36 transition-shadow focus:shadow-md focus:ring-2 focus:ring-primary/20">
+                    <option value="">Semua Level</option>
+                    <option v-for="l in allLevel" :key="l" :value="l">{{ l }}</option>
                 </Select>
                 <Select v-model="kelas" class="w-full sm:w-36 transition-shadow focus:shadow-md focus:ring-2 focus:ring-primary/20">
                     <option value="">Semua Kelas</option>
