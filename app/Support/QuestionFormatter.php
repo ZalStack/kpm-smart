@@ -7,7 +7,7 @@ class QuestionFormatter
     /**
      * Render konten dengan format (LaTeX, tabel, dll)
      */
-    public static function render($content)
+    public static function render(string $content): string
     {
         if (empty($content)) {
             return '';
@@ -55,7 +55,7 @@ class QuestionFormatter
     /**
      * Render tabel dari format Markdown
      */
-    private static function renderTable($content)
+    private static function renderTable(string $content): string
     {
         $lines = explode("\n", $content);
         $inTable = false;
@@ -104,7 +104,7 @@ class QuestionFormatter
     /**
      * Build HTML table dari baris Markdown
      */
-    private static function buildTableHtml($rows)
+    private static function buildTableHtml(array $rows): string
     {
         if (empty($rows)) {
             return '';
@@ -148,9 +148,92 @@ class QuestionFormatter
     }
 
     /**
+     * Format teks soal mentah (dari import PDF) menjadi HTML yang siap tampil.
+     * Mengkonversi tabel Markdown, tag [GAMBAR:...], dan baris baru.
+     * NOTE: Teks dari PDF dianggap trusted (admin upload), jadi tidak perlu escape.
+     */
+    public static function formatImportedText(string $text, array $imageMap = []): string
+    {
+        if (empty($text)) {
+            return '';
+        }
+
+        // 1. Konversi tag [GAMBAR:filename] menjadi <img> HTML (sebelum escape)
+        $text = self::convertImageTags($text, $imageMap);
+
+        // 2. Render tabel Markdown-style menjadi HTML
+        $text = self::renderTable($text);
+
+        // 3. Convert newlines ke <br>, tapi jangan di dalam tabel atau tag HTML
+        $lines = explode("\n", $text);
+        $result = [];
+        $inTable = false;
+
+        foreach ($lines as $line) {
+            $trimmed = trim($line);
+            if (strpos($line, '<div class="table-wrapper') !== false) {
+                $result[] = $line;
+                $inTable = true;
+                continue;
+            }
+            if ($inTable && strpos($line, '</div>') !== false) {
+                $result[] = $line;
+                $inTable = false;
+                continue;
+            }
+            if ($inTable) {
+                $result[] = $line;
+                continue;
+            }
+            // Skip baris yang sudah berisi tag <img> atau <table>
+            if (preg_match('/^<(img|table|div)/i', $trimmed)) {
+                $result[] = $line;
+                continue;
+            }
+            if (!empty(trim($line))) {
+                $result[] = nl2br(e($line));
+            } else {
+                $result[] = '<br>';
+            }
+        }
+
+        return implode("\n", $result);
+    }
+
+    /**
+     * Konversi tag [GAMBAR:filename] menjadi tag <img> HTML
+     */
+    public static function convertImageTags(string $content, array $imageMap = []): string
+    {
+        return preg_replace_callback('/\[GAMBAR\s*:\s*([^\]]+)\]/i', function ($matches) use ($imageMap) {
+            $filename = trim($matches[1]);
+            $key = mb_strtolower($filename);
+
+            // Cari di imageMap yang sudah di-import
+            if (isset($imageMap[$key])) {
+                $path = $imageMap[$key];
+                if (filter_var($path, FILTER_VALIDATE_URL)) {
+                    return '<img src="' . htmlspecialchars($path, ENT_QUOTES, 'UTF-8') . '" alt="Gambar soal" class="max-w-full h-auto rounded-md my-2" />';
+                }
+                return '<img src="/storage/' . htmlspecialchars($path, ENT_QUOTES, 'UTF-8') . '" alt="Gambar soal" class="max-w-full h-auto rounded-md my-2" />';
+            }
+
+            // Fallback: coba path dengan subfolder auto/
+            $autoPath = 'question_images/auto/' . $filename;
+            $autoFullPath = public_path('storage/' . $autoPath);
+            if (file_exists($autoFullPath)) {
+                return '<img src="/storage/' . htmlspecialchars($autoPath, ENT_QUOTES, 'UTF-8') . '" alt="Gambar soal" class="max-w-full h-auto rounded-md my-2" />';
+            }
+
+            // Tidak ditemukan - hapus tag daripada tampilkan gambar 404/403
+            return '<span class="text-xs text-muted-foreground italic">[gambar tidak tersedia]</span>';
+        }, $content);
+    }
+
+    /**
      * Get URL untuk gambar soal
      */
-    public static function imageUrl($path): ?string
+    public static function imageUrl(?string $path): ?string
     {
         if (empty($path)) {
             return null;

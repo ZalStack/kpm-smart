@@ -81,6 +81,7 @@ Route::middleware(['auth', 'role:admin'])
         Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
         Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
         Route::post('/users/{user}/toggle-active', [AdminUserController::class, 'toggleActive'])->name('users.toggle-active');
+        Route::put('/users/{user}/update-level', [AdminUserController::class, 'updateLevel'])->name('users.update-level');
 
         // Packages Management
         Route::get('/packages', [PackageController::class, 'adminIndex'])->name('packages.index');

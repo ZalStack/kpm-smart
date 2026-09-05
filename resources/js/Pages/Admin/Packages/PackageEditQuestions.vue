@@ -232,14 +232,14 @@ function doDelete() {
                               :class="opt === q.correct_answer ? 'bg-green-600 text-white shadow-sm' : 'bg-muted text-muted-foreground'">
                             {{ String.fromCharCode(65 + optIdx) }}
                         </span>
-                        <span class="flex-1 min-w-0 break-words">{{ opt }}</span>
+                        <span class="flex-1 min-w-0 break-words" v-html="opt"></span>
                         <Icon v-if="opt === q.correct_answer" icon="mdi:check" class="w-3 h-3 inline-block align-middle text-green-600" />
                     </div>
                 </div>
 
                 <!-- Explanation -->
                 <div v-if="q.explanation" class="mt-3 p-3 bg-blue-50/70 border border-blue-100 rounded-xl text-xs text-blue-900 leading-relaxed">
-                    <Icon icon="mdi:lightbulb-on-outline" class="w-4 h-4 inline-block align-middle mr-1" /> <strong>Pembahasan:</strong> {{ q.explanation }}
+                    <Icon icon="mdi:lightbulb-on-outline" class="w-4 h-4 inline-block align-middle mr-1" /> <strong>Pembahasan:</strong> <span v-html="q.explanation"></span>
                 </div>
             </div>
         </div>
@@ -272,13 +272,13 @@ function doDelete() {
                               :class="opt === previewQuestion.correct_answer ? 'bg-green-600 text-white shadow-sm' : 'bg-muted text-muted-foreground'">
                             {{ String.fromCharCode(65 + oIdx) }}
                         </span>
-                        <span>{{ opt }}</span>
+                        <span v-html="opt"></span>
                         <span v-if="opt === previewQuestion.correct_answer" class="ml-auto text-green-700 font-bold text-xs inline-flex items-center gap-1">Kunci Jawaban <Icon icon="mdi:check" class="w-3 h-3 inline-block align-middle" /></span>
                     </div>
                 </div>
 
                 <div v-if="previewQuestion.explanation" class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-800">
-                    <Icon icon="mdi:lightbulb-on-outline" class="w-4 h-4 inline-block align-middle mr-1" /> <strong>Pembahasan:</strong> {{ previewQuestion.explanation }}
+                    <Icon icon="mdi:lightbulb-on-outline" class="w-4 h-4 inline-block align-middle mr-1" /> <strong>Pembahasan:</strong> <span v-html="previewQuestion.explanation"></span>
                 </div>
 
                 <div class="flex justify-end pt-2 border-t">

@@ -530,15 +530,20 @@ class PackageController extends Controller
         }
 
         $questionType = $request->type ?: 'pilihan_ganda';
+
+        // Format pertanyaan dan pembahasan agar konsisten dengan import PDF
+        $formattedQuestion = \App\Support\QuestionFormatter::formatImportedText($request->question);
+        $formattedExplanation = \App\Support\QuestionFormatter::formatImportedText($request->explanation ?? '');
+
         $questions = $package->questions ?? [];
         $questions[] = [
             'id' => (string) Str::uuid(),
             'card_id' => $request->card_id,
-            'question' => $request->question,
+            'question' => $formattedQuestion,
             'type' => $questionType,
             'options' => $questionType === 'isian_singkat' ? [] : $request->options,
             'correct_answer' => $request->correct_answer,
-            'explanation' => $request->explanation,
+            'explanation' => $formattedExplanation,
             'image' => $imagePath,
             'created_at' => now()->toDateTimeString(),
         ];
@@ -588,12 +593,17 @@ class PackageController extends Controller
             }
 
             $questionType = $request->type ?: 'pilihan_ganda';
+
+            // Format pertanyaan dan pembahasan
+            $formattedQuestion = \App\Support\QuestionFormatter::formatImportedText($request->question);
+            $formattedExplanation = \App\Support\QuestionFormatter::formatImportedText($request->explanation ?? '');
+
             $questions[$i]['card_id'] = $request->card_id;
-            $questions[$i]['question'] = $request->question;
+            $questions[$i]['question'] = $formattedQuestion;
             $questions[$i]['type'] = $questionType;
             $questions[$i]['options'] = $questionType === 'isian_singkat' ? [] : $request->options;
             $questions[$i]['correct_answer'] = $request->correct_answer;
-            $questions[$i]['explanation'] = $request->explanation;
+            $questions[$i]['explanation'] = $formattedExplanation;
             $questions[$i]['image'] = $imagePath;
 
             $updated = true;
@@ -721,6 +731,9 @@ class PackageController extends Controller
             $missingImages = [];
             $autoAttachedCount = 0;
 
+            // Gabungkan semua image map untuk konversi [GAMBAR:] tags
+            $allImageMap = $imageMap;
+
             foreach ($questions as $question) {
                 $options = $question['options'] ?? [];
 
@@ -747,14 +760,63 @@ class PackageController extends Controller
                 }
 
                 $questionType = $question['type'] ?? 'pilihan_ganda';
+
+                // Pre-process [GAMBAR:] tags: resolve ke path yang benar
+                $rawQuestion = $question['question'];
+                $rawExplanation = $question['explanation'] ?? '';
+                $rawOptions = $options;
+
+                // Build per-question image map: ZIP images + auto-extracted image for this question
+                $perQuestionImageMap = $allImageMap;
+                if ($imagePath !== null) {
+                    // Tambahkan auto-extracted image dengan key filename dari GAMBAR tag
+                    // Cari semua [GAMBAR:] tags di question text
+                    if (preg_match_all('/\[GAMBAR\s*:\s*([^\]]+)\]/i', $rawQuestion, $imgMatches)) {
+                        foreach ($imgMatches[1] as $imgFilename) {
+                            $key = mb_strtolower(trim($imgFilename));
+                            if (!isset($perQuestionImageMap[$key])) {
+                                $perQuestionImageMap[$key] = $imagePath;
+                            }
+                        }
+                    }
+                    // Juga cek di options
+                    foreach ($rawOptions as $opt) {
+                        if (preg_match_all('/\[GAMBAR\s*:\s*([^\]]+)\]/i', $opt, $imgMatches)) {
+                            foreach ($imgMatches[1] as $imgFilename) {
+                                $key = mb_strtolower(trim($imgFilename));
+                                if (!isset($perQuestionImageMap[$key])) {
+                                    $perQuestionImageMap[$key] = $imagePath;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Format pertanyaan: konversi tabel Markdown ke HTML + [GAMBAR:] ke <img>
+                $formattedQuestion = \App\Support\QuestionFormatter::formatImportedText(
+                    $rawQuestion,
+                    $perQuestionImageMap
+                );
+
+                // Format pembahasan juga
+                $formattedExplanation = \App\Support\QuestionFormatter::formatImportedText(
+                    $rawExplanation,
+                    $perQuestionImageMap
+                );
+
+                // Format opsi juga (opsi bisa berisi tabel atau gambar)
+                $formattedOptions = array_map(function ($opt) use ($perQuestionImageMap) {
+                    return \App\Support\QuestionFormatter::formatImportedText($opt, $perQuestionImageMap);
+                }, $rawOptions);
+
                 $newQuestions[] = [
                     'id' => (string) Str::uuid(),
                     'card_id' => $request->card_id,
-                    'question' => $question['question'],
+                    'question' => $formattedQuestion,
                     'type' => $questionType,
-                    'options' => $options,
+                    'options' => $formattedOptions,
                     'correct_answer' => $correctAnswer,
-                    'explanation' => $question['explanation'] ?? '',
+                    'explanation' => $formattedExplanation,
                     'image' => $imagePath,
                     'created_at' => now()->toDateTimeString(),
                     'imported_from_pdf' => true,
@@ -782,7 +844,12 @@ class PackageController extends Controller
             return redirect()->route('admin.packages.edit.questions', $package)->with('success', $message);
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal mengimport PDF. Silakan coba lagi.');
+            \Log::error('Import PDF error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return back()->with('error', 'Gagal mengimport PDF: ' . $e->getMessage());
         }
     }
 
@@ -1290,7 +1357,6 @@ class PackageController extends Controller
 
         $phase = null;
         $expectedNumber = null;
-        $lastLineWasTable = false;
         $foundAnyOption = false;
 
         $flush = function () use (
@@ -1315,35 +1381,51 @@ class PackageController extends Controller
         foreach ($lines as $line) {
             $line = rtrim($line);
             $trimmed = trim($line);
+
             if ($trimmed === '') {
+                // Baris kosong: jika sedang di opsi dan sudah ada opsi, pindah ke post_options
                 if ($phase === 'options' && $foundAnyOption) {
                     $phase = 'post_options';
                 }
                 continue;
             }
 
+            // Deteksi tag [GAMBAR:...] pada baris ini
             $lineImageFilename = null;
             if (preg_match('/\[GAMBAR\s*:\s*([^\]]+)\]/i', $trimmed, $imgMatch)) {
                 $lineImageFilename = trim($imgMatch[1]);
+                // Hapus tag dari trimmed untuk diproses lebih lanjut
                 $trimmed = trim(preg_replace('/\[GAMBAR\s*:\s*([^\]]+)\]/i', '', $trimmed));
                 if ($trimmed === '') {
-                    if ($lineImageFilename !== null) {
+                    // Baris hanya berisi tag gambar
+                    if ($currentQuestion !== null) {
                         $currentImageFilename = $lineImageFilename;
+                        // Sertakan tag GAMBAR di question text agar bisa dikonversi nanti
+                        if ($phase !== 'explanation' && $phase !== 'options') {
+                            $currentQuestion .= "\n" . "[GAMBAR:{$lineImageFilename}]";
+                        }
                     }
                     continue;
                 }
             }
 
-            $isTableRow = (bool) preg_match('/^\|.*\|$/', $trimmed) || preg_match('/\t/', $trimmed);
+            // Deteksi baris tabel (diawali dan diakhiri |) atau baris tab-separated
+            $isTableRow = (bool) preg_match('/^\|.*\|$/', $trimmed) || (preg_match('/\t/', $trimmed) && preg_match('/\|/', $trimmed));
 
+            // Deteksi soal baru (nomor + titik)
             $isNewQuestion = false;
             $newNumber = null;
-            if (!$isTableRow && preg_match('/^(\d{1,4})\.\s+(?=\S)/', $trimmed, $matches)) {
+            if (!$isTableRow && preg_match('/^(\d{1,4})[\.\)]\s+(?=\S)/', $trimmed, $matches)) {
                 $newNumber = (int) $matches[1];
                 if ($expectedNumber === null || $newNumber === $expectedNumber) {
                     $isNewQuestion = true;
                 } elseif ($newNumber > $expectedNumber && $currentQuestion !== null) {
+                    // Nomor loncat - bisa jadi soal baru
                     $isNewQuestion = true;
+                } elseif ($newNumber < $expectedNumber && $currentQuestion !== null) {
+                    // Nomor lebih kecil dari expected - kemungkinan bukan soal baru
+                    // (bisa jadi bagian dari penjelasan/opsi sebelumnya)
+                    $isNewQuestion = false;
                 }
             }
 
@@ -1352,21 +1434,32 @@ class PackageController extends Controller
 
                 $currentNumber = $newNumber;
                 $expectedNumber = $newNumber + 1;
-                $currentQuestion = preg_replace('/^(\d{1,4})[\.\)]\s+/', '', $trimmed);
+                // Ambil teks setelah nomor soal
+                $questionText = preg_replace('/^(\d{1,4})[\.\)]\s+/', '', $trimmed);
+
+                // Jika ada tag GAMBAR di baris soal, simpan juga
+                if ($lineImageFilename !== null) {
+                    $questionText .= "\n" . "[GAMBAR:{$lineImageFilename}]";
+                    $currentImageFilename = $lineImageFilename;
+                } else {
+                    $currentImageFilename = null;
+                }
+
+                $currentQuestion = $questionText;
                 $currentOptions = [];
                 $currentAnswer = '';
                 $currentExplanations = [];
-                $currentImageFilename = $lineImageFilename;
                 $phase = 'question';
-                $lastLineWasTable = false;
                 $foundAnyOption = false;
                 continue;
             }
 
+            // Jika belum ada soal aktif, lewati
             if ($currentQuestion === null) {
                 continue;
             }
 
+            // Deteksi jawaban (Jawaban: / Kunci: / Solusi:)
             if (!$isTableRow && preg_match('/^(jawaban|kunci\s*jawaban|kunci|solusi)\s*[:\-]?\s*(.+)/i', $trimmed, $matches)) {
                 $answerValue = trim($matches[2]);
                 $answerValue = preg_replace('/^pilihan\s*/i', '', $answerValue);
@@ -1379,71 +1472,82 @@ class PackageController extends Controller
                 if ($lineImageFilename !== null) {
                     $currentImageFilename = $lineImageFilename;
                 }
-                $lastLineWasTable = false;
+                $phase = 'answer';
                 continue;
             }
 
-            if (!$isTableRow && $phase !== 'explanation' && $phase !== 'post_options'
-                && preg_match('/^([A-Za-z])[\.\)]\s*(.+)/', $trimmed, $matches)) {
-                $letterOrd = ord(strtoupper($matches[1]));
-                $optionText = trim($matches[2]);
-                if ($optionText === '') {
-                    $optionText = '—';
+            // Deteksi pembahasan
+            if (!$isTableRow && stripos($trimmed, 'pembahasan') === 0) {
+                $pembahasanText = preg_replace('/^pembahasan\s*[:\-]?\s*/i', '', $trimmed);
+                if (!empty($pembahasanText)) {
+                    $currentExplanations[] = $pembahasanText;
                 }
-                $currentOptions[] = $optionText;
-                $phase = 'options';
-                $foundAnyOption = true;
-                if ($lineImageFilename !== null) {
-                    $currentImageFilename = $lineImageFilename;
-                }
-                $lastLineWasTable = false;
-                continue;
-            }
-
-            if (!$isTableRow && $phase !== 'explanation' && stripos($trimmed, 'pembahasan') === 0) {
-                $currentExplanations[] = preg_replace('/^pembahasan\s*[:\-]?\s*/i', '', $trimmed);
                 if ($lineImageFilename !== null) {
                     $currentImageFilename = $lineImageFilename;
                 }
                 $phase = 'explanation';
-                $lastLineWasTable = false;
                 continue;
             }
 
+            // Deteksi opsi (A-E + titik)
+            if (!$isTableRow && $phase !== 'explanation' && $phase !== 'answer'
+                && preg_match('/^([A-Za-z])[\.\)]\s*(.+)/', $trimmed, $matches)) {
+                $optionText = trim($matches[2]);
+                if ($optionText === '') {
+                    $optionText = '—';
+                }
+                // Jika ada tag GAMBAR di opsi, sertakan
+                if ($lineImageFilename !== null) {
+                    $optionText .= " [GAMBAR:{$lineImageFilename}]";
+                }
+                $currentOptions[] = $optionText;
+                $phase = 'options';
+                $foundAnyOption = true;
+                continue;
+            }
+
+            // Baris tabel atau teks lanjutan
             if ($isTableRow) {
+                // Tabel bisa jadi bagian dari pertanyaan, pembahasan, atau opsi
                 if ($phase === 'explanation') {
                     $currentExplanations[] = $trimmed;
                 } elseif ($phase === 'options' && !empty($currentOptions)) {
+                    // Tabel setelah opsi: append ke opsi terakhir
                     $lastIndex = count($currentOptions) - 1;
                     $currentOptions[$lastIndex] .= "\n" . $trimmed;
                 } else {
+                    // Tabel bagian dari pertanyaan
                     $currentQuestion .= "\n" . $trimmed;
                 }
                 if ($lineImageFilename !== null) {
                     $currentImageFilename = $lineImageFilename;
                 }
-                $lastLineWasTable = true;
                 continue;
             }
 
-            $glue = $lastLineWasTable ? "\n" : ' ';
+            // Teks lanjutan (bukan tabel, bukan baris baru)
             if ($phase === 'explanation') {
                 if (empty($currentExplanations)) {
                     $currentExplanations[] = $trimmed;
                 } else {
                     $lastIndex = count($currentExplanations) - 1;
-                    $currentExplanations[$lastIndex] .= $glue . $trimmed;
+                    $currentExplanations[$lastIndex] .= ' ' . $trimmed;
                 }
             } elseif ($phase === 'options' && !empty($currentOptions)) {
+                // Teks lanjutan setelah opsi: append ke opsi terakhir
                 $lastIndex = count($currentOptions) - 1;
-                $currentOptions[$lastIndex] .= $glue . $trimmed;
+                $currentOptions[$lastIndex] .= ' ' . $trimmed;
+            } elseif ($phase === 'answer') {
+                // Teks lanjutan setelah jawaban: append ke jawaban
+                $currentAnswer .= ' ' . $trimmed;
             } else {
-                $currentQuestion .= $glue . $trimmed;
+                // Teks lanjutan pertanyaan
+                $currentQuestion .= ' ' . $trimmed;
             }
+
             if ($lineImageFilename !== null) {
                 $currentImageFilename = $lineImageFilename;
             }
-            $lastLineWasTable = false;
         }
 
         $flush();

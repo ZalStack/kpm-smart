@@ -229,6 +229,25 @@ class AdminUserController extends Controller
     }
 
     /**
+     * Update level user via AJAX (realtime inline edit).
+     */
+    public function updateLevel(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'level' => 'nullable|string|max:50',
+        ]);
+
+        $user->level = $validated['level'] ?: null;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'level' => $user->level,
+            'message' => 'Level "' . ($user->level ?? '-') . '" berhasil diperbarui.',
+        ]);
+    }
+
+    /**
      * Form import user dari Excel.
      */
     public function showImportExcel()

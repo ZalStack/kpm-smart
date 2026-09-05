@@ -330,7 +330,7 @@ onBeforeUnmount(() => {
                             <div class="p-5 sm:p-6">
                                 <div class="text-sm sm:text-[15px] leading-relaxed" v-html="q.question"></div>
                                 <div v-if="q.image" class="mt-4">
-                                    <img :src="q.image" alt="Gambar soal" class="max-w-full h-auto rounded-xl border max-h-72 object-contain" @error="$event.target.style.display='none'" />
+                                    <img :src="q.image.startsWith('/') || q.image.startsWith('http') ? q.image : '/storage/' + q.image" alt="Gambar soal" class="max-w-full h-auto rounded-xl border max-h-72 object-contain" @error="$event.target.style.display='none'" />
                                 </div>
                             </div>
                         </div>
@@ -345,7 +345,7 @@ onBeforeUnmount(() => {
                                            : 'border-border hover:border-primary/30 hover:bg-muted/30'
                                    ]">
                                 <input type="radio" :name="'answers_' + idx" :value="opt" v-model="answers[idx]" class="mt-0.5 w-4 h-4 text-primary focus:ring-primary/20" />
-                                <span class="text-sm leading-relaxed flex-1">{{ opt }}</span>
+                                <span class="text-sm leading-relaxed flex-1" v-html="opt"></span>
                                 <span v-if="answers[idx] === opt" class="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 mt-0.5">
                                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                                 </span>

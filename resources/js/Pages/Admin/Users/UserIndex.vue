@@ -29,6 +29,8 @@ const kelasVal = ref(props.filters?.kelas || '');
 
 const inactiveUsers = computed(() => props.totalUsers - props.activeUsers);
 
+const updatingLevelId = ref(null);
+
 function applyFilters() {
     router.get(route('admin.users.index'), {
         search: searchVal.value,
@@ -52,6 +54,32 @@ function toggleActive(userId) {
     if (confirm('Yakin ingin mengubah status akun ini?')) {
         router.post(route('admin.users.toggle-active', userId));
     }
+}
+
+function updateLevel(user, newLevel) {
+    if (user.level === newLevel) return;
+    updatingLevelId.value = user.id;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
+        || decodeURIComponent(document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || '');
+    fetch(route('admin.users.update-level', user.id), {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-XSRF-TOKEN': csrfToken,
+        },
+        body: JSON.stringify({ level: newLevel }),
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            user.level = data.level;
+        }
+    })
+    .catch(() => {})
+    .finally(() => {
+        updatingLevelId.value = null;
+    });
 }
 </script>
 
@@ -254,11 +282,26 @@ function toggleActive(userId) {
                                     {{ user.student_class || '-' }} / {{ user.bidang || '-' }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-sm">
-                                <span v-if="user.level" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary font-medium text-xs">
-                                    {{ user.level }}
-                                </span>
-                                <span v-else class="text-muted-foreground text-xs">-</span>
+                            <td class="px-6 py-4 text-sm" @click.stop>
+                                <div class="relative inline-flex items-center">
+                                    <select
+                                        :value="user.level || ''"
+                                        @change="updateLevel(user, $event.target.value)"
+                                        :disabled="updatingLevelId === user.id"
+                                        class="appearance-none cursor-pointer pl-2.5 pr-7 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                                        :class="user.level ? 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/15' : 'bg-muted/60 text-muted-foreground border-border/60 hover:bg-muted'"
+                                    >
+                                        <option value="">Pilih Level</option>
+                                        <option v-for="l in allLevel" :key="l" :value="l">{{ l }}</option>
+                                    </select>
+                                    <svg class="absolute right-2 w-3 h-3 pointer-events-none" :class="user.level ? 'text-primary/60' : 'text-muted-foreground/60'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                    </svg>
+                                    <svg v-if="updatingLevelId === user.id" class="absolute -right-5 w-3.5 h-3.5 text-primary animate-spin" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </div>
                             </td>
                             <td class="px-6 py-4 text-sm truncate max-w-[200px] text-muted-foreground">{{ user.school_name || '-' }}</td>
                             <td class="px-6 py-4">
@@ -334,9 +377,21 @@ function toggleActive(userId) {
                         </svg>
                         {{ user.student_class || '-' }} / {{ user.bidang || '-' }}
                     </span>
-                    <span v-if="user.level" class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-medium">
-                        {{ user.level }}
-                    </span>
+                    <div class="relative" @click.stop>
+                        <select
+                            :value="user.level || ''"
+                            @change="updateLevel(user, $event.target.value)"
+                            :disabled="updatingLevelId === user.id"
+                            class="appearance-none cursor-pointer pl-2 pr-6 py-1 rounded-lg text-xs font-medium border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                            :class="user.level ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted/60 text-muted-foreground border-border/60'"
+                        >
+                            <option value="">Level</option>
+                            <option v-for="l in allLevel" :key="l" :value="l">{{ l }}</option>
+                        </select>
+                        <svg class="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none" :class="user.level ? 'text-primary/60' : 'text-muted-foreground/60'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    </div>
                 </div>
                 <!-- Mobile Card Actions -->
                 <div class="flex items-center justify-between mt-3 pt-3 border-t border-border/40">

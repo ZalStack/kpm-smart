@@ -220,7 +220,7 @@ onMounted(() => {
                             <div class="flex-1 min-w-0">
                                 <!-- Question image -->
                                 <div v-if="result.image" class="mb-3">
-                                    <img :src="result.image" alt="Gambar soal" class="max-w-full h-auto rounded-xl border border-border/40 max-h-48 object-contain shadow-sm" @error="$event.target.style.display='none'" />
+                                    <img :src="result.image.startsWith('/') || result.image.startsWith('http') ? result.image : '/storage/' + result.image" alt="Gambar soal" class="max-w-full h-auto rounded-xl border border-border/40 max-h-48 object-contain shadow-sm" @error="$event.target.style.display='none'" />
                                 </div>
 
                                 <!-- Question text -->
@@ -238,7 +238,7 @@ onMounted(() => {
                                         <span class="flex-shrink-0">
                                              <Icon v-if="opt === result.correct_answer" icon="mdi:check-circle" class="w-4 h-4 text-green-600" /><Icon v-else-if="opt === result.user_answer && !result.is_correct" icon="mdi:close-circle" class="w-4 h-4 text-red-500" /><span v-else class="text-muted-foreground/50">○</span>
                                         </span>
-                                        {{ opt }}
+                                         <span v-html="opt"></span>
                                     </div>
                                 </div>
 
@@ -280,7 +280,7 @@ onMounted(() => {
                                     <span class="text-blue-500 flex-shrink-0 mt-0.5"><Icon icon="mdi:lightbulb-outline" class="w-5 h-5 text-blue-500" /></span>
                                     <div>
                                         <p class="text-[10px] font-bold text-blue-700 mb-0.5 uppercase tracking-wider">Pembahasan</p>
-                                        <p class="text-xs text-blue-800 leading-relaxed">{{ result.explanation }}</p>
+                                        <p class="text-xs text-blue-800 leading-relaxed" v-html="result.explanation"></p>
                                     </div>
                                 </div>
                             </div>

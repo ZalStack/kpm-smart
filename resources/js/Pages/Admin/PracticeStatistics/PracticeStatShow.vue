@@ -162,7 +162,7 @@ const scoreOffset = computed(() => circumference - (Math.min(Number(props.sessio
                         </div>
 
                         <div v-if="result.image" class="mb-2">
-                            <img :src="result.image" alt="Gambar soal" class="w-full h-auto rounded-xl border max-h-32 object-contain" @error="$event.target.style.display='none'" />
+                            <img :src="result.image.startsWith('/') || result.image.startsWith('http') ? result.image : '/storage/' + result.image" alt="Gambar soal" class="w-full h-auto rounded-xl border max-h-32 object-contain" @error="$event.target.style.display='none'" />
                         </div>
 
                         <p class="text-xs leading-relaxed mb-2 line-clamp-4" v-html="result.question"></p>
@@ -182,7 +182,7 @@ const scoreOffset = computed(() => circumference - (Math.min(Number(props.sessio
 
                         <div v-if="showExplanation && result.explanation" class="mt-2 flex items-start gap-1.5 bg-blue-50 border border-blue-100 rounded-xl p-2.5">
                             <span class="text-blue-500 flex-shrink-0 text-xs"><Icon icon="mdi:lightbulb-on-outline" class="w-3 h-3" /></span>
-                            <p class="text-[10px] text-blue-800 leading-relaxed line-clamp-3">{{ result.explanation }}</p>
+                            <p class="text-[10px] text-blue-800 leading-relaxed line-clamp-3" v-html="result.explanation"></p>
                         </div>
                     </div>
                 </div>
