@@ -708,10 +708,23 @@ class PackageController extends Controller
             $autoImageMap = $this->assignAutoImagesToQuestions($embeddedImages, $questionPageMap, $questions);
 
             $pageImages = [];
-            $questionsNeedingImages = array_diff(
-                array_column($questions, 'number'),
-                array_keys($autoImageMap)
-            );
+            // Cari soal yang butuh gambar tapi belum dapat dari embedded images:
+            // soal dengan [GAMBAR:] tag ATAU soal yang menyebut gambar/figure/diagram
+            $questionsNeedingImages = [];
+            foreach ($questions as $q) {
+                $qNum = $q['number'];
+                if (isset($autoImageMap[$qNum])) {
+                    continue; // Sudah dapat gambar dari embedded extraction
+                }
+                $hasImageTag = !empty($q['image_filename']);
+                $mentionsImage = (bool) preg_match(
+                    '/\b(gambar|figure|diagram|grafik|graph|ilustrasi|terlihat pada|ditunjukkan pada|tampak pada)\b/i',
+                    $q['question']
+                );
+                if ($hasImageTag || $mentionsImage) {
+                    $questionsNeedingImages[] = $qNum;
+                }
+            }
             if (!empty($questionsNeedingImages)) {
                 $rawPageImages = $this->renderPdfPagesAsImages($pdfPath, $package->id, $questionPageMap);
                 $pageImages = [];
@@ -793,6 +806,13 @@ class PackageController extends Controller
                 }
 
                 // Format pertanyaan: konversi tabel Markdown ke HTML + [GAMBAR:] ke <img>
+                // Jika soal sudah punya gambar via field 'image', hapus tag [GAMBAR:] dari teks
+                // agar gambar tidak tampil duplikat (inline + field image)
+                if ($imagePath !== null) {
+                    $rawQuestion = preg_replace('/\s*\[GAMBAR\s*:\s*[^\]]+\]\s*/i', ' ', $rawQuestion);
+                    $rawQuestion = trim($rawQuestion);
+                }
+
                 $formattedQuestion = \App\Support\QuestionFormatter::formatImportedText(
                     $rawQuestion,
                     $perQuestionImageMap
@@ -1261,6 +1281,7 @@ class PackageController extends Controller
             return $result;
         }
 
+        // Kelompokkan gambar per halaman
         $imagesByPage = [];
         foreach ($embeddedImages as $idx => $img) {
             $page = $img['page'];
@@ -1270,44 +1291,66 @@ class PackageController extends Controller
             $imagesByPage[$page][] = $img;
         }
 
+        // Kelompokkan soal per halaman (urut sesuai kemunculan)
+        $questionsByPage = [];
         foreach ($questions as $question) {
             $qNum = $question['number'];
-
             if (!isset($questionPageMap[$qNum])) {
                 continue;
             }
-
             $page = $questionPageMap[$qNum];
+            if (!isset($questionsByPage[$page])) {
+                $questionsByPage[$page] = [];
+            }
+            $questionsByPage[$page][] = $question;
+        }
 
-            if (isset($imagesByPage[$page]) && !empty($imagesByPage[$page])) {
-                foreach ($imagesByPage[$page] as $idx => $img) {
-                    $imageKey = $img['path'];
-                    if (!in_array($imageKey, $usedImages)) {
-                        $result[$qNum] = $img['path'];
-                        $usedImages[] = $imageKey;
-                        break;
-                    }
+        // Untuk setiap halaman yang punya gambar, assign gambar ke soal di halaman itu
+        // Strategi: jika 1 halaman punya N gambar dan M soal,
+        // assign gambar ke soal yang punya [GAMBAR:] tag atau yang menyebut "gambar/figure/diagram"
+        // Jika tidak bisa match spesifik, assign berurutan ke soal terakhir di halaman
+        foreach ($imagesByPage as $page => $pageImgs) {
+            if (!isset($questionsByPage[$page])) {
+                continue;
+            }
+
+            $pageQuestions = $questionsByPage[$page];
+
+            // Prioritas 1: Soal yang punya tag [GAMBAR:] atau menyebut gambar/figure/diagram
+            $questionsNeedingImage = [];
+            $questionsNoImage = [];
+
+            foreach ($pageQuestions as $q) {
+                $qNum = $q['number'];
+                $hasImageTag = !empty($q['image_filename']);
+                $mentionsImage = (bool) preg_match(
+                    '/\b(gambar|figure|diagram|grafik|graph|tabel|table|ilustrasi|pola|berikut ini|sebagai berikut|terlihat pada|ditunjukkan pada|tampak pada)\b/i',
+                    $q['question']
+                );
+
+                if ($hasImageTag || $mentionsImage) {
+                    $questionsNeedingImage[] = $qNum;
+                } else {
+                    $questionsNoImage[] = $qNum;
                 }
             }
-        }
 
-        $questionsWithoutImage = array_diff(
-            array_column($questions, 'number'),
-            array_keys($result)
-        );
-
-        $remainingImages = [];
-        foreach ($embeddedImages as $img) {
-            if (!in_array($img['path'], $usedImages)) {
-                $remainingImages[] = $img;
+            // Assign gambar ke soal yang butuh gambar (berurutan)
+            $imgIndex = 0;
+            foreach ($questionsNeedingImage as $qNum) {
+                if ($imgIndex >= count($pageImgs)) {
+                    break;
+                }
+                $img = $pageImgs[$imgIndex];
+                if (!in_array($img['path'], $usedImages)) {
+                    $result[$qNum] = $img['path'];
+                    $usedImages[] = $img['path'];
+                    $imgIndex++;
+                }
             }
-        }
 
-        foreach ($questionsWithoutImage as $qNum) {
-            if (!empty($remainingImages)) {
-                $img = array_shift($remainingImages);
-                $result[$qNum] = $img['path'];
-            }
+            // TIDAK assign sisa gambar ke soal yang tidak butuh gambar
+            // Soal tanpa referensi gambar di teksnya = tidak dapat gambar
         }
 
         return $result;
