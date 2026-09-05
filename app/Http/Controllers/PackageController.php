@@ -1359,6 +1359,13 @@ class PackageController extends Controller
         $expectedNumber = null;
         $foundAnyOption = false;
 
+        // Daftar kata/frasa header section yang harus di-skip (bukan bagian soal)
+        $sectionHeaders = [
+            'pemecahan masalah', 'penerapan', 'penalaran', 'literasi',
+            'hots', 'lots', 'mots', 'soal uraian', 'soal pilihan ganda',
+            'bagian', 'section', 'part',
+        ];
+
         $flush = function () use (
             &$questions, &$currentQuestion, &$currentOptions, &$currentNumber,
             &$currentAnswer, &$currentExplanations, &$currentImageFilename
@@ -1390,6 +1397,23 @@ class PackageController extends Controller
                 continue;
             }
 
+            // Skip baris header section (misal "Pemecahan Masalah", "Penerapan", dll)
+            $trimmedLower = mb_strtolower($trimmed);
+            $isSection = false;
+            foreach ($sectionHeaders as $header) {
+                if ($trimmedLower === $header || preg_match('/^' . preg_quote($header, '/') . '\s*[:\-]?\s*$/i', $trimmedLower)) {
+                    $isSection = true;
+                    break;
+                }
+            }
+            if ($isSection) {
+                // Jika sedang di fase answer, jawaban sudah selesai; pindah ke post_answer
+                if ($phase === 'answer') {
+                    $phase = 'post_answer';
+                }
+                continue;
+            }
+
             // Deteksi tag [GAMBAR:...] pada baris ini
             $lineImageFilename = null;
             if (preg_match('/\[GAMBAR\s*:\s*([^\]]+)\]/i', $trimmed, $imgMatch)) {
@@ -1412,20 +1436,39 @@ class PackageController extends Controller
             // Deteksi baris tabel (diawali dan diakhiri |) atau baris tab-separated
             $isTableRow = (bool) preg_match('/^\|.*\|$/', $trimmed) || (preg_match('/\t/', $trimmed) && preg_match('/\|/', $trimmed));
 
-            // Deteksi soal baru (nomor + titik)
+            // Deteksi soal baru: HANYA format "nomor + titik" (misal "1. ") yang dianggap soal baru
+            // Format "nomor + kurung tutup" (misal "1) ") dianggap sub-item bagian soal
             $isNewQuestion = false;
+            $isSubItem = false;
             $newNumber = null;
-            if (!$isTableRow && preg_match('/^(\d{1,4})[\.\)]\s+(?=\S)/', $trimmed, $matches)) {
+            $matchSeparator = null;
+
+            if (!$isTableRow && preg_match('/^(\d{1,4})([.\)])\s+(?=\S)/', $trimmed, $matches)) {
                 $newNumber = (int) $matches[1];
-                if ($expectedNumber === null || $newNumber === $expectedNumber) {
-                    $isNewQuestion = true;
-                } elseif ($newNumber > $expectedNumber && $currentQuestion !== null) {
-                    // Nomor loncat - bisa jadi soal baru
-                    $isNewQuestion = true;
-                } elseif ($newNumber < $expectedNumber && $currentQuestion !== null) {
-                    // Nomor lebih kecil dari expected - kemungkinan bukan soal baru
-                    // (bisa jadi bagian dari penjelasan/opsi sebelumnya)
-                    $isNewQuestion = false;
+                $matchSeparator = $matches[2];
+
+                if ($matchSeparator === '.') {
+                    // Format "1." — ini soal baru
+                    if ($expectedNumber === null || $newNumber === $expectedNumber) {
+                        $isNewQuestion = true;
+                    } elseif ($newNumber > $expectedNumber && $currentQuestion !== null) {
+                        // Nomor loncat - bisa jadi soal baru
+                        $isNewQuestion = true;
+                    } elseif ($newNumber < $expectedNumber && $currentQuestion !== null) {
+                        // Nomor lebih kecil dari expected — kemungkinan sub-item
+                        $isSubItem = true;
+                    }
+                } else {
+                    // Format "1)" — ini sub-item, BUKAN soal baru
+                    if ($currentQuestion !== null) {
+                        // Sudah ada soal aktif → ini sub-item
+                        $isSubItem = true;
+                    } else {
+                        // Belum ada soal aktif → mungkin ini soal pertama dengan format )
+                        if ($expectedNumber === null || $newNumber === $expectedNumber) {
+                            $isNewQuestion = true;
+                        }
+                    }
                 }
             }
 
@@ -1435,7 +1478,7 @@ class PackageController extends Controller
                 $currentNumber = $newNumber;
                 $expectedNumber = $newNumber + 1;
                 // Ambil teks setelah nomor soal
-                $questionText = preg_replace('/^(\d{1,4})[\.\)]\s+/', '', $trimmed);
+                $questionText = preg_replace('/^(\d{1,4})[.\)]\s+/', '', $trimmed);
 
                 // Jika ada tag GAMBAR di baris soal, simpan juga
                 if ($lineImageFilename !== null) {
@@ -1454,6 +1497,21 @@ class PackageController extends Controller
                 continue;
             }
 
+            // Sub-item (misal "1) Biogas"): append ke teks pertanyaan aktif
+            if ($isSubItem && $currentQuestion !== null) {
+                if ($phase === 'question' || $phase === null) {
+                    $currentQuestion .= "\n" . $trimmed;
+                } elseif ($phase === 'explanation') {
+                    $currentExplanations[] = $trimmed;
+                } else {
+                    $currentQuestion .= "\n" . $trimmed;
+                }
+                if ($lineImageFilename !== null) {
+                    $currentImageFilename = $lineImageFilename;
+                }
+                continue;
+            }
+
             // Jika belum ada soal aktif, lewati
             if ($currentQuestion === null) {
                 continue;
@@ -1466,13 +1524,16 @@ class PackageController extends Controller
                 $answerValue = trim($answerValue);
                 if (preg_match('/^[A-Za-z]$/', $answerValue)) {
                     $currentAnswer = strtoupper($answerValue);
+                    // Jawaban berupa huruf tunggal (A-E) → sudah selesai, jangan append lagi
+                    $phase = 'post_answer';
                 } else {
                     $currentAnswer = $answerValue;
+                    // Jawaban panjang (isian singkat) → masih bisa ada lanjutan
+                    $phase = 'answer';
                 }
                 if ($lineImageFilename !== null) {
                     $currentImageFilename = $lineImageFilename;
                 }
-                $phase = 'answer';
                 continue;
             }
 
@@ -1489,9 +1550,9 @@ class PackageController extends Controller
                 continue;
             }
 
-            // Deteksi opsi (A-E + titik)
-            if (!$isTableRow && $phase !== 'explanation' && $phase !== 'answer'
-                && preg_match('/^([A-Za-z])[\.\)]\s*(.+)/', $trimmed, $matches)) {
+            // Deteksi opsi (hanya A-E + titik/kurung, standar pilihan ganda Indonesia)
+            if (!$isTableRow && $phase !== 'explanation' && $phase !== 'answer' && $phase !== 'post_answer'
+                && preg_match('/^([A-Ea-e])[.\)]\s*(.+)/', $trimmed, $matches)) {
                 $optionText = trim($matches[2]);
                 if ($optionText === '') {
                     $optionText = '—';
@@ -1538,8 +1599,12 @@ class PackageController extends Controller
                 $lastIndex = count($currentOptions) - 1;
                 $currentOptions[$lastIndex] .= ' ' . $trimmed;
             } elseif ($phase === 'answer') {
-                // Teks lanjutan setelah jawaban: append ke jawaban
+                // Teks lanjutan setelah jawaban (hanya untuk jawaban panjang/isian)
                 $currentAnswer .= ' ' . $trimmed;
+            } elseif ($phase === 'post_answer') {
+                // Setelah jawaban huruf tunggal selesai, teks ini bukan bagian jawaban
+                // Bisa jadi teks pertanyaan selanjutnya yang belum ke-flush, skip saja
+                continue;
             } else {
                 // Teks lanjutan pertanyaan
                 $currentQuestion .= ' ' . $trimmed;
