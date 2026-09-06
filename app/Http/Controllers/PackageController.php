@@ -978,11 +978,19 @@ class PackageController extends Controller
         $pdf = $parser->parseFile($pdfPath);
         $pages = $pdf->getPages();
 
+        // Track content hashes per halaman untuk deduplikasi
+        // PDF sering menyimpan gambar duplikat (misal versi dengan/tanpa border)
+        $seenHashesPerPage = [];
+
         foreach ($pages as $pageIndex => $page) {
             $xobjects = $page->getXObjects();
 
             if (empty($xobjects)) {
                 continue;
+            }
+
+            if (!isset($seenHashesPerPage[$pageIndex])) {
+                $seenHashesPerPage[$pageIndex] = [];
             }
 
             foreach ($xobjects as $xobject) {
@@ -999,6 +1007,14 @@ class PackageController extends Controller
                 if (strlen($imageData['content']) < 200) {
                     continue;
                 }
+
+                // Deduplikasi: skip gambar dengan content yang sama
+                // PDF sering menyimpan XObject duplikat (misal 1 tanpa border, 1 dengan border)
+                $contentHash = md5($imageData['content']);
+                if (in_array($contentHash, $seenHashesPerPage[$pageIndex])) {
+                    continue; // Skip duplikat
+                }
+                $seenHashesPerPage[$pageIndex][] = $contentHash;
 
                 $filename = 'auto_' . Str::uuid() . '.' . $imageData['ext'];
                 $storedPath = $targetDir . '/' . $filename;
@@ -1324,7 +1340,7 @@ class PackageController extends Controller
                 $qNum = $q['number'];
                 $hasImageTag = !empty($q['image_filename']);
                 $mentionsImage = (bool) preg_match(
-                    '/\b(gambar|figure|diagram|grafik|graph|tabel|table|ilustrasi|pola|berikut ini|sebagai berikut|terlihat pada|ditunjukkan pada|tampak pada)\b/i',
+                    '/\b(gambar|figure|diagram|grafik|graph|ilustrasi|terlihat pada|ditunjukkan pada|tampak pada)\b/i',
                     $q['question']
                 );
 
@@ -1351,6 +1367,35 @@ class PackageController extends Controller
 
             // TIDAK assign sisa gambar ke soal yang tidak butuh gambar
             // Soal tanpa referensi gambar di teksnya = tidak dapat gambar
+        }
+
+        // Pass 2: Untuk soal dengan [GAMBAR:] tag yang belum dapat gambar
+        // (misal teks soal di halaman 1 tapi gambar di halaman 2),
+        // cari sisa gambar yang belum terpakai dari halaman manapun
+        $remainingImages = [];
+        foreach ($embeddedImages as $img) {
+            if (!in_array($img['path'], $usedImages)) {
+                $remainingImages[] = $img;
+            }
+        }
+
+        if (!empty($remainingImages)) {
+            foreach ($questions as $question) {
+                $qNum = $question['number'];
+                if (isset($result[$qNum])) {
+                    continue; // Sudah punya gambar
+                }
+                if (empty($question['image_filename'])) {
+                    continue; // Tidak punya [GAMBAR:] tag
+                }
+                // Soal ini punya [GAMBAR:] tag tapi belum dapat gambar
+                // Ambil gambar tersisa yang terdekat (urutan pertama)
+                if (!empty($remainingImages)) {
+                    $img = array_shift($remainingImages);
+                    $result[$qNum] = $img['path'];
+                    $usedImages[] = $img['path'];
+                }
+            }
         }
 
         return $result;
@@ -1476,8 +1521,10 @@ class PackageController extends Controller
                 }
             }
 
-            // Deteksi baris tabel (diawali dan diakhiri |) atau baris tab-separated
-            $isTableRow = (bool) preg_match('/^\|.*\|$/', $trimmed) || (preg_match('/\t/', $trimmed) && preg_match('/\|/', $trimmed));
+            // Deteksi baris tabel (diawali dan diakhiri |) atau baris tab-separated (berisi \t)
+            $isTabSeparated = str_contains($trimmed, "\t");
+            $isPipeTable = (bool) preg_match('/^\|.*\|$/', $trimmed);
+            $isTableRow = $isPipeTable || $isTabSeparated;
 
             // Deteksi soal baru: HANYA format "nomor + titik" (misal "1. ") yang dianggap soal baru
             // Format "nomor + kurung tutup" (misal "1) ") dianggap sub-item bagian soal
@@ -1612,16 +1659,22 @@ class PackageController extends Controller
 
             // Baris tabel atau teks lanjutan
             if ($isTableRow) {
+                $tableLine = $trimmed;
+                if ($isTabSeparated && !$isPipeTable) {
+                    $cells = array_map('trim', explode("\t", $trimmed));
+                    $tableLine = '| ' . implode(' | ', $cells) . ' |';
+                }
+
                 // Tabel bisa jadi bagian dari pertanyaan, pembahasan, atau opsi
                 if ($phase === 'explanation') {
-                    $currentExplanations[] = $trimmed;
+                    $currentExplanations[] = $tableLine;
                 } elseif ($phase === 'options' && !empty($currentOptions)) {
                     // Tabel setelah opsi: append ke opsi terakhir
                     $lastIndex = count($currentOptions) - 1;
-                    $currentOptions[$lastIndex] .= "\n" . $trimmed;
+                    $currentOptions[$lastIndex] .= "\n" . $tableLine;
                 } else {
                     // Tabel bagian dari pertanyaan
-                    $currentQuestion .= "\n" . $trimmed;
+                    $currentQuestion .= "\n" . $tableLine;
                 }
                 if ($lineImageFilename !== null) {
                     $currentImageFilename = $lineImageFilename;
@@ -1635,12 +1688,14 @@ class PackageController extends Controller
                     $currentExplanations[] = $trimmed;
                 } else {
                     $lastIndex = count($currentExplanations) - 1;
-                    $currentExplanations[$lastIndex] .= ' ' . $trimmed;
+                    $separator = preg_match('/\|\s*$/', $currentExplanations[$lastIndex]) ? "\n" : ' ';
+                    $currentExplanations[$lastIndex] .= $separator . $trimmed;
                 }
             } elseif ($phase === 'options' && !empty($currentOptions)) {
                 // Teks lanjutan setelah opsi: append ke opsi terakhir
                 $lastIndex = count($currentOptions) - 1;
-                $currentOptions[$lastIndex] .= ' ' . $trimmed;
+                $separator = preg_match('/\|\s*$/', $currentOptions[$lastIndex]) ? "\n" : ' ';
+                $currentOptions[$lastIndex] .= $separator . $trimmed;
             } elseif ($phase === 'answer') {
                 // Teks lanjutan setelah jawaban (hanya untuk jawaban panjang/isian)
                 $currentAnswer .= ' ' . $trimmed;
@@ -1650,7 +1705,8 @@ class PackageController extends Controller
                 continue;
             } else {
                 // Teks lanjutan pertanyaan
-                $currentQuestion .= ' ' . $trimmed;
+                $separator = preg_match('/\|\s*$/', $currentQuestion) ? "\n" : ' ';
+                $currentQuestion .= $separator . $trimmed;
             }
 
             if ($lineImageFilename !== null) {

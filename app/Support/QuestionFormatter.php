@@ -110,7 +110,7 @@ class QuestionFormatter
             return '';
         }
 
-        $html = '<div class="table-wrapper my-3"><table class="min-w-full border-collapse border border-gray-300 text-sm">';
+        $html = '<div class="table-wrapper my-3.5 max-w-[480px] w-full overflow-x-auto rounded-lg shadow-sm border border-slate-800"><table class="w-full border-collapse text-center" style="width: 100%; max-width: 480px; border-collapse: collapse; margin: 0;">';
         $isHeader = true;
 
         foreach ($rows as $row) {
@@ -125,16 +125,21 @@ class QuestionFormatter
             }
 
             $tag = $isHeader ? 'th' : 'td';
-            $align = $isHeader ? ' text-left' : '';
-            $bg = $isHeader ? ' bg-gray-50' : '';
+            $bg = $isHeader ? ' bg-[#0f2b48] text-white font-bold' : ' bg-white text-slate-800';
+            $align = ' text-center';
 
             $html .= '<tr>';
             foreach ($cells as $cell) {
+                $style = $isHeader
+                    ? 'background-color: #0f2b48; color: #ffffff; font-weight: bold; text-align: center; padding: 10px 18px; border: 1px solid #1e293b; font-size: 16px; letter-spacing: 0.025em;'
+                    : 'background-color: #ffffff; color: #1e293b; text-align: center; padding: 9px 18px; border: 1px solid #334155; font-size: 15px; font-weight: 500;';
+
                 $html .= sprintf(
-                    '<%s class="border border-gray-300 px-3 py-1.5%s%s">%s</%s>',
+                    '<%s class="border border-slate-700 px-4 py-2%s%s" style="%s">%s</%s>',
                     $tag,
                     $bg,
                     $align,
+                    $style,
                     htmlspecialchars($cell, ENT_QUOTES, 'UTF-8'),
                     $tag
                 );
