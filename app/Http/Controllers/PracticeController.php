@@ -186,6 +186,17 @@ class PracticeController extends Controller
             'answers' => $results,
         ]);
 
+        // Kirim laporan hasil belajar PR ke Web Induk kpm-student-smart
+        $currentUser = Auth::user();
+        if ($currentUser && !empty($currentUser->email)) {
+            \App\Services\ParentWeeklyReportService::report(
+                $currentUser->email,
+                (int) round($totalScore),
+                true,
+                "PR / Latihan Soal: " . ($package->title ?? 'Latihan Mandiri')
+            );
+        }
+
         // Ambil pengaturan dari package (realtime)
         $showAnswerKey  = $package->canShowAnswerKey();
         $showExplanation = $package->canShowExplanation();

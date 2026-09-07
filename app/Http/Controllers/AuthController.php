@@ -44,6 +44,44 @@ class AuthController extends Controller
             ]);
         }
 
+        // 1. Coba verifikasi & auto-sync langsung dari Web Induk / Master App
+        $parentUrl = rtrim(env('PARENT_APP_URL', 'http://localhost:8000'), '/');
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(3)->post("{$parentUrl}/api/v1/verify", [
+                'email' => $request->input('email'),
+                'password' => $request->input('password'),
+            ]);
+
+            if ($response->successful() && ($response->json('valid') ?? false)) {
+                $master = $response->json();
+                $role = in_array($master['role'], ['super_admin', 'administrator', 'guru']) ? 'admin' : 'user';
+                $fotoProfil = $master['foto_profil'] ?? "{$parentUrl}/api/foto/" . urlencode($master['email']);
+
+                $user = User::updateOrCreate(
+                    ['email' => $master['email']],
+                    [
+                        'name' => $master['name'],
+                        'password' => $request->input('password'), // model User kpm-smart memiliki mutator setPasswordAttribute
+                        'role' => $role,
+                        'is_active' => true,
+                        'is_verified' => true,
+                        'student_name' => $master['name'],
+                        'student_class' => $master['class_name'] ?: 'VII-A',
+                        'profile_photo' => $fotoProfil,
+                    ]
+                );
+
+                Auth::login($user, $request->boolean('remember'));
+                RateLimiter::clear($throttleKey);
+                $request->session()->regenerate();
+                $user->update(['last_login_at' => now()]);
+
+                return redirect()->intended(route('dashboard'));
+            }
+        } catch (\Throwable $e) {
+            // Jika Web Master offline, lanjutkan ke Auth lokal
+        }
+
         if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             $user = Auth::user();
 

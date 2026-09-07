@@ -124,6 +124,18 @@ class AdminUserController extends Controller
             $user->update(['profile_photo' => $path]);
         }
 
+        // Teruskan user baru ke Web Induk (otomatis menyebar ke Sunnah Daily dan Sudoku)
+        try {
+            $parentUrl = rtrim(env('PARENT_APP_URL', 'http://localhost:8000'), '/');
+            \Illuminate\Support\Facades\Http::timeout(3)->post("{$parentUrl}/api/v1/profile/update", [
+                'email' => $user->email,
+                'name' => $user->name,
+                'password' => $validated['password'],
+                'class_name' => $user->student_class,
+                'role' => 'peserta',
+            ]);
+        } catch (\Throwable $e) {}
+
         return redirect()->route('admin.users.index')
             ->with('success', 'User "' . $user->name . '" berhasil ditambahkan. Email: ' . $user->email);
     }
@@ -194,6 +206,20 @@ class AdminUserController extends Controller
         }
 
         $user->update($data);
+
+        // Teruskan perubahan ke Web Induk (otomatis menyebar ke seluruh web)
+        try {
+            $parentUrl = rtrim(env('PARENT_APP_URL', 'http://localhost:8000'), '/');
+            $payload = [
+                'email' => $user->email,
+                'name' => $user->name,
+                'class_name' => $user->student_class,
+            ];
+            if (!empty($validated['password'])) {
+                $payload['password'] = $validated['password'];
+            }
+            \Illuminate\Support\Facades\Http::timeout(3)->post("{$parentUrl}/api/v1/profile/update", $payload);
+        } catch (\Throwable $e) {}
 
         return redirect()->route('admin.users.show', $user->id)
             ->with('success', 'Data user "' . $user->name . '" berhasil diperbarui.');
