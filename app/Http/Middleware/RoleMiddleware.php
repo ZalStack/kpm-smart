@@ -25,8 +25,17 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, string $role)
     {
-        // 1. Belum login → paksa ke halaman login.
+        $isApi = $request->is('api/*') || $request->expectsJson();
+
+        // 1. Belum login → tolak akses atau redirect.
         if (!Auth::check()) {
+            if ($isApi) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated. Silakan login terlebih dahulu.',
+                ], 401);
+            }
+
             return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu!');
         }
 
@@ -35,16 +44,32 @@ class RoleMiddleware
         // 2. Akun dinonaktifkan → tolak akses dengan pesan yang jelas.
         if ($user->is_active === false) {
             Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+
+            if ($request->hasSession()) {
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
+
+            if ($isApi) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akun Anda telah dinonaktifkan. Silakan hubungi admin.',
+                ], 403);
+            }
 
             return redirect()->route('login')
                 ->with('error', 'Akun Anda telah dinonaktifkan. Silakan hubungi admin.');
         }
 
-        // 3. Role tidak sesuai → redirect ke dashboard role yang dimiliki user,
-        //    bukan sekadar abort(403), agar pengalaman pengguna lebih baik.
+        // 3. Role tidak sesuai → tolak akses API atau redirect ke dashboard role sendiri.
         if ($user->role !== $role) {
+            if ($isApi) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak! Anda tidak memiliki akses ke endpoint ini.',
+                ], 403);
+            }
+
             if ($user->role === 'admin') {
                 return redirect()->route('admin.dashboard')
                     ->with('error', 'Anda tidak memiliki akses ke halaman tersebut.');
