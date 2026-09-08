@@ -22,7 +22,7 @@ const canStart = computed(() => {
 });
 
 function startPractice(cardId) {
-    router.post(route('practice.start', props.package.id), { card_id: cardId });
+    router.post(route('user.practice.start', props.package.id), { card_id: cardId });
 }
 
 function isCardCompleted(cardId) {
@@ -52,7 +52,7 @@ function formatDate(dateStr) {
         <template #header-sub>Detail soal tugas</template>
 
         <!-- Back Link -->
-        <Link :href="route('packages.index')" class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-all duration-200 mb-5 group">
+        <Link :href="route('user.packages.index')" class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-all duration-200 mb-5 group">
             <svg class="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
             Kembali ke Daftar Soal
         </Link>
@@ -82,7 +82,7 @@ function formatDate(dateStr) {
                     <p class="text-xs text-blue-600">Lanjutkan sesi yang belum selesai.</p>
                 </div>
             </div>
-            <Link :href="route('practice.show', inProgressSession.id)" class="flex-shrink-0 bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-blue-700 transition">
+            <Link :href="route('user.practice.show', inProgressSession.id)" class="flex-shrink-0 bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-blue-700 transition">
                 Lanjutkan →
             </Link>
         </div>
@@ -156,14 +156,14 @@ function formatDate(dateStr) {
                                     <div class="flex gap-2">
                                         <!-- Completed: view result only, no retry -->
                                         <template v-if="isCardCompleted(card.id)">
-                                            <Link :href="route('practice.show', cardSessionId(card.id))"
+                                            <Link :href="route('user.practice.show', cardSessionId(card.id))"
                                                   class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-2.5 rounded-lg hover:bg-emerald-100 transition-all duration-200">
                                                 <Icon icon="mdi:chart-bar" class="w-4 h-4" /> Lihat Hasil
                                             </Link>
                                         </template>
                                         <!-- In Progress: continue -->
                                         <template v-else-if="isCardInProgress(card.id)">
-                                            <Link :href="route('practice.show', cardSessionId(card.id))"
+                                            <Link :href="route('user.practice.show', cardSessionId(card.id))"
                                                   class="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 bg-blue-50 px-3 py-2.5 rounded-lg hover:bg-blue-100 transition-all duration-200">
                                                 <Icon icon="mdi:play" class="w-4 h-4" /> Lanjutkan
                                             </Link>
@@ -204,75 +204,8 @@ function formatDate(dateStr) {
                 </div>
             </div>
 
-            <!-- Sidebar -->
+            <!-- Sidebar - hanya peraturan penting (Informasi Soal, Jadwal, Pengaturan dihilangkan sesuai request) -->
             <div class="space-y-4 anim-fade-in-up">
-                <!-- Stats -->
-                <div class="bg-card border rounded-2xl p-5 shadow-card hover:shadow-md transition-shadow duration-300">
-                    <h3 class="font-semibold text-sm mb-4"><Icon icon="mdi:package-variant" class="w-5 h-5 inline-block align-middle mr-1.5" /> Informasi Soal</h3>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-muted-foreground">Total Card</span>
-                            <span class="font-semibold">{{ totalCards }}</span>
-                        </div>
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-muted-foreground">Total Soal</span>
-                            <span class="font-semibold">{{ totalQuestions }}</span>
-                        </div>
-                        <div class="border-t border-border/50 pt-3 flex items-center justify-between text-sm">
-                            <span class="text-muted-foreground">Percobaan</span>
-                            <span class="font-semibold text-amber-600">1x per card</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Schedule -->
-                <div v-if="package.start_date || package.end_date" class="bg-card border rounded-2xl p-5 shadow-card hover:shadow-md transition-shadow duration-300">
-                    <h3 class="font-semibold text-sm mb-4"><Icon icon="mdi:calendar-outline" class="w-5 h-5 inline-block align-middle mr-1.5" /> Jadwal</h3>
-                    <div class="space-y-2.5 text-sm">
-                        <div v-if="package.start_date" class="flex items-center justify-between">
-                            <span class="text-muted-foreground">Mulai</span>
-                            <span class="font-medium">{{ package.start_date }}</span>
-                        </div>
-                        <div v-if="package.end_date" class="flex items-center justify-between">
-                            <span class="text-muted-foreground">Selesai</span>
-                            <span class="font-medium">{{ package.end_date }}</span>
-                        </div>
-                        <div v-if="package.start_time" class="flex items-center justify-between">
-                            <span class="text-muted-foreground">Jam Mulai</span>
-                            <span class="font-medium">{{ package.start_time }}</span>
-                        </div>
-                        <div v-if="package.end_time" class="flex items-center justify-between">
-                            <span class="text-muted-foreground">Jam Selesai</span>
-                            <span class="font-medium">{{ package.end_time }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Settings -->
-                <div class="bg-card border rounded-2xl p-5 shadow-card hover:shadow-md transition-shadow duration-300">
-                    <h3 class="font-semibold text-sm mb-4"><Icon icon="mdi:cog-outline" class="w-5 h-5 inline-block align-middle mr-1.5" /> Pengaturan</h3>
-                    <div class="space-y-2.5 text-sm">
-                        <div class="flex items-center justify-between">
-                            <span class="text-muted-foreground">Kunci Jawaban</span>
-                            <span :class="package.show_answer_key ? 'text-emerald-600 font-medium inline-flex items-center gap-1' : 'text-muted-foreground inline-flex items-center gap-1'">
-                                 <template v-if="package.show_answer_key"><Icon icon="mdi:check-circle" class="w-4 h-4 text-green-600" /> Ya</template><template v-else><Icon icon="mdi:close-circle" class="w-4 h-4 text-red-500" /> Tidak</template>
-                            </span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-muted-foreground">Pembahasan</span>
-                            <span :class="package.show_explanation ? 'text-emerald-600 font-medium inline-flex items-center gap-1' : 'text-muted-foreground inline-flex items-center gap-1'">
-                                 <template v-if="package.show_explanation"><Icon icon="mdi:check-circle" class="w-4 h-4 text-green-600" /> Ya</template><template v-else><Icon icon="mdi:close-circle" class="w-4 h-4 text-red-500" /> Tidak</template>
-                            </span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-muted-foreground">Tampil Skor</span>
-                            <span :class="package.show_score ? 'text-emerald-600 font-medium inline-flex items-center gap-1' : 'text-muted-foreground inline-flex items-center gap-1'">
-                                 <template v-if="package.show_score"><Icon icon="mdi:check-circle" class="w-4 h-4 text-green-600" /> Ya</template><template v-else><Icon icon="mdi:close-circle" class="w-4 h-4 text-red-500" /> Tidak</template>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- 1-Attempt Notice -->
                 <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4">
                     <div class="flex items-start gap-2.5">

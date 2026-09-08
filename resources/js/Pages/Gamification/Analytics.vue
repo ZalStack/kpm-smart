@@ -171,7 +171,7 @@ const hasData = computed(() => props.scoreOverTime.length > 0);
                 <div class="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-4 animate-pulse"><Icon icon="mdi:chart-bar" class="w-10 h-10 text-muted-foreground" /></div>
                 <h3 class="font-semibold text-lg mb-2">Belum Ada Data</h3>
                 <p class="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">Mulai kerjakan soal untuk melihat analitik belajarmu</p>
-                <Link :href="route('packages.index')" class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 hover:shadow-md active:scale-95 transition-all duration-200">
+                <Link :href="route('user.packages.index')" class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 hover:shadow-md active:scale-95 transition-all duration-200">
                     Mulai Belajar
                 </Link>
             </div>

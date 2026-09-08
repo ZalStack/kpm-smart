@@ -66,7 +66,7 @@ function getRankBadge(rank) {
                         <div class="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-4 animate-pulse"><Icon icon="mdi:chart-bar" class="w-10 h-10 text-muted-foreground" /></div>
                         <h3 class="text-lg font-semibold text-foreground mb-1">Belum Ada Data</h3>
                         <p class="text-muted-foreground text-sm mb-5 max-w-xs mx-auto">Belum ada data peringkat. Mulai belajar untuk masuk papan peringkat!</p>
-                        <Link :href="route('packages.index')" class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-primary/90 hover:shadow-md active:scale-95 transition-all duration-200">
+                        <Link :href="route('user.packages.index')" class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-primary/90 hover:shadow-md active:scale-95 transition-all duration-200">
                             Mulai Belajar
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
                         </Link>

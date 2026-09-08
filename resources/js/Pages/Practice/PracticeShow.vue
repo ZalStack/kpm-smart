@@ -23,7 +23,7 @@ const allHidden = computed(() => !props.showScore && !props.showAnswerKey && !pr
 onMounted(() => {
     if (allHidden.value) {
         alert('Detail riwayat tidak tersedia. Pengatur soal telah menonaktifkan semua tampilan hasil.');
-        router.visit(route('practice.history'));
+        router.visit(route('user.practice.history'));
     }
 
     if (props.session?.total_score >= 80) {
@@ -53,7 +53,7 @@ function formatDate(dateStr) {
         <template #header-sub>{{ session.package?.title }}</template>
 
 
-        <Link :href="route('practice.history')" class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-all duration-300 mb-4 hover:gap-2.5 group">
+        <Link :href="route('user.practice.history')" class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-all duration-300 mb-4 hover:gap-2.5 group">
             <svg class="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
             Kembali ke Riwayat
         </Link>
@@ -122,7 +122,7 @@ function formatDate(dateStr) {
 
                 <!-- Certificate Download -->
                 <div v-if="session.status === 'completed'" class="flex justify-center anim-show-fade">
-                    <a :href="route('practice.certificate', session.id)"
+                    <a :href="route('user.practice.certificate', session.id)"
                        class="inline-flex items-center gap-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-3.5 rounded-2xl text-sm font-semibold hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 min-h-[48px]">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
                         Unduh Sertifikat

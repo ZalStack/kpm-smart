@@ -32,7 +32,7 @@ function getIconBg(type) {
 function markAsRead(id, index) {
     const notif = localNotifications.value[index];
     if (notif && !notif.is_read) {
-        fetch(route('notifications.mark-read', id), {
+        fetch(route('user.notifications.mark-read', id), {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
         }).then(r => r.json()).then(data => {
@@ -43,7 +43,7 @@ function markAsRead(id, index) {
 
 function markAllRead() {
     processing.value = true;
-    fetch(route('notifications.mark-all-read'), {
+    fetch(route('user.notifications.mark-all-read'), {
         method: 'POST',
         headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
     }).then(r => r.json()).then(() => {

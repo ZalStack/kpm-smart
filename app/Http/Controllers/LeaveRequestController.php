@@ -59,7 +59,7 @@ class LeaveRequestController extends Controller
             );
         }
 
-        return redirect()->route('leave-requests.index')
+        return redirect()->route('user.leave-requests.index')
             ->with('success', 'Pengajuan izin berhasil dikirim!');
     }
 
@@ -111,7 +111,7 @@ class LeaveRequestController extends Controller
             'leave',
             'Pengajuan Izin ' . ($validated['status'] === 'approved' ? 'Disetujui' : 'Ditolak'),
             'Pengajuan izin anda telah ' . ($validated['status'] === 'approved' ? 'disetujui' : 'ditolak') . ' oleh admin.',
-            ['leave_request_id' => $leaveRequest->id, 'action_url' => route('leave-requests.index')],
+            ['leave_request_id' => $leaveRequest->id, 'action_url' => route('user.leave-requests.index')],
             true
         );
 

@@ -77,12 +77,32 @@ async function markAllRead() {
     } catch (e) {}
 }
 
+function getNotifHref(n) {
+    if (n.type === 'announcement' && n.data?.announcement_id) {
+        return route('admin.announcements.show', n.data.announcement_id);
+    }
+    return route('admin.notifications.index');
+}
+async function handleNotifClick(n) {
+    try {
+        await fetch(route('admin.notifications.mark-read', n.id), {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': page.props.csrfToken,
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+    } catch (e) {}
+}
+
 const navItems = [
     {
         label: 'Menu Utama',
         items: [
             { href: route('admin.dashboard'), label: 'Dasbor', icon: 'M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 12a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z', route: 'admin.dashboard' },
             { href: route('admin.packages.index'), label: 'Soal Tugas', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', route: 'admin.packages.*' },
+            { href: route('admin.announcements.index'), label: 'Pengumuman', icon: 'M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 110-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 01-1.44-4.282m3.102.069a18.03 18.03 0 01-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0', route: 'admin.announcements.*' },
         ],
     },
     {
@@ -239,9 +259,10 @@ onUnmounted(() => {
                                             <p class="text-sm text-muted-foreground/70 font-medium">Tidak ada notifikasi</p>
                                             <p class="text-xs text-muted-foreground/50 mt-1">Semua sudah terbaca</p>
                                         </div>
-                                        <Link v-for="n in notifications" :key="n.id" :href="route('admin.notifications.index')" class="flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors" :class="{ 'bg-accent/50': !n.is_read }">
+                                        <Link v-for="n in notifications" :key="n.id" :href="getNotifHref(n)" @click="handleNotifClick(n)" class="flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors" :class="{ 'bg-accent/50': !n.is_read }">
+                                            <div :class="['w-2 h-2 rounded-full flex-shrink-0', n.is_read ? 'bg-transparent' : (n.type==='announcement' ? 'bg-amber-500' : 'bg-primary')]"></div>
                                             <div class="min-w-0 flex-1">
-                                                <p class="text-sm font-medium truncate">{{ n.title }}</p>
+                                                <p class="text-sm font-medium truncate flex items-center gap-1.5"><span v-if="n.type==='announcement'" class="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">PENGUMUMAN</span>{{ n.title }}</p>
                                                 <p class="text-xs text-muted-foreground truncate">{{ n.message }}</p>
                                             </div>
                                             <span class="text-[10px] text-muted-foreground whitespace-nowrap">{{ n.created_at }}</span>

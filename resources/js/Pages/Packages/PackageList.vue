@@ -45,7 +45,7 @@ const packageIcons = [
 ];
 
 function applyFilters() {
-    router.get(route('packages.index'), {
+    router.get(route('user.packages.index'), {
         search: search.value,
         bidang: bidang.value,
         kelas: kelas.value,
@@ -182,7 +182,7 @@ function getScheduleLabel(pkg) {
                         <div class="mt-auto pt-3 border-t border-border">
                             <span v-if="pkg.schedule_status === 'expired'" class="block w-full text-center bg-muted text-muted-foreground py-2.5 rounded-xl font-semibold text-xs md:text-sm cursor-not-allowed inline-flex items-center justify-center gap-1.5"><Icon icon="mdi:close-octagon" class="w-4 h-4" /> Jadwal Berakhir</span>
                             <span v-else-if="pkg.schedule_status === 'upcoming'" class="block w-full text-center bg-yellow-100 text-yellow-700 py-2.5 rounded-xl font-semibold text-xs md:text-sm cursor-not-allowed inline-flex items-center justify-center gap-1.5"><Icon icon="mdi:clock-outline" class="w-4 h-4" /> Belum Dimulai</span>
-                            <Link v-else :href="route('packages.show', pkg.id)" class="block w-full text-center bg-primary text-white py-2.5 rounded-xl font-semibold hover:bg-primary/90 hover:shadow-lg transition-all duration-300 text-xs md:text-sm inline-flex items-center justify-center gap-1.5"><Icon icon="mdi:book-open-page-variant" class="w-4 h-4" /> Kerjakan Tugas</Link>
+                            <Link v-else :href="route('user.packages.show', pkg.id)" class="block w-full text-center bg-primary text-white py-2.5 rounded-xl font-semibold hover:bg-primary/90 hover:shadow-lg transition-all duration-300 text-xs md:text-sm inline-flex items-center justify-center gap-1.5"><Icon icon="mdi:book-open-page-variant" class="w-4 h-4" /> Kerjakan Tugas</Link>
                         </div>
                     </div>
                 </div>

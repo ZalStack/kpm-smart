@@ -49,7 +49,7 @@ function submit() {
         formData.append('proof_file', form.value.proof_file);
     }
 
-    router.post(route('leave-requests.store'), formData, {
+    router.post(route('user.leave-requests.store'), formData, {
         onFinish: () => { submitting.value = false; },
     });
 }
@@ -88,7 +88,7 @@ function submit() {
             </div>
 
             <div class="flex gap-3 pt-2">
-                <Button variant="ghost" @click="router.visit(route('leave-requests.index'))" class="min-h-10">Batal</Button>
+                <Button variant="ghost" @click="router.visit(route('user.leave-requests.index'))" class="min-h-10">Batal</Button>
                 <Button @click="submit" :disabled="submitting" class="flex-1 hover:shadow-md active:scale-[0.98] transition-all duration-200 min-h-12">
                     {{ submitting ? 'Mengirim...' : 'Kirim Pengajuan' }}
                 </Button>

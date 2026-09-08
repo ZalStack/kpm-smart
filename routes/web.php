@@ -12,6 +12,7 @@ use App\Http\Controllers\LoginLogController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\GamificationController;
+use App\Http\Controllers\AnnouncementController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -167,6 +168,15 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
         Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
 
+        // Announcements (Admin) - Pengumuman untuk User
+        Route::prefix('announcements')->name('announcements.')->group(function () {
+            Route::get('/', [AnnouncementController::class, 'adminIndex'])->name('index');
+            Route::post('/', [AnnouncementController::class, 'adminStore'])->name('store');
+            Route::delete('/{announcement}', [AnnouncementController::class, 'adminDestroy'])->name('destroy');
+            Route::post('/{announcement}/toggle', [AnnouncementController::class, 'adminToggle'])->name('toggle');
+            Route::get('/{announcement}', [AnnouncementController::class, 'show'])->name('show');
+        });
+
         // Admin Profile
         Route::get('/profile', [AuthController::class, 'adminShowProfile'])->name('profile.edit');
         Route::put('/profile', [AuthController::class, 'adminUpdateProfile'])->name('profile.update');
@@ -175,8 +185,8 @@ Route::middleware(['auth', 'role:admin'])
     });
 
 // User Routes
-Route::middleware(['auth', 'role:user'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'userDashboard'])->name('user.dashboard');
+Route::middleware(['auth', 'role:user'])->name('user.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'userDashboard'])->name('dashboard');
 
     // Profile
     Route::get('/profile', [AuthController::class, 'showProfile'])->name('profile.edit');
@@ -203,8 +213,8 @@ Route::middleware(['auth', 'role:user'])->group(function () {
     Route::post('/practice/submit/{session}', [PracticeController::class, 'submit'])->name('practice.submit');
     Route::post('/practice/save-answers/{session}', [PracticeController::class, 'saveAnswers'])->name('practice.save-answers');
     Route::get('/practice/submit/{session}', function ($session) {
-        return redirect()->route('practice.show', $session);
-    });
+        return redirect()->route('user.practice.show', $session);
+    })->name('practice.submit.redirect');
     Route::get('/practice/{session}', [PracticeController::class, 'show'])->name('practice.show');
 
     // Gamification
@@ -219,4 +229,8 @@ Route::middleware(['auth', 'role:user'])->group(function () {
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+
+    // Announcements (User) - Detail pengumuman dari notifikasi
+    Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
 });
+

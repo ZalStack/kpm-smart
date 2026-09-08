@@ -367,7 +367,7 @@ class PackageController extends Controller
     public function show(Package $package)
     {
         if (!$package->is_active) {
-            return redirect()->route('packages.index')->with('error', 'Paket tidak tersedia!');
+            return redirect()->route('user.packages.index')->with('error', 'Paket tidak tersedia!');
         }
 
         $totalCards = count($package->cards ?? []);

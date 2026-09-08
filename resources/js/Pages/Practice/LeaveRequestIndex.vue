@@ -28,7 +28,7 @@ function statusVariant(s) {
         <template #header-sub>Lihat status pengajuan izin anda</template>
 
         <div class="flex items-center justify-end mb-6">
-            <Link :href="route('leave-requests.create')">
+            <Link :href="route('user.leave-requests.create')">
                 <Button size="sm" class="hover:shadow-md active:scale-95 transition-all duration-200 min-h-10">+ Ajukan Izin</Button>
             </Link>
         </div>
@@ -39,7 +39,7 @@ function statusVariant(s) {
             </div>
             <h3 class="text-base font-semibold mb-1">Belum ada pengajuan izin</h3>
             <p class="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">Ajukan izin pertamamu sekarang</p>
-            <Link :href="route('leave-requests.create')">
+            <Link :href="route('user.leave-requests.create')">
                 <Button size="sm" class="hover:shadow-md active:scale-95 transition-all duration-200 min-h-10">Ajukan Izin Sekarang</Button>
             </Link>
         </div>

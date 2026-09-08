@@ -21,10 +21,10 @@ const bottomTabs = computed(() => {
     if (!user || user.role !== 'user') return [];
     return [
         { label: 'Dashboard', route: 'user.dashboard', icon: 'mdi:view-dashboard-outline', iconActive: 'mdi:view-dashboard', match: 'user.dashboard' },
-        { label: 'Tugas PR', route: 'packages.index', icon: 'mdi:book-open-variant', iconActive: 'mdi:book-open-page-variant', match: 'packages.*' },
-        { label: 'Riwayat', route: 'practice.history', icon: 'mdi:history', iconActive: 'mdi:history', match: 'practice.*' },
-        { label: 'Peringkat', route: 'leaderboard', icon: 'mdi:trophy-outline', iconActive: 'mdi:trophy', match: 'leaderboard' },
-        { label: 'Izin', route: 'leave-requests.index', icon: 'mdi:calendar-blank-outline', iconActive: 'mdi:calendar-check', match: 'leave-requests.*' },
+        { label: 'Tugas PR', route: 'user.packages.index', icon: 'mdi:book-open-variant', iconActive: 'mdi:book-open-page-variant', match: 'user.packages.*' },
+        { label: 'Riwayat', route: 'user.practice.history', icon: 'mdi:history', iconActive: 'mdi:history', match: 'user.practice.*' },
+        { label: 'Peringkat', route: 'user.leaderboard', icon: 'mdi:trophy-outline', iconActive: 'mdi:trophy', match: 'user.leaderboard' },
+        { label: 'Izin', route: 'user.leave-requests.index', icon: 'mdi:calendar-blank-outline', iconActive: 'mdi:calendar-check', match: 'user.leave-requests.*' },
     ];
 });
 
@@ -43,7 +43,7 @@ function toggleNotifDropdown() {
 
 async function loadNotifications() {
     try {
-        const response = await fetch(route('notifications.dropdown'), {
+        const response = await fetch(route('user.notifications.dropdown'), {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': page.props.csrfToken,
@@ -59,7 +59,7 @@ async function loadNotifications() {
 
 async function markAllRead() {
     try {
-        await fetch(route('notifications.mark-all-read'), {
+        await fetch(route('user.notifications.mark-all-read'), {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': page.props.csrfToken,
@@ -69,6 +69,25 @@ async function markAllRead() {
         });
         unreadCount.value = 0;
         loadNotifications();
+    } catch (e) {}
+}
+
+function getNotifHref(n) {
+    if (n.type === 'announcement' && n.data?.announcement_id) {
+        return route('user.announcements.show', n.data.announcement_id);
+    }
+    return route('user.notifications.index');
+}
+async function handleNotifClick(n) {
+    try {
+        await fetch(route('user.notifications.mark-read', n.id), {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': page.props.csrfToken,
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
     } catch (e) {}
 }
 
@@ -105,10 +124,10 @@ onUnmounted(() => {
                         <template v-if="user">
                             <template v-if="user.role === 'user'">
                                 <Link :href="route('user.dashboard')" class="nav-link relative inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-lg transition-all duration-200" :class="{ 'text-foreground bg-accent': isActive('user.dashboard') }">Dashboard</Link>
-                                <Link :href="route('packages.index')" class="nav-link relative inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-lg transition-all duration-200" :class="{ 'text-foreground bg-accent': isActive('packages.*') }">Tugas PR</Link>
-                                <Link :href="route('practice.history')" class="nav-link relative inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-lg transition-all duration-200" :class="{ 'text-foreground bg-accent': isActive('practice.*') }">Riwayat</Link>
-                                <Link :href="route('leaderboard')" class="nav-link relative inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-lg transition-all duration-200" :class="{ 'text-foreground bg-accent': isActive('leaderboard') }">Peringkat</Link>
-                                <Link :href="route('leave-requests.index')" class="nav-link relative inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-lg transition-all duration-200" :class="{ 'text-foreground bg-accent': isActive('leave-requests.*') }">Izin</Link>
+                                <Link :href="route('user.packages.index')" class="nav-link relative inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-lg transition-all duration-200" :class="{ 'text-foreground bg-accent': isActive('user.packages.*') }">Tugas PR</Link>
+                                <Link :href="route('user.practice.history')" class="nav-link relative inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-lg transition-all duration-200" :class="{ 'text-foreground bg-accent': isActive('user.practice.*') }">Riwayat</Link>
+                                <Link :href="route('user.leaderboard')" class="nav-link relative inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-lg transition-all duration-200" :class="{ 'text-foreground bg-accent': isActive('user.leaderboard') }">Peringkat</Link>
+                                <Link :href="route('user.leave-requests.index')" class="nav-link relative inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-lg transition-all duration-200" :class="{ 'text-foreground bg-accent': isActive('user.leave-requests.*') }">Izin</Link>
                             </template>
 
                             <!-- Desktop Notification Bell -->
@@ -129,17 +148,17 @@ onUnmounted(() => {
                                                 <p class="text-sm text-muted-foreground font-medium">Tidak ada notifikasi</p>
                                                 <p class="text-xs text-muted-foreground/60 mt-0.5">Notifikasi baru akan muncul di sini</p>
                                             </div>
-                                            <Link v-for="n in notifications" :key="n.id" :href="route('notifications.index')" class="flex items-center gap-3 px-4 py-3 hover:bg-accent/70 transition-all duration-200 border-b border-border/40 last:border-0" :class="{ 'bg-accent/40': !n.is_read }">
-                                                <div class="flex-shrink-0 w-2 h-2 rounded-full bg-primary/60" :class="{ 'opacity-0': n.is_read }"></div>
+                                            <Link v-for="n in notifications" :key="n.id" :href="getNotifHref(n)" @click="handleNotifClick(n)" class="flex items-center gap-3 px-4 py-3 hover:bg-accent/70 transition-all duration-200 border-b border-border/40 last:border-0" :class="{ 'bg-accent/40': !n.is_read }">
+                                                <div :class="['flex-shrink-0 w-2 h-2 rounded-full', n.is_read ? 'opacity-0' : (n.type==='announcement' ? 'bg-amber-500' : 'bg-primary/60')]"></div>
                                                 <div class="min-w-0 flex-1">
-                                                    <p class="text-sm font-medium truncate">{{ n.title }}</p>
+                                                    <p class="text-sm font-medium truncate flex items-center gap-1.5"><span v-if="n.type==='announcement'" class="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">PENGUMUMAN</span>{{ n.title }}</p>
                                                     <p class="text-xs text-muted-foreground truncate mt-0.5">{{ n.message }}</p>
                                                 </div>
                                                 <span class="text-[10px] text-muted-foreground/70 whitespace-nowrap">{{ n.created_at }}</span>
                                             </Link>
                                         </div>
                                         <div class="border-t mx-2 mt-1 pt-1">
-                                            <Link :href="route('notifications.index')" class="block px-3 py-2.5 text-sm text-center text-muted-foreground hover:text-foreground hover:bg-accent/70 transition-all duration-200 rounded-lg font-medium">Lihat Semua Notifikasi</Link>
+                                            <Link :href="route('user.notifications.index')" class="block px-3 py-2.5 text-sm text-center text-muted-foreground hover:text-foreground hover:bg-accent/70 transition-all duration-200 rounded-lg font-medium">Lihat Semua Notifikasi</Link>
                                         </div>
                                     </div>
                                 </Transition>
@@ -162,10 +181,10 @@ onUnmounted(() => {
                                             <p class="text-xs text-muted-foreground truncate mt-0.5">{{ user.email }}</p>
                                         </div>
                                         <div class="py-1">
-                                            <Link :href="route('profile.edit')" class="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-accent/70 hover:text-accent-foreground transition-all duration-200 rounded-lg mx-1.5">
+                                            <Link :href="route('user.profile.edit')" class="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-accent/70 hover:text-accent-foreground transition-all duration-200 rounded-lg mx-1.5">
                                                 <Icon icon="mdi:account-outline" class="w-4 h-4" /> Profil Saya
                                             </Link>
-                                            <Link v-if="user.role === 'user'" :href="route('practice.statistics')" class="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-accent/70 hover:text-accent-foreground transition-all duration-200 rounded-lg mx-1.5">
+                                            <Link v-if="user.role === 'user'" :href="route('user.practice.statistics')" class="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-accent/70 hover:text-accent-foreground transition-all duration-200 rounded-lg mx-1.5">
                                                 <Icon icon="mdi:chart-bar" class="w-4 h-4" /> Statistik
                                             </Link>
                                         </div>
@@ -208,7 +227,7 @@ onUnmounted(() => {
                                         <Icon icon="mdi:bell-off-outline" class="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
                                         <p class="text-sm text-muted-foreground font-medium">Tidak ada notifikasi</p>
                                     </div>
-                                    <Link v-for="n in notifications" :key="n.id" :href="route('notifications.index')" class="flex items-center gap-3 px-4 py-3 hover:bg-accent/70 transition-all duration-200 border-b border-border/40 last:border-0" :class="{ 'bg-accent/40': !n.is_read }">
+                                    <Link v-for="n in notifications" :key="n.id" :href="route('user.notifications.index')" class="flex items-center gap-3 px-4 py-3 hover:bg-accent/70 transition-all duration-200 border-b border-border/40 last:border-0" :class="{ 'bg-accent/40': !n.is_read }">
                                         <div class="flex-shrink-0 w-2 h-2 rounded-full bg-primary/60" :class="{ 'opacity-0': n.is_read }"></div>
                                         <div class="min-w-0 flex-1">
                                             <p class="text-sm font-medium truncate">{{ n.title }}</p>
@@ -218,13 +237,13 @@ onUnmounted(() => {
                                     </Link>
                                 </div>
                                 <div class="border-t mx-2 mt-1 pt-1">
-                                    <Link :href="route('notifications.index')" class="block px-3 py-2.5 text-sm text-center text-muted-foreground hover:text-foreground hover:bg-accent/70 transition-all duration-200 rounded-lg font-medium">Lihat Semua</Link>
+                                    <Link :href="route('user.notifications.index')" class="block px-3 py-2.5 text-sm text-center text-muted-foreground hover:text-foreground hover:bg-accent/70 transition-all duration-200 rounded-lg font-medium">Lihat Semua</Link>
                                 </div>
                             </div>
                         </Transition>
                     </div>
                     <!-- Mobile Profile Avatar -->
-                    <Link :href="route('profile.edit')" class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-xs font-bold text-primary-foreground shadow-sm overflow-hidden">
+                    <Link :href="route('user.profile.edit')" class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-xs font-bold text-primary-foreground shadow-sm overflow-hidden">
                         <img v-if="profilePhotoUrl" :src="profilePhotoUrl" class="w-full h-full object-cover" />
                         <span v-else>{{ (user?.name || 'A').charAt(0).toUpperCase() }}</span>
                     </Link>

@@ -84,7 +84,7 @@ async function saveAnswers(silent = false) {
     if (!testActive.value) return;
     if (!silent) saveStatus.value = 'Menyimpan...';
     try {
-        const resp = await fetch(route('practice.save-answers', props.session.id), {
+        const resp = await fetch(route('user.practice.save-answers', props.session.id), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -180,7 +180,7 @@ function submitForm() {
     if (timerInterval) clearInterval(timerInterval);
     if (autoSaveInterval.value) clearInterval(autoSaveInterval.value);
     disableSecureMode();
-    router.post(route('practice.submit', props.session.id), {
+    router.post(route('user.practice.submit', props.session.id), {
         answers: answers.value,
         duration_seconds: durationSeconds.value,
     });

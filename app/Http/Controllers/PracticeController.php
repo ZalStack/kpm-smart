@@ -13,7 +13,7 @@ class PracticeController extends Controller
 {
     public function index()
     {
-        return redirect()->route('practice.history');
+        return redirect()->route('user.practice.history');
     }
 
     public function startRedirect(Package $package)
@@ -24,27 +24,27 @@ class PracticeController extends Controller
             ->first();
 
         if ($inProgress) {
-            return redirect()->route('practice.show', $inProgress->id);
+            return redirect()->route('user.practice.show', $inProgress->id);
         }
 
-        return redirect()->route('packages.show', $package->id);
+        return redirect()->route('user.packages.show', $package->id);
     }
 
     public function start(Request $request, Package $package)
     {
         if (!$package->is_active) {
-            return redirect()->route('packages.index')
+            return redirect()->route('user.packages.index')
                 ->with('error', 'Paket ini belum aktif!');
         }
 
         // Cek jadwal pengerjaan
         if ($package->schedule_status === 'expired') {
-            return redirect()->route('packages.show', $package->id)
+            return redirect()->route('user.packages.show', $package->id)
                 ->with('error', 'Jadwal pengerjaan paket ini telah berakhir!');
         }
 
         if ($package->schedule_status === 'upcoming') {
-            return redirect()->route('packages.show', $package->id)
+            return redirect()->route('user.packages.show', $package->id)
                 ->with('error', 'Paket ini belum bisa dikerjakan. Silakan tunggu jadwal mulai.');
         }
 
@@ -61,7 +61,7 @@ class PracticeController extends Controller
             ->all();
 
         if (empty($questions)) {
-            return redirect()->route('packages.show', $package->id)
+            return redirect()->route('user.packages.show', $package->id)
                 ->with('error', 'Tidak ada soal pada card ini!');
         }
 
@@ -100,7 +100,7 @@ class PracticeController extends Controller
             ->first();
 
         if ($existingSession) {
-            return redirect()->route('practice.show', $existingSession->id)
+            return redirect()->route('user.practice.show', $existingSession->id)
                 ->with('info', 'Kamu sudah mengerjakan tugas pada card ini. Soal hanya bisa dikerjakan 1 kali. Berikut hasil tugasmu.');
         }
 
