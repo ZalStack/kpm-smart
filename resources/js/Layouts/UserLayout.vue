@@ -3,29 +3,57 @@ import { ref, inject, computed, onMounted, onUnmounted } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { Icon } from '@iconify/vue';
 import FlashMessage from '@/Components/shared/FlashMessage.vue';
+import { usePushNotification } from '@/composables/usePushNotification';
 
 const route = inject('route');
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
 const userDropdownOpen = ref(false);
 const notifDropdownOpen = ref(false);
+const pushNotifOpen = ref(false);
 const notifications = ref([]);
 const unreadCount = ref(0);
+
+const {
+    isSupported: pushSupported,
+    permission: pushPermission,
+    isSubscribed: pushSubscribed,
+    isLoading: pushLoading,
+    error: pushError,
+    requestPermission,
+    unsubscribe: unsubscribePush,
+} = usePushNotification();
+
+async function togglePushNotification() {
+    if (pushSubscribed.value) {
+        await unsubscribePush();
+    } else {
+        await requestPermission();
+    }
+}
 
 const profilePhotoUrl = computed(() => {
     if (!user.value?.profile_photo) return null;
     return '/storage/' + user.value.profile_photo + '?v=' + encodeURIComponent(user.value.profile_photo);
 });
 
+const isUserRole = computed(() => {
+    const u = user.value;
+    return u && u.role === 'user';
+});
+
+const allTabs = [
+    { label: 'Dashboard', route: 'user.dashboard', icon: 'mdi:view-dashboard-outline', iconActive: 'mdi:view-dashboard', match: 'user.dashboard' },
+    { label: 'Tugas PR', route: 'user.packages.index', icon: 'mdi:book-open-variant', iconActive: 'mdi:book-open-page-variant', match: 'user.packages.*' },
+    { label: 'Riwayat', route: 'user.practice.history', icon: 'mdi:history', iconActive: 'mdi:history', match: 'user.practice.*' },
+    { label: 'Peringkat', route: 'user.leaderboard', icon: 'mdi:trophy-outline', iconActive: 'mdi:trophy', match: 'user.leaderboard' },
+    { label: 'Izin', route: 'user.leave-requests.index', icon: 'mdi:calendar-blank-outline', iconActive: 'mdi:calendar-check', match: 'user.leave-requests.*' },
+];
+
 const bottomTabs = computed(() => {
-    if (!user || user.role !== 'user') return [];
-    return [
-        { label: 'Dashboard', route: 'user.dashboard', icon: 'mdi:view-dashboard-outline', iconActive: 'mdi:view-dashboard', match: 'user.dashboard' },
-        { label: 'Tugas PR', route: 'user.packages.index', icon: 'mdi:book-open-variant', iconActive: 'mdi:book-open-page-variant', match: 'user.packages.*' },
-        { label: 'Riwayat', route: 'user.practice.history', icon: 'mdi:history', iconActive: 'mdi:history', match: 'user.practice.*' },
-        { label: 'Peringkat', route: 'user.leaderboard', icon: 'mdi:trophy-outline', iconActive: 'mdi:trophy', match: 'user.leaderboard' },
-        { label: 'Izin', route: 'user.leave-requests.index', icon: 'mdi:calendar-blank-outline', iconActive: 'mdi:calendar-check', match: 'user.leave-requests.*' },
-    ];
+    const u = user.value;
+    if (!u || u.role !== 'user') return [];
+    return allTabs;
 });
 
 function isActive(match) {
@@ -100,7 +128,8 @@ onMounted(() => {
     }
     document.addEventListener('click', (e) => {
         if (!e.target.closest('#userDropdown')) userDropdownOpen.value = false;
-        if (!e.target.closest('#notifWrap')) notifDropdownOpen.value = false;
+        if (!e.target.closest('#notifWrap') && !e.target.closest('#notifWrapMobile')) notifDropdownOpen.value = false;
+        if (!e.target.closest('#pushNotifWrap') && !e.target.closest('#pushNotifWrapMobile')) pushNotifOpen.value = false;
     });
 });
 
@@ -151,7 +180,7 @@ onUnmounted(() => {
                                             <Link v-for="n in notifications" :key="n.id" :href="getNotifHref(n)" @click="handleNotifClick(n)" class="flex items-center gap-3 px-4 py-3 hover:bg-accent/70 transition-all duration-200 border-b border-border/40 last:border-0" :class="{ 'bg-accent/40': !n.is_read }">
                                                 <div :class="['flex-shrink-0 w-2 h-2 rounded-full', n.is_read ? 'opacity-0' : (n.type==='announcement' ? 'bg-amber-500' : 'bg-primary/60')]"></div>
                                                 <div class="min-w-0 flex-1">
-                                                    <p class="text-sm font-medium truncate flex items-center gap-1.5"><span v-if="n.type==='announcement'" class="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">PENGUMUMAN</span>{{ n.title }}</p>
+                                                    <p class="text-sm font-medium truncate flex items-center gap-1.5"><span v-if="n.type==='announcement'" class="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">PENGUMUMAN</span><span v-if="n.type==='sps_reminder'" class="text-[9px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">SPS</span>{{ n.title }}</p>
                                                     <p class="text-xs text-muted-foreground truncate mt-0.5">{{ n.message }}</p>
                                                 </div>
                                                 <span class="text-[10px] text-muted-foreground/70 whitespace-nowrap">{{ n.created_at }}</span>
@@ -159,6 +188,49 @@ onUnmounted(() => {
                                         </div>
                                         <div class="border-t mx-2 mt-1 pt-1">
                                             <Link :href="route('user.notifications.index')" class="block px-3 py-2.5 text-sm text-center text-muted-foreground hover:text-foreground hover:bg-accent/70 transition-all duration-200 rounded-lg font-medium">Lihat Semua Notifikasi</Link>
+                                        </div>
+                                    </div>
+                                </Transition>
+                            </div>
+
+                            <!-- Desktop Push Notification Toggle -->
+                            <div v-if="pushSupported && user?.role === 'user'" class="relative" id="pushNotifWrap">
+                                <button @click="pushNotifOpen = !pushNotifOpen" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground transition-all duration-200 relative" :title="pushSubscribed ? 'Notifikasi aktif' : 'Aktifkan notifikasi'">
+                                    <Icon :icon="pushSubscribed ? 'mdi:bell-ring-outline' : 'mdi:bell-off-outline'" class="w-[18px] h-[18px]" :class="pushSubscribed ? 'text-green-500' : ''" />
+                                </button>
+                                <Transition name="dropdown">
+                                    <div v-if="pushNotifOpen" class="absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] bg-popover text-popover-foreground rounded-xl shadow-xl border py-2 z-50">
+                                        <div class="px-4 py-3 border-b">
+                                            <p class="text-sm font-semibold">Notifikasi Browser</p>
+                                            <p class="text-xs text-muted-foreground mt-0.5">Dapatkan pengingat SPS harian langsung di browser</p>
+                                        </div>
+                                        <div class="px-4 py-3">
+                                            <div v-if="pushSubscribed" class="flex items-center gap-3">
+                                                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                                                    <Icon icon="mdi:check-circle" class="w-5 h-5 text-green-600" />
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-medium text-green-700">Notifikasi Aktif</p>
+                                                    <p class="text-xs text-muted-foreground">Kamu akan mendapat pengingat SPS</p>
+                                                </div>
+                                            </div>
+                                            <div v-else class="flex items-center gap-3">
+                                                <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                                                    <Icon icon="mdi:bell-off" class="w-5 h-5 text-amber-600" />
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-medium">Notifikasi Nonaktif</p>
+                                                    <p class="text-xs text-muted-foreground">Aktifkan untuk pengingat SPS harian</p>
+                                                </div>
+                                            </div>
+                                            <p v-if="pushError" class="text-xs text-destructive mt-2">{{ pushError }}</p>
+                                        </div>
+                                        <div class="px-4 pb-3">
+                                            <button @click="togglePushNotification" :disabled="pushLoading" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200" :class="pushSubscribed ? 'bg-destructive/10 text-destructive hover:bg-destructive/20' : 'bg-primary text-primary-foreground hover:bg-primary/90'">
+                                                <Icon v-if="pushLoading" icon="mdi:loading" class="w-4 h-4 animate-spin" />
+                                                <Icon v-else :icon="pushSubscribed ? 'mdi:bell-off' : 'mdi:bell-check'" class="w-4 h-4" />
+                                                {{ pushLoading ? 'Memproses...' : (pushSubscribed ? 'Nonaktifkan' : 'Aktifkan Sekarang') }}
+                                            </button>
                                         </div>
                                     </div>
                                 </Transition>
@@ -242,6 +314,37 @@ onUnmounted(() => {
                             </div>
                         </Transition>
                     </div>
+                    <!-- Mobile Push Notification Toggle -->
+                    <div v-if="pushSupported && isUserRole" class="relative" id="pushNotifWrapMobile">
+                        <button @click="pushNotifOpen = !pushNotifOpen" class="relative inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:bg-accent/70 transition-all duration-200" :title="pushSubscribed ? 'Notifikasi aktif' : 'Aktifkan notifikasi'">
+                            <Icon :icon="pushSubscribed ? 'mdi:bell-ring-outline' : 'mdi:bell-off-outline'" class="w-5 h-5" :class="pushSubscribed ? 'text-green-500' : ''" />
+                        </button>
+                        <Transition name="dropdown">
+                            <div v-if="pushNotifOpen" class="absolute right-0 mt-2 w-64 max-w-[calc(100vw-2rem)] bg-popover text-popover-foreground rounded-xl shadow-xl border py-2 z-50">
+                                <div class="px-4 py-3 border-b">
+                                    <p class="text-sm font-semibold">Notifikasi Browser</p>
+                                    <p class="text-xs text-muted-foreground mt-0.5">Pengingat SPS harian</p>
+                                </div>
+                                <div class="px-4 py-3">
+                                    <div v-if="pushSubscribed" class="flex items-center gap-2">
+                                        <Icon icon="mdi:check-circle" class="w-4 h-4 text-green-600" />
+                                        <span class="text-sm font-medium text-green-700">Aktif</span>
+                                    </div>
+                                    <div v-else class="flex items-center gap-2">
+                                        <Icon icon="mdi:bell-off" class="w-4 h-4 text-amber-600" />
+                                        <span class="text-sm font-medium">Nonaktif</span>
+                                    </div>
+                                    <p v-if="pushError" class="text-xs text-destructive mt-2">{{ pushError }}</p>
+                                </div>
+                                <div class="px-4 pb-3">
+                                    <button @click="togglePushNotification" :disabled="pushLoading" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200" :class="pushSubscribed ? 'bg-destructive/10 text-destructive' : 'bg-primary text-primary-foreground'">
+                                        <Icon v-if="pushLoading" icon="mdi:loading" class="w-4 h-4 animate-spin" />
+                                        {{ pushLoading ? '...' : (pushSubscribed ? 'Nonaktifkan' : 'Aktifkan') }}
+                                    </button>
+                                </div>
+                            </div>
+                        </Transition>
+                    </div>
                     <!-- Mobile Profile Avatar -->
                     <Link :href="route('user.profile.edit')" class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-xs font-bold text-primary-foreground shadow-sm overflow-hidden">
                         <img v-if="profilePhotoUrl" :src="profilePhotoUrl" class="w-full h-full object-cover" />
@@ -268,18 +371,19 @@ onUnmounted(() => {
             </div>
         </footer>
 
-        <!-- ======================== MOBILE BOTTOM NAV ======================== -->
-        <nav v-if="user?.role === 'user'" class="md:hidden fixed bottom-0 inset-x-0 z-50 bg-background/90 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 border-t border-border/30 safe-area-pb">
-            <div class="grid grid-cols-5 h-16">
+        <!-- ======================== MOBILE BOTTOM NAV (Android Style) ======================== -->
+        <nav v-if="isUserRole" class="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 dark:bg-card/95 backdrop-blur-xl supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-card/80 border-t border-border/30 safe-area-pb shadow-[0_-2px_10px_0_rgb(0,0,0,0.06)]">
+            <div class="grid grid-cols-5 h-[60px]">
                 <Link v-for="tab in bottomTabs" :key="tab.route" :href="route(tab.route)" class="bottom-tab flex flex-col items-center justify-center gap-0.5 relative transition-all duration-200" :class="isActive(tab.match) ? 'text-primary' : 'text-muted-foreground'">
                     <div class="relative">
-                        <Icon :icon="isActive(tab.match) ? tab.iconActive : tab.icon" class="w-5 h-5 transition-all duration-200" :class="isActive(tab.match) ? 'scale-110' : ''" />
-                        <div v-if="isActive(tab.match)" class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-1 rounded-full bg-primary"></div>
+                        <Icon :icon="isActive(tab.match) ? tab.iconActive : tab.icon" class="w-[22px] h-[22px] transition-all duration-200" :class="isActive(tab.match) ? 'scale-110' : ''" />
+                        <div v-if="isActive(tab.match)" class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-5 h-[3px] rounded-full bg-primary"></div>
                     </div>
                     <span class="text-[10px] font-medium leading-tight mt-1 transition-all duration-200">{{ tab.label }}</span>
                 </Link>
             </div>
         </nav>
+
     </div>
 </template>
 
@@ -298,11 +402,20 @@ onUnmounted(() => {
 }
 
 .bottom-tab:active {
-  transform: scale(0.92);
+  transform: scale(0.9);
 }
 
 /* iOS safe area for bottom nav */
 .safe-area-pb {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 </style>

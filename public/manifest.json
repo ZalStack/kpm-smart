@@ -1,0 +1,19 @@
+{
+    "name": "KPM SMART",
+    "short_name": "KPM SMART",
+    "description": "Sistem Penilaian Harian - KPM SMART",
+    "start_url": "/dashboard",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#769826",
+    "orientation": "any",
+    "icons": [
+        {
+            "src": "/favicon.ico",
+            "sizes": "64x64",
+            "type": "image/x-icon"
+        }
+    ],
+    "categories": ["education", "productivity"],
+    "lang": "id"
+}

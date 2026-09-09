@@ -49,6 +49,11 @@ class User extends Authenticatable
         return $this->hasMany(PracticeSession::class);
     }
 
+    public function pushSubscriptions()
+    {
+        return $this->hasMany(PushSubscription::class);
+    }
+
     public function loginLogs()
     {
         return $this->hasMany(LoginLog::class);

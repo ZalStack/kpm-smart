@@ -13,6 +13,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\GamificationController;
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\PushNotificationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -183,6 +184,15 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/profile/change-password', [AuthController::class, 'adminShowChangePassword'])->name('profile.change-password');
         Route::put('/profile/change-password', [AuthController::class, 'adminChangePassword'])->name('profile.change-password.update');
     });
+
+// Push Notification Routes (authenticated users)
+Route::middleware('auth')->prefix('push')->name('push.')->group(function () {
+    Route::post('/subscribe', [PushNotificationController::class, 'subscribe'])->name('subscribe');
+    Route::post('/unsubscribe', [PushNotificationController::class, 'unsubscribe'])->name('unsubscribe');
+    Route::get('/status', [PushNotificationController::class, 'status'])->name('status');
+    Route::get('/vapid-key', [PushNotificationController::class, 'vapidPublicKey'])->name('vapid-key');
+    Route::post('/resubscribe', [PushNotificationController::class, 'resubscribe'])->name('resubscribe');
+});
 
 // User Routes
 Route::middleware(['auth', 'role:user'])->name('user.')->group(function () {
