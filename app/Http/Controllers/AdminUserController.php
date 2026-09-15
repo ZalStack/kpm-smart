@@ -126,7 +126,7 @@ class AdminUserController extends Controller
 
         // Teruskan user baru ke Web Induk (otomatis menyebar ke Sunnah Daily dan Sudoku)
         try {
-            $parentUrl = rtrim(env('PARENT_APP_URL', 'http://localhost:8000'), '/');
+            $parentUrl = rtrim(config('app.parent_app_url', 'http://localhost:8000'), '/');
             \Illuminate\Support\Facades\Http::timeout(3)->post("{$parentUrl}/api/v1/profile/update", [
                 'email' => $user->email,
                 'name' => $user->name,
@@ -209,7 +209,7 @@ class AdminUserController extends Controller
 
         // Teruskan perubahan ke Web Induk (otomatis menyebar ke seluruh web)
         try {
-            $parentUrl = rtrim(env('PARENT_APP_URL', 'http://localhost:8000'), '/');
+            $parentUrl = rtrim(config('app.parent_app_url', 'http://localhost:8000'), '/');
             $payload = [
                 'email' => $user->email,
                 'name' => $user->name,
@@ -283,12 +283,17 @@ class AdminUserController extends Controller
 
     /**
      * Reset (hapus) semua data user yang diimport dari Excel.
+     * Import user selalu punya email generated (akhirname@gmail.com)
+     * dan student_name diisi. User manual/sync dari parent app tidak punya student_name.
      */
     public function resetImportedUsers()
     {
-        $deleted = User::where('role', 'user')->delete();
+        $deleted = User::where('role', 'user')
+            ->whereNotNull('student_name')
+            ->where('email', 'like', '%@gmail.com')
+            ->delete();
 
-        return back()->with('success', "Berhasil menghapus {$deleted} data user.");
+        return back()->with('success', "Berhasil menghapus {$deleted} data user import.");
     }
 
     /**

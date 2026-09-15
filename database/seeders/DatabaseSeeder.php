@@ -46,7 +46,6 @@ class DatabaseSeeder extends Seeder
         $package = Package::create([
             'title' => 'Paket TOEFL Preparation',
             'description' => 'Persiapan lengkap untuk menghadapi tes TOEFL dengan soal-soal terbaru dan pembahasan mendetail.',
-            'price' => 150000,
             'is_active' => true,
             'cards' => [
                 [

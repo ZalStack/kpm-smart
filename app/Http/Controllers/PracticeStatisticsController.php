@@ -111,13 +111,11 @@ class PracticeStatisticsController extends Controller
         $showExplanation = true;
         $showAnswerKey = true;
         $showScore = true;
-        $timeLimitMinutes = 0;
 
         if ($session->package) {
             $showExplanation = $session->package->canShowExplanation();
             $showAnswerKey = $session->package->canShowAnswerKey();
             $showScore = $session->package->canShowScore();
-            $timeLimitMinutes = $session->package->time_limit_minutes ?? 0;
         }
 
         return Inertia::render('Admin/PracticeStatistics/PracticeStatShow', [
@@ -126,7 +124,6 @@ class PracticeStatisticsController extends Controller
             'showExplanation' => $showExplanation,
             'showAnswerKey' => $showAnswerKey,
             'showScore' => $showScore,
-            'timeLimitMinutes' => $timeLimitMinutes,
         ]);
     }
 
@@ -430,6 +427,7 @@ class PracticeStatisticsController extends Controller
             return $pdf->download($fileName);
 
         } catch (\Exception $e) {
+            Log::error('Export PDF gagal: ' . $e->getMessage());
             return back()->with('error', 'Gagal mengekspor PDF. Silakan coba lagi.');
         }
     }

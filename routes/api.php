@@ -6,7 +6,6 @@ use App\Http\Controllers\Api\Admin\DashboardApiController as AdminDashboardContr
 use App\Http\Controllers\Api\Admin\UserApiController as AdminUserController;
 use App\Http\Controllers\Api\Admin\PackageApiController as AdminPackageController;
 use App\Http\Controllers\Api\Admin\PracticeStatisticsApiController as AdminPracticeStatsController;
-use App\Http\Controllers\Api\Admin\SupportApiController as AdminSupportController;
 use App\Http\Controllers\Api\Admin\LoginLogApiController as AdminLoginLogController;
 use App\Http\Controllers\Api\Admin\LeaveRequestApiController as AdminLeaveRequestController;
 use App\Http\Controllers\Api\Admin\NotificationApiController as AdminNotificationController;
@@ -64,26 +63,22 @@ Route::prefix('admin/v1')->name('api.admin.')->group(function () {
     Route::get('/practice-statistics', [AdminPracticeStatsController::class, 'index'])->name('practice-statistics.index');
     Route::get('/practice-statistics/{session}', [AdminPracticeStatsController::class, 'show'])->name('practice-statistics.show');
 
-    // 5. Support Tickets
-    Route::get('/support', [AdminSupportController::class, 'index'])->name('support.index');
-    Route::get('/support/{id}', [AdminSupportController::class, 'show'])->name('support.show');
-
-    // 6. Login Logs
+    // 5. Login Logs
     Route::get('/login-logs', [AdminLoginLogController::class, 'index'])->name('login-logs.index');
 
-    // 7. Leave Requests (Pengajuan Izin)
+    // 6. Leave Requests (Pengajuan Izin)
     Route::get('/leave-requests', [AdminLeaveRequestController::class, 'index'])->name('leave-requests.index');
     Route::get('/leave-requests/{id}', [AdminLeaveRequestController::class, 'show'])->name('leave-requests.show');
 
-    // 8. Notifications (gunakan ?user_id=xxx untuk filter)
+    // 7. Notifications (gunakan ?user_id=xxx untuk filter)
     Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/unread-count', [AdminNotificationController::class, 'unreadCount'])->name('notifications.unread-count');
 
-    // 9. Announcements (Pengumuman)
+    // 8. Announcements (Pengumuman)
     Route::get('/announcements', [AdminAnnouncementController::class, 'index'])->name('announcements.index');
     Route::get('/announcements/{announcement}', [AdminAnnouncementController::class, 'show'])->name('announcements.show');
 
-    // 10. Admin Profile (gunakan ?user_id=xxx untuk filter)
+    // 9. Admin Profile (gunakan ?user_id=xxx untuk filter)
     Route::get('/profile', [AdminProfileController::class, 'show'])->name('profile');
 });
 

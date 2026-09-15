@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Models\Package;
 use App\Models\PracticeSession;
-use App\Models\SupportTicket;
 use App\Models\LeaveRequest;
 use App\Models\Notification;
 use App\Models\Announcement;
@@ -21,7 +20,6 @@ class ApiEndpointsTest extends TestCase
     protected User $user;
     protected Package $package;
     protected PracticeSession $session;
-    protected SupportTicket $supportTicket;
     protected LeaveRequest $leaveRequest;
     protected Notification $notification;
     protected Announcement $announcement;
@@ -87,13 +85,6 @@ class ApiEndpointsTest extends TestCase
                     'is_correct' => true,
                 ],
             ],
-        ]);
-
-        $this->supportTicket = SupportTicket::create([
-            'name' => 'Budi',
-            'email' => 'budi@test.com',
-            'question' => 'Bagaimana cara mengerjakan soal?',
-            'status' => 'pending',
         ]);
 
         $this->leaveRequest = LeaveRequest::create([
@@ -264,21 +255,12 @@ class ApiEndpointsTest extends TestCase
             ->assertOk()
             ->assertJsonStructure(['success', 'data' => ['id', 'user', 'package']]);
 
-        // 5. Support
-        $this->withHeaders($headers)->getJson(route('api.admin.support.index'))
-            ->assertOk()
-            ->assertJsonStructure(['success', 'data' => ['data']]);
-
-        $this->withHeaders($headers)->getJson(route('api.admin.support.show', $this->supportTicket->id))
-            ->assertOk()
-            ->assertJsonStructure(['success', 'data' => ['id', 'question']]);
-
-        // 6. Login Logs
+        // 5. Login Logs
         $this->withHeaders($headers)->getJson(route('api.admin.login-logs.index'))
             ->assertOk()
             ->assertJsonStructure(['success', 'data' => ['data']]);
 
-        // 7. Leave Requests
+        // 6. Leave Requests
         $this->withHeaders($headers)->getJson(route('api.admin.leave-requests.index'))
             ->assertOk()
             ->assertJsonStructure(['success', 'data' => ['counts', 'leave_requests']]);
@@ -287,7 +269,7 @@ class ApiEndpointsTest extends TestCase
             ->assertOk()
             ->assertJsonStructure(['success', 'data' => ['id', 'reason']]);
 
-        // 8. Notifications
+        // 7. Notifications
         $this->withHeaders($headers)->getJson(route('api.admin.notifications.index'))
             ->assertOk()
             ->assertJsonStructure(['success', 'data' => ['data']]);
@@ -296,7 +278,7 @@ class ApiEndpointsTest extends TestCase
             ->assertOk()
             ->assertJsonStructure(['success', 'data' => ['unread_count']]);
 
-        // 9. Announcements
+        // 8. Announcements
         $this->withHeaders($headers)->getJson(route('api.admin.announcements.index'))
             ->assertOk()
             ->assertJsonStructure(['success', 'data' => ['data']]);
@@ -305,7 +287,7 @@ class ApiEndpointsTest extends TestCase
             ->assertOk()
             ->assertJsonStructure(['success', 'data' => ['id', 'title', 'content']]);
 
-        // 10. Profile
+        // 9. Profile
         $this->withHeaders($headers)->getJson(route('api.admin.profile'))
             ->assertOk()
             ->assertJsonStructure(['success', 'data' => ['id', 'name', 'email', 'role']]);

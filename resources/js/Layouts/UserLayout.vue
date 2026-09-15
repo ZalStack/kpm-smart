@@ -120,21 +120,24 @@ async function handleNotifClick(n) {
 }
 
 let pollInterval;
+let clickHandler;
 
 onMounted(() => {
     if (user.value) {
         loadNotifications();
         pollInterval = setInterval(loadNotifications, 10000);
     }
-    document.addEventListener('click', (e) => {
+    clickHandler = (e) => {
         if (!e.target.closest('#userDropdown')) userDropdownOpen.value = false;
         if (!e.target.closest('#notifWrap') && !e.target.closest('#notifWrapMobile')) notifDropdownOpen.value = false;
         if (!e.target.closest('#pushNotifWrap') && !e.target.closest('#pushNotifWrapMobile')) pushNotifOpen.value = false;
-    });
+    };
+    document.addEventListener('click', clickHandler);
 });
 
 onUnmounted(() => {
     if (pollInterval) clearInterval(pollInterval);
+    if (clickHandler) document.removeEventListener('click', clickHandler);
 });
 </script>
 

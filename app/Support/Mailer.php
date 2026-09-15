@@ -52,7 +52,7 @@ class Mailer
             'Content-Transfer-Encoding: base64',
             'From: ' . $this->encodedDisplayName($this->fromName) . ' <' . $this->fromEmail . '>',
             'Reply-To: ' . $this->fromEmail,
-            'X-Mailer: MembershipSystem-Mailer',
+            'X-Mailer: KPM-SMART-Mailer',
         ]);
 
         // Subject & body di-encode UTF-8 base64 agar aman untuk semua klien email.

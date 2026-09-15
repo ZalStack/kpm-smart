@@ -26,4 +26,9 @@ export default defineConfig({
             '@': resolve(__dirname, 'resources/js'),
         },
     },
+    server: {
+        watch: {
+            ignored: ['**/vendor/**', '**/node_modules/**'],
+        },
+    },
 });

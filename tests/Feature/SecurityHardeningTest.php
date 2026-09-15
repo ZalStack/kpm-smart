@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
 
 class SecurityHardeningTest extends TestCase
@@ -70,21 +69,5 @@ class SecurityHardeningTest extends TestCase
 
         $response->assertRedirect(route('user.dashboard'));
         $this->assertTrue(auth()->check());
-    }
-
-    public function test_public_support_endpoint_is_rate_limited(): void
-    {
-        RateLimiter::clear('support:127.0.0.1');
-
-        foreach (range(1, 10) as $i) {
-            $this->post(route('support.submit'), [
-                'question' => 'Pertanyaan uji coba nomor ' . $i,
-            ])->assertStatus(200);
-        }
-
-        // Permintaan ke-11 dalam satu menit diblokir rate limiter.
-        $this->post(route('support.submit'), [
-            'question' => 'Pertanyaan setelah batas limit',
-        ])->assertStatus(429);
     }
 }

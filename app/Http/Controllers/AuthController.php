@@ -8,6 +8,7 @@ use App\Support\Mailer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -45,7 +46,7 @@ class AuthController extends Controller
         }
 
         // 1. Coba verifikasi & auto-sync langsung dari Web Induk / Master App
-        $parentUrl = rtrim(env('PARENT_APP_URL', 'http://localhost:8000'), '/');
+        $parentUrl = rtrim(config('app.parent_app_url', 'http://localhost:8000'), '/');
         try {
             $response = \Illuminate\Support\Facades\Http::timeout(3)->post("{$parentUrl}/api/v1/verify", [
                 'email' => $request->input('email'),
@@ -61,15 +62,18 @@ class AuthController extends Controller
                     ['email' => $master['email']],
                     [
                         'name' => $master['name'],
-                        'password' => $request->input('password'), // model User kpm-smart memiliki mutator setPasswordAttribute
-                        'role' => $role,
-                        'is_active' => true,
-                        'is_verified' => true,
+                        'password' => $request->input('password'),
                         'student_name' => $master['name'],
                         'student_class' => $master['class_name'] ?: 'VII-A',
                         'profile_photo' => $fotoProfil,
                     ]
                 );
+
+                $user->forceFill([
+                    'role' => $role,
+                    'is_active' => true,
+                    'is_verified' => true,
+                ])->save();
 
                 Auth::login($user, $request->boolean('remember'));
                 RateLimiter::clear($throttleKey);
@@ -165,7 +169,7 @@ class AuthController extends Controller
         ]);
 
         if ($request->hasFile('profile_photo')) {
-            if ($user->profile_photo) {
+            if ($user->profile_photo && !str_starts_with($user->profile_photo, 'http')) {
                 Storage::disk('public')->delete($user->profile_photo);
             }
             $data['profile_photo'] = $request->file('profile_photo')->store('profile_photos', 'public');
@@ -240,7 +244,7 @@ class AuthController extends Controller
         $data = $request->only(['name', 'email', 'phone']);
 
         if ($request->hasFile('profile_photo')) {
-            if ($user->profile_photo) {
+            if ($user->profile_photo && !str_starts_with($user->profile_photo, 'http')) {
                 Storage::disk('public')->delete($user->profile_photo);
             }
             $data['profile_photo'] = $request->file('profile_photo')->store('profile_photos', 'public');

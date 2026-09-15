@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\PushSubscription;
 use App\Models\User;
-use App\Models\PracticeSession;
 use Minishlink\WebPush\WebPush;
 use Minishlink\WebPush\Subscription;
 use Illuminate\Support\Collection;
@@ -56,23 +55,9 @@ class PushNotificationService
             ->delete() > 0;
     }
 
-    public static function unsubscribeAll(int $userId): int
-    {
-        return PushSubscription::where('user_id', $userId)->delete();
-    }
-
     public static function getSubscriptions(int $userId): Collection
     {
         return PushSubscription::where('user_id', $userId)->get();
-    }
-
-    public static function getAllSubscriptions(): Collection
-    {
-        return PushSubscription::with('user:id,name,email,role,is_active')
-            ->whereHas('user', function ($query) {
-                $query->where('role', 'user')->where('is_active', true);
-            })
-            ->get();
     }
 
     public static function sendToUser(int $userId, string $title, string $body, array $options = []): array
@@ -127,67 +112,6 @@ class PushNotificationService
         }
 
         return $results;
-    }
-
-    public static function sendToAllUsers(string $title, string $body, array $options = []): array
-    {
-        $subscriptions = self::getAllSubscriptions();
-        $results = [];
-
-        $webPush = self::getWebPush();
-        $payload = json_encode([
-            'title' => $title,
-            'body' => $body,
-            'icon' => $options['icon'] ?? '/favicon.ico',
-            'badge' => $options['badge'] ?? '/favicon.ico',
-            'url' => $options['url'] ?? '/dashboard',
-            'tag' => $options['tag'] ?? 'kpm-smart-notification',
-            'requireInteraction' => $options['requireInteraction'] ?? false,
-        ]);
-
-        foreach ($subscriptions as $sub) {
-            try {
-                $pushSubscription = Subscription::create([
-                    'endpoint' => $sub->endpoint,
-                    'publicKey' => $sub->p256dh,
-                    'authToken' => $sub->auth,
-                ]);
-
-                $report = $webPush->sendOneNotification($pushSubscription, $payload);
-
-                $sub->markUsed();
-
-                if ($report->isSuccess()) {
-                    $results[] = ['user_id' => $sub->user_id, 'status' => 'success'];
-                } else {
-                    $results[] = [
-                        'user_id' => $sub->user_id,
-                        'status' => 'failed',
-                        'error' => $report->getReason(),
-                    ];
-                    if ($report->isSubscriptionExpired()) {
-                        $sub->delete();
-                    }
-                }
-            } catch (\Exception $e) {
-                Log::error("Push notification failed for user {$sub->user_id}: " . $e->getMessage());
-                $results[] = [
-                    'user_id' => $sub->user_id,
-                    'status' => 'error',
-                    'error' => $e->getMessage(),
-                ];
-            }
-        }
-
-        return $results;
-    }
-
-    public static function hasDoneSpsToday(int $userId): bool
-    {
-        return PracticeSession::where('user_id', $userId)
-            ->whereDate('created_at', today())
-            ->where('status', 'completed')
-            ->exists();
     }
 
     public static function getSpsReminderUsers(): Collection

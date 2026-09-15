@@ -22,7 +22,7 @@ class ParentWeeklyReportService
         $year = (string) date('Y');
 
         // 1. Coba via API HTTP jika parent app hidup
-        $baseUrl = rtrim(env('PARENT_APP_URL', 'http://localhost:8000'), '/');
+        $baseUrl = rtrim(config('app.parent_app_url', 'http://localhost:8000'), '/');
         try {
             $response = Http::timeout(3)->post("{$baseUrl}/api/v1/weekly-reports/update-progress", [
                 'email' => $email,
@@ -41,8 +41,8 @@ class ParentWeeklyReportService
             // API gagal, lanjut ke fallback DB langsung
         }
 
-        // 2. Fallback: Langsung update database SQLite kpm-student-smart
-        $dbPath = 'c:/laragon/www/kpm-student-smart/database/database.sqlite';
+        // 2. Fallback: gunakan database path dari config
+        $dbPath = config('database.connections.sqlite.database', database_path('database.sqlite'));
         if (!file_exists($dbPath)) {
             return false;
         }

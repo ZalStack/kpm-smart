@@ -17,14 +17,13 @@ const localNotifications = ref(props.notifications.data || []);
 const processing = ref(false);
 
 function getIcon(type) {
-    const icons = { order: 'mdi:cart-outline', testimonial: 'mdi:chat-outline', support: 'mdi:lifebuoy', enroll: 'mdi:graduation-cap', video: 'mdi:video-outline' };
+    const icons = { announcement: 'mdi:megaphone-outline', sps_reminder: 'mdi:calendar-check-outline' };
     return icons[type] || 'mdi:bell-outline';
 }
 
 function getIconBg(type) {
     const bgs = {
-        order: 'bg-yellow-100 text-yellow-700', testimonial: 'bg-primary/10 text-primary', support: 'bg-red-100 text-red-700',
-        enroll: 'bg-green-100 text-green-700', video: 'bg-pink-100 text-pink-700',
+        announcement: 'bg-amber-100 text-amber-700', sps_reminder: 'bg-blue-100 text-blue-700',
     };
     return bgs[type] || 'bg-muted text-muted-foreground';
 }

@@ -17,13 +17,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
         ]);
 
-        // Webhook Midtrans dikirim server-to-server tanpa session/CSRF token;
-        // keaslian payload diverifikasi di controller via signature SHA512 + Server Key.
-        $middleware->validateCsrfTokens(except: [
-            'payment/notification',
-            'video-payment/notification',
-        ]);
-
         // Keamanan: security headers untuk semua respons web.
         $middleware->web(append: [
             \App\Http\Middleware\SecurityHeadersMiddleware::class,
@@ -32,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (\Illuminate\Http\Exceptions\PostTooLargeException $e, \Illuminate\Http\Request $request) {
-            $message = 'Ukuran file yang diunggah terlalu besar. Maksimal 50 MB per video.';
+            $message = 'Ukuran file yang diunggah terlalu besar. Maksimal 50 MB.';
 
             if ($request->expectsJson()) {
                 return response()->json(['message' => $message], 413);

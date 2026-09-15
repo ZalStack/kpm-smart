@@ -5,54 +5,6 @@ namespace App\Support;
 class QuestionFormatter
 {
     /**
-     * Render konten dengan format (LaTeX, tabel, dll)
-     */
-    public static function render(string $content): string
-    {
-        if (empty($content)) {
-            return '';
-        }
-
-        // Proses tabel Markdown-style
-        $content = self::renderTable($content);
-
-        // Proses LaTeX (akan di-render oleh KaTeX di frontend)
-        // Biarkan tanda $ tetap ada untuk KaTeX
-
-        // Convert newlines to <br> but preserve table structure
-        $lines = explode("\n", $content);
-        $result = [];
-        $inTable = false;
-
-        foreach ($lines as $line) {
-            $trimmed = trim($line);
-            // Skip if it's a table line (already rendered)
-            if (strpos($line, '<div class="table-wrapper') !== false) {
-                $result[] = $line;
-                $inTable = true;
-                continue;
-            }
-            if ($inTable && strpos($line, '</div>') !== false) {
-                $result[] = $line;
-                $inTable = false;
-                continue;
-            }
-            if ($inTable) {
-                $result[] = $line;
-                continue;
-            }
-            // Regular text - escape and convert newlines
-            if (!empty(trim($line))) {
-                $result[] = nl2br(e($line));
-            } else {
-                $result[] = '<br>';
-            }
-        }
-
-        return implode("\n", $result);
-    }
-
-    /**
      * Render tabel dari format Markdown
      */
     private static function renderTable(string $content): string
@@ -208,7 +160,7 @@ class QuestionFormatter
     /**
      * Konversi tag [GAMBAR:filename] menjadi tag <img> HTML
      */
-    public static function convertImageTags(string $content, array $imageMap = []): string
+    private static function convertImageTags(string $content, array $imageMap = []): string
     {
         return preg_replace_callback('/\[GAMBAR\s*:\s*([^\]]+)\]/i', function ($matches) use ($imageMap) {
             $filename = trim($matches[1]);
@@ -233,22 +185,5 @@ class QuestionFormatter
             // Tidak ditemukan - hapus tag daripada tampilkan gambar 404/403
             return '<span class="text-xs text-muted-foreground italic">[gambar tidak tersedia]</span>';
         }, $content);
-    }
-
-    /**
-     * Get URL untuk gambar soal
-     */
-    public static function imageUrl(?string $path): ?string
-    {
-        if (empty($path)) {
-            return null;
-        }
-
-        // Jika path sudah berupa URL lengkap
-        if (filter_var($path, FILTER_VALIDATE_URL)) {
-            return $path;
-        }
-
-        return asset('storage/' . $path);
     }
 }

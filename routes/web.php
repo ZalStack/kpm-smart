@@ -6,8 +6,6 @@ use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PracticeController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\PracticeStatisticsController;
-use App\Http\Controllers\SupportController;
-use App\Http\Controllers\ChatController;
 use App\Http\Controllers\LoginLogController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\LeaveRequestController;
@@ -24,18 +22,6 @@ Route::get('/', fn () => redirect()->route('login'));
 Route::get('/fitur', fn () => Inertia::render('Pages/Features'))->name('pages.features');
 Route::get('/panduan', fn () => Inertia::render('Pages/Guide'))->name('pages.guide');
 Route::get('/faq', fn () => Inertia::render('Pages/Faq'))->name('pages.faq');
-
-// Support Routes (Public - tidak perlu login, dilindungi rate limiter anti spam)
-Route::post('/support/submit', [SupportController::class, 'submitQuestion'])
-    ->middleware('throttle:support')->name('support.submit');
-Route::get('/support/tickets', [SupportController::class, 'getTickets'])
-    ->middleware('throttle:support')->name('support.tickets');
-
-// AI Chat Routes (Public)
-Route::post('/chat/send', [ChatController::class, 'sendMessage'])
-    ->middleware('throttle:support')->name('chat.send');
-Route::get('/chat/history', [ChatController::class, 'getHistory'])
-    ->middleware('throttle:support')->name('chat.history');
 
 // Auth Routes
 Route::middleware('guest')->group(function () {
@@ -132,20 +118,6 @@ Route::middleware(['auth', 'role:admin'])
                 Route::get('/export/excel', [PracticeStatisticsController::class, 'exportExcel'])->name('export-excel');
                 Route::get('/export/pdf', [PracticeStatisticsController::class, 'exportPdf'])->name('export-pdf');
                 Route::get('/{session}', [PracticeStatisticsController::class, 'show'])->name('show');
-            });
-
-        // Support Management
-        Route::prefix('support')
-            ->name('support.')
-            ->group(function () {
-                Route::get('/', [SupportController::class, 'adminIndex'])->name('index');
-                // Rute statis HARUS didaftarkan sebelum rute dinamis /{id}
-                Route::post('/bulk-delete', [SupportController::class, 'adminBulkDelete'])->name('bulk-delete');
-                Route::get('/export/csv', [SupportController::class, 'adminExport'])->name('export');
-                Route::get('/{id}', [SupportController::class, 'adminShow'])->name('show');
-                Route::post('/{id}/answer', [SupportController::class, 'adminAnswer'])->name('answer');
-                Route::put('/{id}/status', [SupportController::class, 'adminUpdateStatus'])->name('update-status');
-                Route::delete('/{id}', [SupportController::class, 'adminDelete'])->name('delete');
             });
 
         // Login Logs (Admin)

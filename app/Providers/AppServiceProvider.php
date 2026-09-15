@@ -39,15 +39,5 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('auth-public', function (Request $request) {
             return Limit::perMinute(10)->by('auth:' . $request->ip());
         });
-
-        // Form support publik: 10x/menit per IP (anti spam database).
-        RateLimiter::for('support', function (Request $request) {
-            return Limit::perMinute(10)->by('support:' . $request->ip());
-        });
-
-        // API publik (testimonials): 30x/menit per IP.
-        RateLimiter::for('public-api', function (Request $request) {
-            return Limit::perMinute(30)->by('api:' . $request->ip());
-        });
     }
 }

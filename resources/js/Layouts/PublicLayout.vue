@@ -1,10 +1,10 @@
 <script setup>
-import { inject, ref } from 'vue';
+import { inject, ref, computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 const route = inject('route');
 
 const page = usePage();
-const user = page.props.auth?.user;
+const user = computed(() => page.props.auth?.user);
 const mobileMenuOpen = ref(false);
 </script>
 
