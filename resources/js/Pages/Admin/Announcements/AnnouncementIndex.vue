@@ -1,7 +1,7 @@
 <script setup>
 import { ref, inject } from 'vue';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import Pagination from '@/Components/shared/Pagination.vue';
 

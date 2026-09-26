@@ -71,14 +71,18 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Get user profile (authenticated or via user_id / default user)
+     * Get user profile of the currently authenticated user.
+     *
+     * Route ini berada di dalam `auth:sanctum`, jadi user selalu ada. tetap
+     * dijaga return 401 bila token tidak valid, bukan diam-diam memakai user
+     * lain sebagai fallback.
      */
     public function me(Request $request): JsonResponse
     {
         $user = $this->resolveUser($request);
 
         if (!$user) {
-            return $this->sendError('Data profil tidak ditemukan.', [], 404);
+            return $this->sendError('Unauthenticated. Silakan login terlebih dahulu.', [], 401);
         }
 
         return $this->sendResponse([

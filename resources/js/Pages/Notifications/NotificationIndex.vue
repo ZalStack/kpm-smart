@@ -5,7 +5,7 @@ import UserLayout from '@/Layouts/UserLayout.vue';
 import Button from '@/Components/ui/button/Button.vue';
 import Pagination from '@/Components/shared/Pagination.vue';
 import { timeAgo } from '@/lib/utils';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 const route = inject('route');
 
 const props = defineProps({

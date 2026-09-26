@@ -41,11 +41,43 @@ class PackageApiController extends BaseApiController
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
 
+        // Ringkas saja: `cards` dan `questions` sengaja tidak ikut di respons
+        // daftar. Selain membebani payload, keduanya memuat kunci jawaban yang
+        // tidak perlu muncul saat admin hanya sedang melihat daftar paket.
+        $packages->getCollection()->transform(function (Package $pkg) {
+            return [
+                'id' => $pkg->id,
+                'title' => $pkg->title,
+                'description' => $pkg->description,
+                'kelas' => $pkg->kelas,
+                'thumbnail' => $pkg->thumbnail,
+                'bidang' => $pkg->bidang,
+                'level' => $pkg->level,
+                'start_date' => $pkg->start_date,
+                'end_date' => $pkg->end_date,
+                'start_time' => $pkg->start_time,
+                'end_time' => $pkg->end_time,
+                'schedule_status' => $pkg->schedule_status,
+                'show_answer_key' => $pkg->show_answer_key,
+                'show_explanation' => $pkg->show_explanation,
+                'show_score' => $pkg->show_score,
+                'is_active' => $pkg->is_active,
+                'cards_count' => count($pkg->cards ?? []),
+                'questions_count' => count($pkg->questions ?? []),
+                'practice_sessions_count' => $pkg->practice_sessions_count,
+                'created_at' => $pkg->created_at,
+                'updated_at' => $pkg->updated_at,
+            ];
+        });
+
         return $this->sendResponse($packages, 'Daftar paket berhasil dimuat.');
     }
 
     /**
      * Get package detail
+     *
+     * Endpoint ini hanya untuk admin (route dijaga `role:admin`), jadi kunci
+     * jawaban tetap disertakan karena admin memang butuh untuk menyusun soal.
      */
     public function show(Package $package): JsonResponse
     {

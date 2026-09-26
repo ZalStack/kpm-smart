@@ -1,7 +1,7 @@
 <script setup>
 import { inject,  ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 import PublicLayout from '@/Layouts/PublicLayout.vue';
 const route = inject('route');
 

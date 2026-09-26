@@ -14,15 +14,19 @@ class PracticeApiController extends BaseApiController
      */
     public function history(Request $request): JsonResponse
     {
-        $userId = $this->resolveUserId($request, 'user', true);
+        $userId = $this->resolveUserId($request);
+
+        // Fail closed: tanpa user yang terautentikasi, jangan pernah mengembalikan
+        // sesi milik semua user.
+        if (! $userId) {
+            return $this->sendError('Unauthenticated. Silakan login terlebih dahulu.', [], 401);
+        }
+
         $perPage = (int) $request->input('per_page', 15);
 
         $query = PracticeSession::where('status', 'completed')
-            ->with(['package:id,title,bidang,level', 'user:id,name']);
-
-        if ($userId) {
-            $query->where('user_id', $userId);
-        }
+            ->with(['package:id,title,bidang,level', 'user:id,name'])
+            ->where('user_id', $userId);
 
         $sessions = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
@@ -34,7 +38,7 @@ class PracticeApiController extends BaseApiController
      */
     public function statistics(Request $request): JsonResponse
     {
-        $userId = $this->resolveUserId($request, 'user');
+        $userId = $this->resolveUserId($request);
 
         $sessions = $userId ? PracticeSession::where('user_id', $userId)
             ->where('status', 'completed')

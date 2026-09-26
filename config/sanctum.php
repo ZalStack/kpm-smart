@@ -48,9 +48,13 @@ return [
     | considered expired. This will override any values set in the token's
     | "expires_at" attribute, but first-party sessions are not affected.
     |
+    | Token API yang tidak pernah kedaluwarsa berarti token yang bocor (log,
+    | backup, perangkat hilang) tetap bisa dipakai selamanya. Default 1440 menit
+    | (24 jam). Isi 0 untuk menonaktifkan expire.
+    |
     */
 
-    'expiration' => null,
+    'expiration' => env('SANCTUM_TOKEN_EXPIRATION', 60 * 24),
 
     /*
     |--------------------------------------------------------------------------

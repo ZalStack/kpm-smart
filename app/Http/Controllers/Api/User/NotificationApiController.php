@@ -15,7 +15,7 @@ class NotificationApiController extends BaseApiController
      */
     public function index(Request $request): JsonResponse
     {
-        $userId = $this->resolveUserId($request, 'user');
+        $userId = $this->resolveUserId($request);
         $perPage = (int) $request->input('per_page', 15);
 
         $notifications = Notification::where('user_id', $userId)
@@ -30,7 +30,7 @@ class NotificationApiController extends BaseApiController
      */
     public function unreadCount(Request $request): JsonResponse
     {
-        $userId = $this->resolveUserId($request, 'user');
+        $userId = $this->resolveUserId($request);
 
         $count = Notification::where('user_id', $userId)
             ->where('is_read', false)

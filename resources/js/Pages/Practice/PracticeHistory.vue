@@ -4,7 +4,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import UserLayout from '@/Layouts/UserLayout.vue';
 import Input from '@/Components/ui/input/Input.vue';
 import Select from '@/Components/ui/select/Select.vue';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 import { timeAgo } from '@/lib/utils';
 const route = inject('route');
 

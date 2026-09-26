@@ -3,7 +3,7 @@ import { inject } from 'vue';
 const route = inject('route');
 
 import { Link, usePage } from '@inertiajs/vue3';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 import PublicLayout from '@/Layouts/PublicLayout.vue';
 
 const page = usePage();

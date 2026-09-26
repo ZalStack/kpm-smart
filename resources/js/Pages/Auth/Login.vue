@@ -1,13 +1,13 @@
 <script setup>
-import { ref, inject } from 'vue';
+import { ref, computed, inject } from 'vue';
 import { Head, useForm, Link } from '@inertiajs/vue3';
+import { Icon } from '@iconify/vue/offline';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import Input from '@/Components/ui/input/Input.vue';
 import Label from '@/Components/ui/label/Label.vue';
 import Button from '@/Components/ui/button/Button.vue';
 import Alert from '@/Components/ui/alert/Alert.vue';
 import AlertTitle from '@/Components/ui/alert/AlertTitle.vue';
-import AlertDescription from '@/Components/ui/alert/AlertDescription.vue';
 
 const route = inject('route');
 
@@ -26,6 +26,19 @@ const showPassword = ref(false);
 function submit() {
     form.post(route('login'));
 }
+
+// Error yang punya field sendiri ditampilkan tepat di bawah field tersebut.
+// Sisanya (mis. "kredensial salah") tetap lewat blok ringkasan agar informasinya
+// tidak hilang — sebelumnya keduanya ditampilkan sehingga pesan muncul dua kali.
+const FIELD_ERRORS = ['email', 'password'];
+
+const generalErrors = computed(() =>
+    Object.entries(form.errors || {})
+        .filter(([key]) => !FIELD_ERRORS.includes(key))
+        .map(([, message]) => message)
+);
+
+const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
 </script>
 
 <template>
@@ -44,28 +57,42 @@ function submit() {
                 </Alert>
             </div>
 
-            <div v-if="form.errors && Object.keys(form.errors).length > 0" class="bg-destructive/10 border border-destructive/20 border-l-4 border-l-destructive text-destructive px-4 py-3 rounded-xl mb-6 text-sm" role="alert">
+            <div
+                v-if="generalErrors.length > 0"
+                class="bg-destructive/10 border border-destructive/20 border-l-4 border-l-destructive text-destructive px-4 py-3 rounded-xl mb-6 text-sm"
+                role="alert"
+            >
                 <div class="flex items-start gap-2.5">
-                    <svg class="w-4 h-4 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                    <Icon icon="mdi:alert-outline" class="w-[18px] h-[18px] mt-0.5 flex-shrink-0" aria-hidden="true" />
                     <ul class="space-y-1">
-                        <li v-for="(error, key) in form.errors" :key="key">{{ error }}</li>
+                        <li v-for="(error, i) in generalErrors" :key="i">{{ error }}</li>
                     </ul>
                 </div>
             </div>
 
-            <form @submit.prevent="submit" class="space-y-5" novalidate>
+            <form @submit.prevent="submit" class="space-y-5" novalidate :aria-busy="form.processing">
                 <div class="space-y-2">
                     <Label for="email">Alamat Email</Label>
                     <Input
                         id="email"
                         v-model="form.email"
                         type="email"
-                        placeholder="Masukkan email"
+                        inputmode="email"
+                        placeholder="nama@sekolah.id"
                         required
                         autofocus
                         autocomplete="email"
+                        :error="form.errors.email"
+                        :aria-describedby="form.errors.email ? 'email-error' : undefined"
                     />
-                    <p v-if="form.errors.email" class="text-xs text-destructive mt-1">{{ form.errors.email }}</p>
+                    <p
+                        v-if="form.errors.email"
+                        id="email-error"
+                        class="text-xs font-medium text-destructive flex items-center gap-1.5"
+                    >
+                        <Icon icon="mdi:alert-circle-outline" class="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                        {{ form.errors.email }}
+                    </p>
                 </div>
 
                 <div class="space-y-2">
@@ -78,31 +105,57 @@ function submit() {
                             placeholder="Masukkan kata sandi"
                             required
                             autocomplete="current-password"
+                            :error="form.errors.password"
+                            :aria-describedby="form.errors.password ? 'password-error' : undefined"
                             class="pr-12"
                         />
-                        <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition p-1">
-                            <svg v-if="!showPassword" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                            <svg v-else viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.6 21.6 0 0 1 5.06-6.06M9.9 4.24A10.6 10.6 0 0 1 12 4c7 0 11 8 11 8a21.5 21.5 0 0 1-2.61 3.94M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m1 1 22 22"/></svg>
+                        <button
+                            type="button"
+                            @click="showPassword = !showPassword"
+                            :aria-label="showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'"
+                            :aria-pressed="showPassword"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            <Icon
+                                :icon="showPassword ? 'mdi:eye-off-outline' : 'mdi:eye-outline'"
+                                class="w-[18px] h-[18px]"
+                                aria-hidden="true"
+                            />
                         </button>
                     </div>
-                    <p v-if="form.errors.password" class="text-xs text-destructive mt-1">{{ form.errors.password }}</p>
+                    <p
+                        v-if="form.errors.password"
+                        id="password-error"
+                        class="text-xs font-medium text-destructive flex items-center gap-1.5"
+                    >
+                        <Icon icon="mdi:alert-circle-outline" class="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                        {{ form.errors.password }}
+                    </p>
                 </div>
 
                 <div class="flex items-center justify-between pt-1">
-                    <label class="flex items-center gap-2.5 cursor-pointer select-none">
-                        <input type="checkbox" v-model="form.remember" class="sr-only peer">
-                        <span class="relative inline-flex h-6 w-11 items-center rounded-full bg-input transition-colors peer-checked:bg-primary">
-                            <span :class="['inline-block h-4 w-4 transform rounded-full bg-background shadow-lg transition-transform', form.remember ? 'translate-x-6' : 'translate-x-1']" />
+                    <label class="toggle-switch items-center gap-2.5 cursor-pointer select-none">
+                        <input type="checkbox" v-model="form.remember" class="sr-only peer" />
+                        <span class="toggle-track" aria-hidden="true">
+                            <span class="toggle-thumb"></span>
                         </span>
-                        <span class="text-sm text-muted-foreground">Ingat saya</span>
+                        <span class="text-sm text-muted-foreground peer-focus-visible:text-foreground transition-colors">Ingat saya</span>
                     </label>
                     <Link :href="route('password.request')" class="text-sm text-primary hover:text-primary/80 font-semibold transition">Lupa kata sandi?</Link>
                 </div>
 
-                <Button type="submit" class="btn-auth w-full py-3.5 text-[15px] font-semibold hover:shadow-md active:scale-[0.98] transition-all duration-200 min-h-12" :disabled="form.processing">
+                <Button
+                    type="submit"
+                    :loading="form.processing"
+                    class="btn-auth w-full min-h-12 text-[15px] font-semibold"
+                >
                     <span v-if="!form.processing">Masuk</span>
-                    <span v-else class="flex items-center gap-2">Memproses… <span class="spinner" /></span>
+                    <span v-else>Memproses…</span>
                 </Button>
+
+                <p v-if="hasErrors" class="sr-only" role="status">
+                    Formulir gagal dikirim. Periksa kembali isian yang ditandai merah.
+                </p>
             </form>
         </div>
     </GuestLayout>

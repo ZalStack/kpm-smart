@@ -17,7 +17,7 @@ class DashboardApiController extends BaseApiController
      */
     public function index(Request $request): JsonResponse
     {
-        $user = $this->resolveUser($request, 'user');
+        $user = $this->resolveUser($request);
 
         // Ambil paket aktif sesuai bidang/level jika terisi
         $packagesQuery = Package::where('is_active', true);
@@ -76,7 +76,22 @@ class DashboardApiController extends BaseApiController
                 'average_score' => $averageScore,
             ],
             'gamification' => $gamification,
-            'recent_packages' => $packages,
+            // Ringkas saja. Mengirim model Package mentah di sini membocorkan
+            // array `questions` yang memuat correct_answer + explanation, sehingga
+            // siswa bisa menghafal kunci jawaban sebelum mengerjakan tugas.
+            'recent_packages' => $packages->map(fn (Package $pkg) => [
+                'id' => $pkg->id,
+                'title' => $pkg->title,
+                'description' => $pkg->description,
+                'thumbnail' => $pkg->thumbnail,
+                'bidang' => $pkg->bidang,
+                'level' => $pkg->level,
+                'schedule_status' => $pkg->schedule_status,
+                'total_cards' => count($pkg->cards ?? []),
+                'total_questions' => count($pkg->questions ?? []),
+                'start_date' => $pkg->start_date,
+                'end_date' => $pkg->end_date,
+            ])->values(),
             'recent_announcements' => $recentAnnouncements,
         ], 'Data dasbor siswa berhasil dimuat.');
     }

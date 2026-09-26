@@ -5,7 +5,7 @@ import UserLayout from '@/Layouts/UserLayout.vue';
 import { Line, Bar } from 'vue-chartjs';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 import StatCard from '@/Components/shared/StatCard.vue';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 const route = inject('route');
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler);

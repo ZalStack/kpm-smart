@@ -27,6 +27,10 @@ export default defineConfig({
         },
     },
     server: {
+        // Samakan dengan host aplikasi (127.0.0.1). Tanpa ini Vite menulis
+        // http://[::1]:5173 ke public/hot, sehingga origin berbeda dari
+        // halaman dan aset dev diblokir oleh CSP.
+        host: '127.0.0.1',
         watch: {
             ignored: ['**/vendor/**', '**/node_modules/**'],
         },

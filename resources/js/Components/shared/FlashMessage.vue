@@ -1,73 +1,153 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import { Icon } from '@iconify/vue/offline';
 
 const page = usePage();
+
 const show = ref(false);
 const type = ref('success');
 const message = ref('');
 
+let timer = null;
+
+/** Menahan timer selama kursor di atas notifikasi, supaya tidak hilang
+ *  saat pengguna sedang menyeleksi atau akan menekan tombol di dalamnya. */
+const paused = ref(false);
+let remaining = 5000;
+let startedAt = 0;
+
+const DURATION = 5000;
+
+const meta = {
+    success: {
+        icon: 'mdi:check-circle-outline',
+        wrap: 'bg-green-50 border-green-200 text-green-800',
+        iconWrap: 'bg-green-100 text-green-600',
+        bar: 'bg-green-500',
+        label: 'Berhasil',
+    },
+    error: {
+        icon: 'mdi:alert-circle-outline',
+        wrap: 'bg-red-50 border-red-200 text-red-800',
+        iconWrap: 'bg-red-100 text-red-600',
+        bar: 'bg-red-500',
+        label: 'Gagal',
+    },
+    info: {
+        icon: 'mdi:information-outline',
+        wrap: 'bg-blue-50 border-blue-200 text-blue-800',
+        iconWrap: 'bg-blue-100 text-blue-600',
+        bar: 'bg-blue-500',
+        label: 'Informasi',
+    },
+};
+
+function startTimer() {
+    if (paused.value || !show.value) return;
+    startedAt = Date.now();
+    timer = setTimeout(dismiss, remaining);
+}
+
+function pauseTimer() {
+    if (!timer) return;
+    clearTimeout(timer);
+    timer = null;
+    remaining -= Date.now() - startedAt;
+}
+
+function resumeTimer() {
+    paused.value = false;
+    startTimer();
+}
+
+function dismiss() {
+    if (timer) clearTimeout(timer);
+    timer = null;
+    show.value = false;
+}
+
 function flash() {
-    if (page.props.flash?.success) {
+    const { success, error, info } = page.props.flash || {};
+
+    if (success) {
         type.value = 'success';
-        message.value = page.props.flash.success;
-        show.value = true;
-    } else if (page.props.flash?.error) {
+        message.value = success;
+    } else if (error) {
         type.value = 'error';
-        message.value = page.props.flash.error;
-        show.value = true;
-    } else if (page.props.flash?.info) {
+        message.value = error;
+    } else if (info) {
         type.value = 'info';
-        message.value = page.props.flash.info;
-        show.value = true;
+        message.value = info;
     } else {
-        show.value = false;
+        dismiss();
+        return;
     }
 
-    if (show.value) {
-        setTimeout(() => {
-            show.value = false;
-        }, 5000);
-    }
+    paused.value = false;
+    remaining = DURATION;
+    show.value = true;
+
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(dismiss, remaining);
 }
 
 onMounted(flash);
+onUnmounted(() => timer && clearTimeout(timer));
 watch(() => [page.props.flash?.success, page.props.flash?.error, page.props.flash?.info], flash);
-
-const icons = {
-    success: `<svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
-    error: `<svg class="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>`,
-    info: `<svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>`,
-};
-
-const bgClasses = {
-    success: 'bg-green-50 border-green-200 text-green-700',
-    error: 'bg-red-50 border-red-200 text-red-700',
-    info: 'bg-blue-50 border-blue-200 text-blue-700',
-};
-
-const iconBgClasses = {
-    success: 'bg-green-100',
-    error: 'bg-red-100',
-    info: 'bg-blue-100',
-};
 </script>
 
 <template>
     <Transition name="flash">
-        <div v-if="show" :class="['p-4 rounded-lg mb-6 flex items-center gap-3 border', bgClasses[type]]">
-            <div :class="['w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0', iconBgClasses[type]]" v-html="icons[type]" />
-            <p class="text-sm font-medium flex-1">{{ message }}</p>
-            <button @click="show = false" class="text-muted-foreground hover:text-foreground transition p-1">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        <div
+            v-if="show"
+            :class="['relative overflow-hidden rounded-lg border p-3.5 pr-10 mb-5 flex items-start gap-3', meta[type].wrap]"
+            role="status"
+            aria-live="polite"
+            @mouseenter="pauseTimer"
+            @mouseleave="resumeTimer"
+            @focusin="pauseTimer"
+            @focusout="resumeTimer"
+        >
+            <div :class="['h-8 w-8 shrink-0 rounded-full flex items-center justify-center', meta[type].iconWrap]">
+                <Icon :icon="meta[type].icon" class="h-[18px] w-[18px]" aria-hidden="true" />
+            </div>
+
+            <div class="min-w-0 flex-1 pt-0.5">
+                <p class="text-xs font-semibold uppercase tracking-wide opacity-70">
+                    {{ meta[type].label }}
+                </p>
+                <p class="text-sm font-medium mt-0.5 break-words">{{ message }}</p>
+            </div>
+
+            <button
+                type="button"
+                @click="dismiss"
+                class="absolute right-2 top-2.5 rounded-md p-1.5 opacity-60 transition hover:opacity-100 hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
+                aria-label="Tutup notifikasi"
+            >
+                <Icon icon="mdi:close" class="h-4 w-4" aria-hidden="true" />
             </button>
+
+            <!-- Progres durasi, sekaligus petunjuk bahwa notifikasi akan menutup sendiri -->
+            <span
+                v-if="!paused"
+                :class="['absolute bottom-0 left-0 h-0.5', meta[type].bar]"
+                :style="{ animation: `flashBar ${DURATION}ms linear forwards` }"
+                aria-hidden="true"
+            />
         </div>
     </Transition>
 </template>
 
 <style scoped>
-.flash-enter-active { transition: all 0.3s ease; }
-.flash-leave-active { transition: all 0.3s ease; }
-.flash-enter-from { opacity: 0; transform: translateY(-8px); }
-.flash-leave-to { opacity: 0; transform: translateY(-8px); }
+.flash-enter-active { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.flash-leave-active { transition: all 0.2s ease-in; }
+.flash-enter-from { opacity: 0; transform: translateY(-10px); }
+.flash-leave-to { opacity: 0; transform: translateY(-10px); }
+
+@keyframes flashBar {
+    from { width: 100%; }
+    to { width: 0%; }
+}
 </style>

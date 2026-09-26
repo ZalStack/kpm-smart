@@ -1,0 +1,1 @@
+import{I as e,K as t,P as n,S as r,q as i}from"./dist-Bx2-cc3D.js";import{t as a}from"./utils-xn_YJHkT.js";var o={__name:`Card`,props:{class:{type:[String,Array,Object],default:``}},setup(o){let s=o;return(o,c)=>(n(),r(`div`,{class:i(t(a)(`rounded-lg border bg-card text-card-foreground shadow-sm`,s.class))},[e(o.$slots,`default`)],2))}};export{o as t};

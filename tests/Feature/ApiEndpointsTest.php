@@ -183,35 +183,35 @@ class ApiEndpointsTest extends TestCase
             ]);
     }
 
-    public function test_api_me_endpoint_without_token_returns_200(): void
+    public function test_api_me_endpoint_without_token_returns_401(): void
     {
         $response = $this->getJson(route('api.auth.me'));
 
-        $response->assertOk()
-            ->assertJson([
-                'success' => true,
-            ])
-            ->assertJsonStructure([
-                'data' => [
-                    'user' => ['id', 'name', 'email'],
-                ],
-            ]);
+        $response->assertStatus(401);
+        $response->assertJsonMissingPath('data.user');
     }
 
-    public function test_api_me_endpoint_with_user_id_query(): void
+    public function test_api_me_endpoint_ignores_user_id_query_parameter(): void
     {
-        $response = $this->getJson(route('api.auth.me', ['user_id' => $this->user->id]));
+        // Celah IDOR: dulu endpoint ini menerima ?user_id= sehingga siapa pun bisa
+        // membaca profil user lain. Sekarang ?user_id= harus diabaikan sepenuhnya.
+        $token = $this->user->createToken('idor-test')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson(route('api.auth.me') . '?user_id=' . $this->admin->id);
 
         $response->assertOk()
-            ->assertJson([
-                'success' => true,
-                'data' => [
-                    'user' => [
-                        'id' => $this->user->id,
-                        'email' => $this->user->email,
-                    ],
-                ],
-            ]);
+            ->assertJsonPath('data.user.id', $this->user->id)
+            ->assertJsonPath('data.user.email', 'student@kpm.test')
+            ->assertJsonMissing(['email' => 'admin@kpm.test']);
+    }
+
+    public function test_api_me_endpoint_with_invalid_token_returns_401(): void
+    {
+        $response = $this->withHeader('Authorization', 'Bearer token-palsu-ngawur')
+            ->getJson(route('api.auth.me'));
+
+        $response->assertStatus(401);
     }
 
     // ==========================================
@@ -293,12 +293,38 @@ class ApiEndpointsTest extends TestCase
             ->assertJsonStructure(['success', 'data' => ['id', 'name', 'email', 'role']]);
     }
 
-    public function test_unauthenticated_guest_can_access_admin_api_endpoints(): void
+    public function test_unauthenticated_guest_is_rejected_from_admin_api_endpoints(): void
     {
-        $response = $this->getJson(route('api.admin.dashboard'));
+        // Dulu endpoint admin terbuka untuk publik. Sekarang semua wajib 401.
+        $endpoints = [
+            'api.admin.dashboard',
+            'api.admin.users.index',
+            'api.admin.packages.index',
+            'api.admin.practice-statistics.index',
+            'api.admin.login-logs.index',
+            'api.admin.leave-requests.index',
+            'api.admin.notifications.index',
+            'api.admin.announcements.index',
+            'api.admin.profile',
+        ];
 
-        $response->assertOk()
-            ->assertJsonStructure(['success', 'data' => ['summary', 'recent_users', 'package_stats']]);
+        foreach ($endpoints as $endpoint) {
+            $this->getJson(route($endpoint))
+                ->assertStatus(401, "Endpoint [{$endpoint}] harus menolak request tanpa token.");
+        }
+    }
+
+    public function test_non_admin_role_is_forbidden_from_admin_api_endpoints(): void
+    {
+        $token = $this->user->createToken('student-token')->plainTextToken;
+
+        $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson(route('api.admin.dashboard'))
+            ->assertStatus(403);
+
+        $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson(route('api.admin.users.index'))
+            ->assertStatus(403);
     }
 
     // ==========================================
@@ -372,11 +398,81 @@ class ApiEndpointsTest extends TestCase
             ->assertJsonStructure(['success', 'data' => ['id', 'title', 'content']]);
     }
 
-    public function test_unauthenticated_guest_can_access_user_api_endpoints(): void
+    public function test_unauthenticated_guest_is_rejected_from_user_api_endpoints(): void
     {
-        $response = $this->getJson(route('api.user.dashboard'));
+        $endpoints = [
+            'api.user.dashboard',
+            'api.user.profile',
+            'api.user.packages.index',
+            'api.user.practice.history',
+            'api.user.practice.statistics',
+            'api.user.leaderboard',
+            'api.user.analytics',
+            'api.user.leave-requests.index',
+            'api.user.notifications.index',
+        ];
+
+        foreach ($endpoints as $endpoint) {
+            $this->getJson(route($endpoint))
+                ->assertStatus(401, "Endpoint [{$endpoint}] harus menolak request tanpa token.");
+        }
+    }
+
+    public function test_user_endpoints_ignore_user_id_query_parameter(): void
+    {
+        // Siswa tidak boleh membaca data siswa lain hanya dengan menggeser user_id.
+        $token = $this->user->createToken('student-token')->plainTextToken;
+        $other = User::factory()->create([
+            'email' => 'other@kpm.test',
+            'password' => 'password',
+            'role' => 'user',
+            'is_active' => true,
+        ]);
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson(route('api.user.profile') . '?user_id=' . $other->id);
 
         $response->assertOk()
-            ->assertJsonStructure(['success', 'data' => ['user', 'statistics', 'gamification', 'recent_packages']]);
+            ->assertJsonPath('data.email', 'student@kpm.test')
+            ->assertJsonMissing(['email' => 'other@kpm.test']);
+    }
+
+    public function test_practice_history_ignores_user_id_query_parameter(): void
+    {
+        $token = $this->user->createToken('student-token')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson(route('api.user.practice.history') . '?user_id=' . $this->admin->id);
+
+        $response->assertOk();
+
+        // Hanya sesi milik user yang login yang boleh muncul.
+        $returnedUserIds = collect($response->json('data.data'))
+            ->pluck('user_id')
+            ->unique()
+            ->all();
+
+        $this->assertNotContains($this->admin->id, $returnedUserIds);
+        $this->assertSame([$this->user->id], $returnedUserIds);
+    }
+
+    public function test_admin_package_index_does_not_expose_question_answers(): void
+    {
+        $token = $this->admin->createToken('admin-test')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson(route('api.admin.packages.index'));
+
+        $response->assertOk();
+
+        $first = $response->json('data.data.0');
+
+        // Daftar paket tidak boleh memuat array questions (isi kunci jawaban),
+        // cukup jumlah soalnya saja.
+        $this->assertArrayNotHasKey('questions', $first);
+        $this->assertArrayNotHasKey('cards', $first);
+        $this->assertArrayHasKey('questions_count', $first);
+        $this->assertSame(1, $first['questions_count']);
+        $this->assertStringNotContainsString('correct_answer', $response->getContent());
     }
 }

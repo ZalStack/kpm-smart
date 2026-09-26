@@ -3,7 +3,7 @@ import { inject, computed } from 'vue';
 const route = inject('route');
 
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 import UserLayout from '@/Layouts/UserLayout.vue';
 import Badge from '@/Components/ui/badge/Badge.vue';
 

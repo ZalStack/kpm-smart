@@ -11,6 +11,19 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // PERINGATAN KESELAMATAN: seeder ini membuat akun admin dengan password
+        // default yang tertulis di repository publik. Menjalankan
+        // `db:seed --force` di production akan membuka pintu ke seluruh data.
+        // Karena itu seeder hanya boleh jalan di environment non-produksi.
+        if (app()->environment('production')) {
+            $this->command?->warn('DatabaseSeeder dilewati: seeding diblokir di environment production.');
+            $this->command?->line('Buat akun admin pertama secara manual, lalu jalankan: php artisan app:make-admin');
+
+            return;
+        }
+
+        $this->command?->warn('Menjalankan seeder dengan akun contoh (password123). Jangan pernah di production.');
+
         // Admin User
         User::create([
             'name' => 'Admin PKA Litbang',

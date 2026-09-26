@@ -55,10 +55,8 @@ class PracticeController extends Controller
             $cardId = $package->cards[0]['id'] ?? null;
         }
 
-        $questions = collect($package->questions ?? [])
-            ->where('card_id', $cardId)
-            ->values()
-            ->all();
+        // Tanpa kunci jawaban: siswa tidak boleh bisa membaca kunci jawaban dari payload.
+        $questions = $package->questionsForAttempt($cardId);
 
         if (empty($questions)) {
             return redirect()->route('user.packages.show', $package->id)
@@ -81,9 +79,9 @@ class PracticeController extends Controller
             }
 
             return Inertia::render('Practice/PracticeStart', [
-                'package' => $package,
+                'package' => $package->summary(),
                 'questions' => $questions,
-                'session' => $inProgress,
+                'session' => $inProgress->withoutRelations(),
                 'timeLimitMinutes' => 0,
                 'savedAnswers' => $savedAnswers,
                 'savedCurrentIndex' => null,
@@ -115,9 +113,9 @@ class PracticeController extends Controller
         ]);
 
         return Inertia::render('Practice/PracticeStart', [
-            'package' => $package,
+            'package' => $package->summary(),
             'questions' => $questions,
-            'session' => $session,
+            'session' => $session->withoutRelations(),
             'timeLimitMinutes' => 0,
         ]);
     }
@@ -203,7 +201,7 @@ class PracticeController extends Controller
         $showScore      = $package->canShowScore();
 
         return Inertia::render('Practice/PracticeResult', [
-            'session' => $session,
+            'session' => $session->withoutRelations(),
             'results' => $results,
             'correct' => $correct,
             'wrong' => $wrong,
@@ -236,10 +234,7 @@ class PracticeController extends Controller
         $package = $session->package;
 
         if ($session->status === 'in_progress') {
-            $questions = collect($package->questions ?? [])
-                ->where('card_id', $session->card_id)
-                ->values()
-                ->all();
+            $questions = $package->questionsForAttempt($session->card_id);
 
             $savedAnswers = [];
             if (!empty($session->answers)) {
@@ -249,9 +244,9 @@ class PracticeController extends Controller
             }
 
             return Inertia::render('Practice/PracticeStart', [
-                'package' => $package,
+                'package' => $package->summary(),
                 'questions' => $questions,
-                'session' => $session,
+                'session' => $session->withoutRelations(),
                 'timeLimitMinutes' => 0,
                 'savedAnswers' => $savedAnswers,
                 'savedCurrentIndex' => null,
@@ -267,7 +262,7 @@ class PracticeController extends Controller
         $showScore       = $package ? $package->canShowScore() : true;
 
         return Inertia::render('Practice/PracticeShow', [
-            'session' => $session,
+            'session' => $session->withoutRelations(),
             'results' => $results,
             'showAnswerKey' => $showAnswerKey,
             'showExplanation' => $showExplanation,
@@ -316,15 +311,18 @@ class PracticeController extends Controller
                 $wrong++;
             }
 
+            // Autosave hanya butuh informasi untuk melanjutkan sesi, bukan
+            // penilaian. `correct_answer`, `is_correct`, dan `explanation`
+            // SENGAJA tidak disimpan di sini: kalau ikut tersimpan, payload
+            // `session` pada halaman Kerjakan akan membocorkan kunci jawaban
+            // di tengah pengerjaan. Penilaian final dihitung ulang oleh
+            // submit() dari jawaban yang dikirim pengguna.
             $results[] = [
                 'question' => $question['question'],
                 'options' => $question['options'],
                 'type' => $questionType,
-                'correct_answer' => $question['correct_answer'],
                 'user_answer' => $userAnswer,
-                'is_correct' => $isCorrect,
                 'image' => $question['image'] ?? null,
-                'explanation' => $question['explanation'] ?? '',
             ];
         }
 

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, inject, computed, onMounted, onUnmounted } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 import FlashMessage from '@/Components/shared/FlashMessage.vue';
 import { usePushNotification } from '@/composables/usePushNotification';
 
@@ -121,6 +121,13 @@ async function handleNotifClick(n) {
 
 let pollInterval;
 let clickHandler;
+let keyHandler;
+
+function closeAllDropdowns() {
+    userDropdownOpen.value = false;
+    notifDropdownOpen.value = false;
+    pushNotifOpen.value = false;
+}
 
 onMounted(() => {
     if (user.value) {
@@ -132,12 +139,21 @@ onMounted(() => {
         if (!e.target.closest('#notifWrap') && !e.target.closest('#notifWrapMobile')) notifDropdownOpen.value = false;
         if (!e.target.closest('#pushNotifWrap') && !e.target.closest('#pushNotifWrapMobile')) pushNotifOpen.value = false;
     };
+    keyHandler = (e) => {
+        if (e.key !== 'Escape') return;
+        // Escape menutup dropdown teratas lebih dulu, baru semua dropdown.
+        if (userDropdownOpen.value || notifDropdownOpen.value || pushNotifOpen.value) {
+            closeAllDropdowns();
+        }
+    };
     document.addEventListener('click', clickHandler);
+    document.addEventListener('keydown', keyHandler);
 });
 
 onUnmounted(() => {
     if (pollInterval) clearInterval(pollInterval);
     if (clickHandler) document.removeEventListener('click', clickHandler);
+    if (keyHandler) document.removeEventListener('keydown', keyHandler);
 });
 </script>
 
@@ -155,16 +171,29 @@ onUnmounted(() => {
                     <div class="flex items-center gap-1">
                         <template v-if="user">
                             <template v-if="user.role === 'user'">
-                                <Link :href="route('user.dashboard')" class="nav-link relative inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-lg transition-all duration-200" :class="{ 'text-foreground bg-accent': isActive('user.dashboard') }">Dashboard</Link>
-                                <Link :href="route('user.packages.index')" class="nav-link relative inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-lg transition-all duration-200" :class="{ 'text-foreground bg-accent': isActive('user.packages.*') }">Tugas PR</Link>
-                                <Link :href="route('user.practice.history')" class="nav-link relative inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-lg transition-all duration-200" :class="{ 'text-foreground bg-accent': isActive('user.practice.*') }">Riwayat</Link>
-                                <Link :href="route('user.leaderboard')" class="nav-link relative inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-lg transition-all duration-200" :class="{ 'text-foreground bg-accent': isActive('user.leaderboard') }">Peringkat</Link>
-                                <Link :href="route('user.leave-requests.index')" class="nav-link relative inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-lg transition-all duration-200" :class="{ 'text-foreground bg-accent': isActive('user.leave-requests.*') }">Izin</Link>
+                                <nav class="hidden md:flex items-center gap-0.5" aria-label="Navigasi utama">
+                                    <Link
+                                        v-for="tab in allTabs"
+                                        :key="tab.route"
+                                        :href="route(tab.route)"
+                                        :aria-current="isActive(tab.match) ? 'page' : undefined"
+                                        class="nav-link relative inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-lg transition-all duration-200"
+                                        :class="{ 'text-foreground bg-accent': isActive(tab.match) }"
+                                    >
+                                        {{ tab.label }}
+                                    </Link>
+                                </nav>
                             </template>
 
                             <!-- Desktop Notification Bell -->
                             <div class="relative" id="notifWrap">
-                                <button @click="toggleNotifDropdown" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground transition-all duration-200 relative">
+                                <button
+                                    @click="toggleNotifDropdown"
+                                    :aria-expanded="notifDropdownOpen"
+                                    aria-haspopup="true"
+                                    aria-label="Notifikasi"
+                                    class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground transition-all duration-200 relative"
+                                >
                                     <Icon icon="mdi:bell-outline" class="w-[18px] h-[18px]" />
                                     <span v-if="unreadCount > 0" class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm ring-2 ring-background">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
                                 </button>
@@ -198,7 +227,7 @@ onUnmounted(() => {
 
                             <!-- Desktop Push Notification Toggle -->
                             <div v-if="pushSupported && user?.role === 'user'" class="relative" id="pushNotifWrap">
-                                <button @click="pushNotifOpen = !pushNotifOpen" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground transition-all duration-200 relative" :title="pushSubscribed ? 'Notifikasi aktif' : 'Aktifkan notifikasi'">
+                                <button @click="pushNotifOpen = !pushNotifOpen" :aria-expanded="pushNotifOpen" aria-haspopup="true" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground transition-all duration-200 relative" :title="pushSubscribed ? 'Notifikasi aktif' : 'Aktifkan notifikasi'" :aria-label="pushSubscribed ? 'Notifikasi browser aktif' : 'Aktifkan notifikasi browser'">
                                     <Icon :icon="pushSubscribed ? 'mdi:bell-ring-outline' : 'mdi:bell-off-outline'" class="w-[18px] h-[18px]" :class="pushSubscribed ? 'text-green-500' : ''" />
                                 </button>
                                 <Transition name="dropdown">
@@ -241,13 +270,14 @@ onUnmounted(() => {
 
                             <!-- Desktop User Dropdown -->
                             <div class="relative" id="userDropdown">
-                                <button @click="toggleUserDropdown" class="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-200 px-2 py-1.5 rounded-lg hover:bg-accent/70">
+                                <button @click="toggleUserDropdown" :aria-expanded="userDropdownOpen" aria-haspopup="true" class="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-200 px-2 py-1.5 rounded-lg hover:bg-accent/70">
                                     <span class="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-xs font-bold text-primary-foreground shadow-sm overflow-hidden">
-                                        <img v-if="profilePhotoUrl" :src="profilePhotoUrl" class="w-full h-full object-cover" />
+                                        <img v-if="profilePhotoUrl" :src="profilePhotoUrl" class="w-full h-full object-cover" alt="" />
                                         <span v-else>{{ (user?.name || 'A').charAt(0).toUpperCase() }}</span>
                                     </span>
-                                    <span class="text-sm">{{ user.name?.substring(0, 15) }}</span>
+                                    <span class="text-sm max-w-[10rem] truncate">{{ user.name?.substring(0, 15) }}</span>
                                     <Icon icon="mdi:chevron-down" class="w-3.5 h-3.5 transition-transform duration-200" :class="{ 'rotate-180': userDropdownOpen }" />
+                                    <span class="sr-only">Buka menu akun</span>
                                 </button>
                                 <Transition name="dropdown">
                                     <div v-if="userDropdownOpen" class="absolute right-0 mt-2 w-56 bg-popover text-popover-foreground rounded-xl shadow-xl py-1.5 z-50 border">
@@ -287,7 +317,7 @@ onUnmounted(() => {
                 <div class="flex items-center gap-1">
                     <!-- Mobile Notification Bell -->
                     <div class="relative" id="notifWrapMobile">
-                        <button @click="toggleNotifDropdown" class="relative inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:bg-accent/70 transition-all duration-200">
+                        <button @click="toggleNotifDropdown" :aria-expanded="notifDropdownOpen" aria-haspopup="true" aria-label="Notifikasi" class="relative inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:bg-accent/70 transition-all duration-200">
                             <Icon icon="mdi:bell-outline" class="w-5 h-5" />
                             <span v-if="unreadCount > 0" class="absolute top-1 right-1 min-w-[16px] h-[16px] bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm ring-2 ring-background">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
                         </button>
@@ -319,7 +349,7 @@ onUnmounted(() => {
                     </div>
                     <!-- Mobile Push Notification Toggle -->
                     <div v-if="pushSupported && isUserRole" class="relative" id="pushNotifWrapMobile">
-                        <button @click="pushNotifOpen = !pushNotifOpen" class="relative inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:bg-accent/70 transition-all duration-200" :title="pushSubscribed ? 'Notifikasi aktif' : 'Aktifkan notifikasi'">
+                        <button @click="pushNotifOpen = !pushNotifOpen" :aria-expanded="pushNotifOpen" aria-haspopup="true" class="relative inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:bg-accent/70 transition-all duration-200" :title="pushSubscribed ? 'Notifikasi aktif' : 'Aktifkan notifikasi'" :aria-label="pushSubscribed ? 'Notifikasi browser aktif' : 'Aktifkan notifikasi browser'">
                             <Icon :icon="pushSubscribed ? 'mdi:bell-ring-outline' : 'mdi:bell-off-outline'" class="w-5 h-5" :class="pushSubscribed ? 'text-green-500' : ''" />
                         </button>
                         <Transition name="dropdown">
@@ -376,8 +406,15 @@ onUnmounted(() => {
 
         <!-- ======================== MOBILE BOTTOM NAV (Android Style) ======================== -->
         <nav v-if="isUserRole" class="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 dark:bg-card/95 backdrop-blur-xl supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-card/80 border-t border-border/30 safe-area-pb shadow-[0_-2px_10px_0_rgb(0,0,0,0.06)]">
-            <div class="grid grid-cols-5 h-[60px]">
-                <Link v-for="tab in bottomTabs" :key="tab.route" :href="route(tab.route)" class="bottom-tab flex flex-col items-center justify-center gap-0.5 relative transition-all duration-200" :class="isActive(tab.match) ? 'text-primary' : 'text-muted-foreground'">
+            <div class="grid grid-cols-5 h-[60px]" role="tablist">
+                <Link
+                    v-for="tab in bottomTabs"
+                    :key="tab.route"
+                    :href="route(tab.route)"
+                    :aria-current="isActive(tab.match) ? 'page' : undefined"
+                    class="bottom-tab flex flex-col items-center justify-center gap-0.5 relative transition-all duration-200"
+                    :class="isActive(tab.match) ? 'text-primary' : 'text-muted-foreground'"
+                >
                     <div class="relative">
                         <Icon :icon="isActive(tab.match) ? tab.iconActive : tab.icon" class="w-[22px] h-[22px] transition-all duration-200" :class="isActive(tab.match) ? 'scale-110' : ''" />
                         <div v-if="isActive(tab.match)" class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-5 h-[3px] rounded-full bg-primary"></div>

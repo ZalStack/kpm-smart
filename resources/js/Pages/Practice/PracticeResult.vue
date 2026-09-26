@@ -1,7 +1,7 @@
 <script setup>
 import { inject, computed, ref, onMounted } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 import UserLayout from '@/Layouts/UserLayout.vue';
 import confetti from 'canvas-confetti';
 const route = inject('route');

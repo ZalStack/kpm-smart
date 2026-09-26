@@ -13,7 +13,7 @@ class ProfileApiController extends BaseApiController
      */
     public function show(Request $request): JsonResponse
     {
-        $user = $this->resolveUser($request, 'user');
+        $user = $this->resolveUser($request);
 
         if (!$user) {
             return $this->sendError('Data profil siswa tidak ditemukan.', [], 404);

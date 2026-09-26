@@ -15,7 +15,7 @@ class PackageApiController extends BaseApiController
      */
     public function index(Request $request): JsonResponse
     {
-        $user = $this->resolveUser($request, 'user', true);
+        $user = $this->resolveUser($request);
         $query = Package::where('is_active', true);
 
         if ($request->filled('bidang')) {
@@ -84,7 +84,7 @@ class PackageApiController extends BaseApiController
             return $this->sendError('Paket tugas tidak tersedia.', [], 404);
         }
 
-        $user = $this->resolveUser($request, 'user', true);
+        $user = $this->resolveUser($request);
 
         // Cari sesi yang sedang berjalan atau sudah selesai untuk paket ini
         $sessions = $user ? PracticeSession::where('user_id', $user->id)

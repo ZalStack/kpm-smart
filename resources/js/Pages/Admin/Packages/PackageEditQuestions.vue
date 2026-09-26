@@ -7,7 +7,7 @@ import Input from '@/Components/ui/input/Input.vue';
 import Select from '@/Components/ui/select/Select.vue';
 import Badge from '@/Components/ui/badge/Badge.vue';
 import ConfirmDialog from '@/Components/shared/ConfirmDialog.vue';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 
 const route = inject('route');
 

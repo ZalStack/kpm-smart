@@ -17,7 +17,7 @@ class GamificationApiController extends BaseApiController
      */
     public function leaderboard(Request $request): JsonResponse
     {
-        $userId = $this->resolveUserId($request, 'user');
+        $userId = $this->resolveUserId($request);
 
         $users = PracticeSession::where('status', 'completed')
             ->select('user_id', DB::raw('COUNT(*) as total_attempts'), DB::raw('AVG(total_score) as avg_score'), DB::raw('MAX(total_score) as best_score'))
@@ -75,7 +75,7 @@ class GamificationApiController extends BaseApiController
      */
     public function analytics(Request $request): JsonResponse
     {
-        $userId = $this->resolveUserId($request, 'user');
+        $userId = $this->resolveUserId($request);
         $sessions = PracticeSession::where('user_id', $userId)
             ->where('status', 'completed')
             ->with('package:id,title')

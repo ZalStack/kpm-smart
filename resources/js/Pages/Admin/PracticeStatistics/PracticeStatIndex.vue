@@ -1,7 +1,7 @@
 <script setup>
 import { inject, ref } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import Badge from '@/Components/ui/badge/Badge.vue';
 import Pagination from '@/Components/shared/Pagination.vue';

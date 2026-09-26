@@ -39,5 +39,20 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('auth-public', function (Request $request) {
             return Limit::perMinute(10)->by('auth:' . $request->ip());
         });
+
+        // Login API (Sanctum): 5x/menit per email+IP. Tanpa ini endpoint
+        // /api/v1/auth/login bisa di-brute-force tanpa batas.
+        RateLimiter::for('api-login', function (Request $request) {
+            $key = 'api-login:' . mb_strtolower((string) $request->input('email')) . '|' . $request->ip();
+
+            return Limit::perMinute(5)->by($key);
+        });
+
+        // Batas dasar untuk seluruh endpoint API yang sudah terautentikasi,
+        // supaya satu token tidak bisa dipakai untuk scraping data secara massal.
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(120)
+                ->by($request->user()?->id ?: $request->ip());
+        });
     }
 }

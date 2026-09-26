@@ -2,7 +2,7 @@
 import { inject, onMounted, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import confetti from 'canvas-confetti';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 const route = inject('route');
 
 import { Head, Link } from '@inertiajs/vue3';

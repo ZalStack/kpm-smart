@@ -127,6 +127,57 @@ class Package extends Model
     }
 
     /**
+     * Ringkasan paket yang AMAN dikirim ke siswa.
+     *
+     * Berbeda dengan model mentah, hasil ini tidak memuat `questions` sama
+     * sekali — sehingga kunci jawaban tidak ikut terbawa ke browser. Paket ini
+     * yang dipakai untuk prop `package` pada halaman mengerjakan soal.
+     */
+    public function summary(): array
+    {
+        return [
+            'id' => $this->id,
+            'title' => $this->title,
+            'description' => $this->description,
+            'thumbnail' => $this->thumbnail,
+            'kelas' => $this->kelas,
+            'bidang' => $this->bidang,
+            'level' => $this->level,
+            'cards' => $this->cards ?? [],
+            'total_cards' => count($this->cards ?? []),
+            'total_questions' => count($this->questions ?? []),
+            'schedule_status' => $this->schedule_status,
+            'schedule_label' => $this->schedule_label,
+            'start_date' => $this->start_date,
+            'end_date' => $this->end_date,
+            'start_time' => $this->start_time,
+            'end_time' => $this->end_time,
+        ];
+    }
+
+    /**
+     * Ambil soal untuk ditampilkan ke siswa SEDANG mengerjakan.
+     *
+     * Penting: `correct_answer` dan `explanation` sengaja dibuang. Kalau ikut
+     * dikirim, siswa cukup membuka DevTools > Network/Payload untuk membaca
+     * seluruh kunci jawaban sebelum menjawab. Penilaian tetap dilakukan di
+     * server (lihat PracticeController::submit).
+     */
+    public function questionsForAttempt(?string $cardId = null): array
+    {
+        $questions = collect($this->questions ?? [])
+            ->when($cardId !== null, fn ($c) => $c->where('card_id', $cardId))
+            ->values()
+            ->all();
+
+        return array_map(function (array $question): array {
+            unset($question['correct_answer'], $question['explanation']);
+
+            return $question;
+        }, $questions);
+    }
+
+    /**
      * Apakah user boleh melihat kunci jawaban.
      */
     public function canShowAnswerKey(): bool

@@ -27,27 +27,30 @@ use App\Http\Controllers\Api\User\AnnouncementApiController as UserAnnouncementC
 |--------------------------------------------------------------------------
 | Prefix bawaan dari Laravel: /api/...
 |
-| GET endpoints: TIDAK membutuhkan autentikasi (public)
-| POST/auth:    Membutuhkan autentikasi Sanctum token
+| Keamanan: SELURUH endpoint di bawah wajib memakai Sanctum token, kecuali
+| endpoint login. Endpoint admin butuh role admin. Parameter query `?user_id=`
+| hanya dipercaya untuk role admin.
 */
 
 // ==========================================
 // AUTHENTICATION ROUTES (/api/v1/auth/...)
 // ==========================================
 Route::prefix('v1/auth')->name('api.auth.')->group(function () {
-    Route::post('/login', [AuthController::class, 'login'])->name('login');
-    Route::get('/me', [AuthController::class, 'me'])->name('me');
+    Route::post('/login', [AuthController::class, 'login'])
+        ->middleware('throttle:api-login')
+        ->name('login');
 
     Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/me', [AuthController::class, 'me'])->name('me');
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     });
 });
 
 // ==========================================
 // ADMIN API ROUTES (/api/admin/v1/...)
-// GET: PUBLIC (no auth required)
+// Wajib login sebagai admin.
 // ==========================================
-Route::prefix('admin/v1')->name('api.admin.')->group(function () {
+Route::prefix('admin/v1')->name('api.admin.')->middleware(['auth:sanctum', 'role:admin'])->group(function () {
     // 1. Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
@@ -70,7 +73,7 @@ Route::prefix('admin/v1')->name('api.admin.')->group(function () {
     Route::get('/leave-requests', [AdminLeaveRequestController::class, 'index'])->name('leave-requests.index');
     Route::get('/leave-requests/{id}', [AdminLeaveRequestController::class, 'show'])->name('leave-requests.show');
 
-    // 7. Notifications (gunakan ?user_id=xxx untuk filter)
+    // 7. Notifications (?user_id= honoured untuk admin)
     Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/unread-count', [AdminNotificationController::class, 'unreadCount'])->name('notifications.unread-count');
 
@@ -78,41 +81,41 @@ Route::prefix('admin/v1')->name('api.admin.')->group(function () {
     Route::get('/announcements', [AdminAnnouncementController::class, 'index'])->name('announcements.index');
     Route::get('/announcements/{announcement}', [AdminAnnouncementController::class, 'show'])->name('announcements.show');
 
-    // 9. Admin Profile (gunakan ?user_id=xxx untuk filter)
+    // 9. Admin Profile (?user_id= honoured untuk admin)
     Route::get('/profile', [AdminProfileController::class, 'show'])->name('profile');
 });
 
 // ==========================================
 // USER / SISWA API ROUTES (/api/user/v1/...)
-// GET: PUBLIC (no auth required)
-// Gunakan ?user_id=xxx untuk data spesifik user
+// Wajib login. Data yang dikembalikan selalu milik user yang sedang login.
+// `?user_id=` hanya dipercaya bila role-nya admin (lihat BaseApiController).
 // ==========================================
-Route::prefix('user/v1')->name('api.user.')->group(function () {
-    // 1. Dashboard (gunakan ?user_id=xxx)
+Route::prefix('user/v1')->name('api.user.')->middleware('auth:sanctum')->group(function () {
+    // 1. Dashboard
     Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
 
-    // 2. Profile (gunakan ?user_id=xxx)
+    // 2. Profile
     Route::get('/profile', [UserProfileController::class, 'show'])->name('profile');
 
-    // 3. Packages (Tugas PR) — gunakan ?user_id=xxx untuk melihat progress
+    // 3. Packages (Tugas PR)
     Route::get('/packages', [UserPackageController::class, 'index'])->name('packages.index');
     Route::get('/packages/{package}', [UserPackageController::class, 'show'])->name('packages.show');
 
-    // 4. Practice (Riwayat & Statistik) — gunakan ?user_id=xxx
+    // 4. Practice (Riwayat & Statistik)
     Route::get('/practice/history', [UserPracticeController::class, 'history'])->name('practice.history');
     Route::get('/practice/statistics', [UserPracticeController::class, 'statistics'])->name('practice.statistics');
     Route::get('/practice/{session}', [UserPracticeController::class, 'show'])->name('practice.show');
 
-    // 5. Leaderboard — gunakan ?user_id=xxx untuk highlight posisi user
+    // 5. Leaderboard
     Route::get('/leaderboard', [UserGamificationController::class, 'leaderboard'])->name('leaderboard');
 
-    // 6. Analytics — gunakan ?user_id=xxx
+    // 6. Analytics
     Route::get('/analytics', [UserGamificationController::class, 'analytics'])->name('analytics');
 
-    // 7. Leave Requests (Pengajuan Izin) — gunakan ?user_id=xxx
+    // 7. Leave Requests (Pengajuan Izin)
     Route::get('/leave-requests', [UserLeaveRequestController::class, 'index'])->name('leave-requests.index');
 
-    // 8. Notifications — gunakan ?user_id=xxx
+    // 8. Notifications
     Route::get('/notifications', [UserNotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/unread-count', [UserNotificationController::class, 'unreadCount'])->name('notifications.unread-count');
 

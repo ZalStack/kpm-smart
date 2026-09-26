@@ -203,7 +203,7 @@
     }
 
     .toggle-switch .toggle-track {
-        @apply h-6 w-11 rounded-full bg-input
+        @apply relative h-6 w-11 rounded-full bg-input
                transition-colors duration-200;
     }
 
@@ -216,7 +216,7 @@
                transition-transform duration-200;
     }
 
-    .toggle-switch input:checked ~ .toggle-thumb {
+    .toggle-switch input:checked ~ .toggle-track .toggle-thumb {
         transform: translateX(1.25rem);
     }
 
@@ -482,6 +482,55 @@
     .stat-card:hover,
     .admin-card-hover:hover {
         transform: none;
+    }
+}
+
+/* ===== Accessibility ===== */
+
+/* Hormati preferensi pengguna yang mengurangi animasi.中的应用 ini punya
+   banyak animasi tak berujung (float, shimmer, pulse-soft, sheen) yang
+   bisa memicu mual pada pengguna dengan gangguan vestibular. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Cincin fokus yang konsisten untuk elemen yang dapat difokuskan.
+   Hanya muncul saat navigasi keyboard, tidak saat klik mouse. */
+@layer base {
+    :focus-visible {
+        outline: 2px solid hsl(var(--ring));
+        outline-offset: 2px;
+    }
+
+    /* Jangan hapus indikator fokus tanpa diganti (mis. reset Tailwind). */
+    :focus:not(:focus-visible) {
+        outline: none;
+    }
+}
+
+/* Target sentuh minimal 44x44px sesuai pedoman WCAG 2.5.5 / Material. */
+@layer components {
+    .tap-target {
+        position: relative;
+    }
+
+    .tap-target::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100%;
+        min-width: 44px;
+        min-height: 44px;
     }
 }
 

@@ -1,7 +1,7 @@
 <script setup>
 import { inject,  ref, onMounted, onBeforeUnmount } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import Button from '@/Components/ui/button/Button.vue';
 import Badge from '@/Components/ui/badge/Badge.vue';

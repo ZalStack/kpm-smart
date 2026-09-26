@@ -2,7 +2,7 @@
 import { inject, computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import UserLayout from '@/Layouts/UserLayout.vue';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 const route = inject('route');
 
 const props = defineProps({

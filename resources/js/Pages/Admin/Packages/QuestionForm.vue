@@ -7,7 +7,7 @@ import Input from '@/Components/ui/input/Input.vue';
 import Label from '@/Components/ui/label/Label.vue';
 import Textarea from '@/Components/ui/textarea/Textarea.vue';
 import Select from '@/Components/ui/select/Select.vue';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 const route = inject('route');
 
 const props = defineProps({

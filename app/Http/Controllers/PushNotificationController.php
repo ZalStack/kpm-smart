@@ -75,8 +75,20 @@ class PushNotificationController extends Controller
 
     public function vapidPublicKey(): JsonResponse
     {
+        // Bila VAPID belum dikonfigurasi, kembalikan 503 + flag supaya frontend
+        // bisa menonaktifkan UI notifikasi daripada crash saat fetch.
+        if (! PushNotificationService::isConfigured()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Push notification belum dikonfigurasi di server ini.',
+                'public_key' => null,
+                'configured' => false,
+            ], 503);
+        }
+
         return response()->json([
             'public_key' => PushNotificationService::getPublicKey(),
+            'configured' => true,
         ]);
     }
 

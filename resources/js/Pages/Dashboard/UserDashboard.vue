@@ -3,7 +3,7 @@ import { inject, computed } from 'vue';
 const route = inject('route');
 
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 import UserLayout from '@/Layouts/UserLayout.vue';
 import StatCard from '@/Components/shared/StatCard.vue';
 
@@ -37,7 +37,11 @@ const xpProgress = computed(() => g.value.xp_in_level || 0);
                 <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-white/5 blur-3xl"></div>
             </div>
             <div class="relative z-10">
-                <h2 class="text-xl sm:text-2xl md:text-3xl font-bold mb-2">Halo, {{ user?.name }}! <Icon icon="mdi:hands-up" class="w-6 h-6 inline-block align-middle mr-1" /></h2>
+                <!-- Catatan: sebelumnya memakai `mdi:hands-up`, yang TIDAK ADA di
+                     Material Design Icons sehingga ikonnya tidak pernah muncul
+                     (Iconify 404 saat memuatnya). Diganti `mdi:hand-wave`, yang
+                     merupakan padanan resmi MDI. Ganti bila ingin ikon lain. -->
+                <h2 class="text-xl sm:text-2xl md:text-3xl font-bold mb-2">Halo, {{ user?.name }}! <Icon icon="mdi:hand-wave" class="w-6 h-6 inline-block align-middle mr-1" /></h2>
                 <p class="text-white/80 text-sm sm:text-base max-w-lg">Selamat datang di KPM SMART. Pilih soal tugas dan mulai berlatih sekarang.</p>
                 <Link :href="route('user.packages.index')" class="inline-flex items-center gap-2 mt-4 bg-white/20 hover:bg-white/30 backdrop-blur px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:shadow-lg">
                     Kerjakan Tugas

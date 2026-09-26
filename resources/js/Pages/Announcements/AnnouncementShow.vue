@@ -1,7 +1,7 @@
 <script setup>
 import { inject } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 import UserLayout from '@/Layouts/UserLayout.vue';
 const route = inject('route');
 defineProps({ announcement: Object });

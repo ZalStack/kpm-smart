@@ -5,7 +5,7 @@ const route = inject('route');
 import { Head, Link } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import Badge from '@/Components/ui/badge/Badge.vue';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 
 const props = defineProps({
     package: { type: Object, required: true },

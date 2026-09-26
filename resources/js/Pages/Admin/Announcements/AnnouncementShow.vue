@@ -1,7 +1,7 @@
 <script setup>
 import { inject } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 const route = inject('route');
 const props = defineProps({ announcement: Object });

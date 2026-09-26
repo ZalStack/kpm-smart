@@ -14,7 +14,7 @@ class NotificationApiController extends BaseApiController
      */
     public function index(Request $request): JsonResponse
     {
-        $userId = $this->resolveUserId($request, 'admin');
+        $userId = $this->resolveUserId($request);
         $query = Notification::query();
 
         if ($userId) {
@@ -32,7 +32,7 @@ class NotificationApiController extends BaseApiController
      */
     public function unreadCount(Request $request): JsonResponse
     {
-        $userId = $this->resolveUserId($request, 'admin');
+        $userId = $this->resolveUserId($request);
         $query = Notification::where('is_read', false);
 
         if ($userId) {

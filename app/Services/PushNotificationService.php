@@ -13,9 +13,27 @@ class PushNotificationService
 {
     private static ?WebPush $webPush = null;
 
+    /**
+     * WebPush hanya bisa dibuat kalau pasangan VAPID sudah dikonfigurasi.
+     * Kalau kosong, `new WebPush()` akan melempar exception dan membuat
+     * scheduled command `push:sps-reminder` gagal terus-menerus.
+     */
+    public static function isConfigured(): bool
+    {
+        return filled(config('services.vapid.public_key'))
+            && filled(config('services.vapid.private_key'));
+    }
+
     private static function getWebPush(): WebPush
     {
         if (self::$webPush === null) {
+            if (! self::isConfigured()) {
+                throw new \RuntimeException(
+                    'VAPID keys belum dikonfigurasi. Isi VAPID_PUBLIC_KEY dan VAPID_PRIVATE_KEY di .env '
+                    .'(generate dengan: php artisan web-push:generate-vapid-keys).'
+                );
+            }
+
             self::$webPush = new WebPush([
                 'VAPID' => [
                     'subject' => config('app.url', 'http://localhost'),
@@ -64,6 +82,16 @@ class PushNotificationService
     {
         $subscriptions = self::getSubscriptions($userId);
         $results = [];
+
+        // Tanpa VAPID keys, pengiriman tidak mungkin succeed. Keluar lebih awal supaya
+        // scheduled command tidak mencoba mengirim ke ratusan user lalu gagal.
+        if (! self::isConfigured()) {
+            return [[
+                'subscription_id' => null,
+                'status' => 'skipped',
+                'error' => 'VAPID keys belum dikonfigurasi.',
+            ]];
+        }
 
         foreach ($subscriptions as $sub) {
             try {

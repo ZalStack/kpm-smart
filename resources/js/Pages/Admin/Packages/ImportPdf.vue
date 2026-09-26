@@ -5,7 +5,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import Button from '@/Components/ui/button/Button.vue';
 import Label from '@/Components/ui/label/Label.vue';
 import Select from '@/Components/ui/select/Select.vue';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 
 const route = inject('route');
 

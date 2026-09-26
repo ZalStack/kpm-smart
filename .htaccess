@@ -1,0 +1,38 @@
+# =============================================================
+# PENTING: file ini hanya diperlukan kalau document root cPanel Anda
+# TIDAK bisa diarahkan ke folder `public/`.
+#
+# Cara yang SELALU lebih aman dan lebih disarankan: di cPanel
+# Domains > domain > Document Root, arahkan ke `/public`. Dengan begitu
+# `.env` dan `storage/` tidak pernah bisa diakses lewat browser.
+#
+# Kalau Anda memang tidak bisa mengubah document root, file ini
+# mengarahkan semua request ke folder public/ DAN memblokir akses
+# langsung ke file sensitif.
+# =============================================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # ---- Blokir akses langsung ke file sensitif ----
+    # Dilakukan SEBELUM rewrite, karena file ini sendiri berada di root.
+    RewriteRule ^\.env - [F,L]
+    RewriteRule ^composer\.(json|lock) - [F,L]
+    RewriteRule ^package(-lock)?\.json$ - [F,L]
+    RewriteRule ^(phpunit\.xml|\.php-ini) - [F,L]
+    RewriteRule ^(storage|bootstrap|database|app|routes|tests)/ - [F,L]
+    RewriteRule ^(artisan|vite\.config\.js|postcss\.config\.js|tailwind\.config\.js)$ - [F,L]
+
+    # ---- Arahkan ke folder public/ ----
+    # Kalau request sudah cocok dengan file/folder yang benar-benar ada
+    # di document root, biarkan apa adanya (mis. /build/*, /favicon.ico).
+    RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -d
+    RewriteRule ^ - [L]
+
+    # Selain itu teruskan ke front controller di public/.
+    RewriteRule ^ public/index.php [L]
+</IfModule>
+
+# Cegah directory listing jika mod_rewrite tidak aktif sama sekali.
+Options -Indexes

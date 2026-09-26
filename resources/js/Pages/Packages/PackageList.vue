@@ -1,7 +1,7 @@
 <script setup>
 import { inject,  ref, computed } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 import UserLayout from '@/Layouts/UserLayout.vue';
 import Button from '@/Components/ui/button/Button.vue';
 import Input from '@/Components/ui/input/Input.vue';

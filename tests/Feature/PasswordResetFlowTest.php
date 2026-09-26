@@ -14,10 +14,14 @@ class PasswordResetFlowTest extends TestCase
 
     public function test_forgot_password_pages_render_correctly(): void
     {
+        // Catatan: aplikasi memakai Inertia tanpa SSR, jadi teks halaman berada di
+        // payload JSON dan TIDAK ada di HTML. Karena itu assertSee tidak bisa
+        // dipakai; yang diverifikasi adalah komponen Inertia yang di-render.
+
         // Halaman form email.
         $this->get(route('password.request'))
             ->assertStatus(200)
-            ->assertSee('Lupa Kata Sandi');
+            ->assertInertia(fn ($page) => $page->component('Auth/ForgotPassword'));
 
         // Halaman "cek email" tanpa session -> diarahkan ke form awal.
         $this->get(route('password.sent'))
@@ -27,7 +31,7 @@ class PasswordResetFlowTest extends TestCase
         $this->withSession(['reset_email_sent' => 'member@example.com'])
             ->get(route('password.sent'))
             ->assertStatus(200)
-            ->assertSee('Cek Email Kamu');
+            ->assertInertia(fn ($page) => $page->component('Auth/ForgotPasswordSent'));
     }
 
     public function test_reset_request_sends_email_and_stores_hashed_token(): void
@@ -88,7 +92,7 @@ class PasswordResetFlowTest extends TestCase
         // Token valid -> form reset tampil.
         $this->get(route('password.reset', ['token' => $token]))
             ->assertStatus(200)
-            ->assertSee('Buat Password Baru');
+            ->assertInertia(fn ($page) => $page->component('Auth/ResetPassword'));
 
         // Token asal-asalan -> ditolak.
         $this->get(route('password.reset', ['token' => str_repeat('ff', 32)]))

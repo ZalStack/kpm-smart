@@ -1,7 +1,7 @@
 <script setup>
 import { inject, ref } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 import UserLayout from '@/Layouts/UserLayout.vue';
 import Button from '@/Components/ui/button/Button.vue';
 const route = inject('route');

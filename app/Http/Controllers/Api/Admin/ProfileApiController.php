@@ -13,7 +13,7 @@ class ProfileApiController extends BaseApiController
      */
     public function show(Request $request): JsonResponse
     {
-        $user = $this->resolveUser($request, 'admin');
+        $user = $this->resolveUser($request);
 
         if (!$user) {
             return $this->sendError('Data profil admin tidak ditemukan.', [], 404);

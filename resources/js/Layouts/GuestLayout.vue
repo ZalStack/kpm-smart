@@ -1,5 +1,5 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+const year = new Date().getFullYear();
 </script>
 
 <template>
@@ -15,25 +15,27 @@ import { Link } from '@inertiajs/vue3';
 
             <div class="relative z-10 fade-up max-w-lg">
                 <div class="flex items-center gap-4 mb-14">
-                    <div class="w-13 h-13 rounded-[0.9rem] bg-gradient-to-br from-dry-sage to-fern flex items-center justify-center text-white font-bold text-xl shadow-xl shadow-fern/25 ring-pulse">K</div>
+                    <div class="w-12 h-12 shrink-0 rounded-[0.9rem] bg-gradient-to-br from-dry-sage to-fern flex items-center justify-center text-white font-bold text-xl shadow-xl shadow-fern/25 ring-pulse" aria-hidden="true">K</div>
                     <div class="leading-tight">
                         <span class="font-bold text-lg tracking-wide block">KPM SMART</span>
                         <span class="text-[0.7rem] text-white/50 tracking-widest uppercase">Platform belajar & bank soal</span>
                     </div>
                 </div>
 
-                <h1 class="text-[2.4rem] xl:text-[2.9rem] font-bold leading-[1.15] mb-6 tracking-tight">
+                <!-- Bukan <h1>: halaman sudah punya <h1> di panel form, dan
+                 satu dokumen sebaiknya hanya punya satu heading level-1. -->
+                <p class="text-[2.4rem] xl:text-[2.9rem] font-bold leading-[1.15] mb-6 tracking-tight text-balance">
                     Setiap login,<br>
-                    <span class="text-dry-sage bg-gradient-to-r from-dry-sage to-fern bg-clip-text text-transparent">satu langkah</span><br>
+                    <span class="bg-gradient-to-r from-dry-sage to-fern bg-clip-text text-transparent">satu langkah</span><br>
                     lebih siap ujian.
-                </h1>
+                </p>
                 <p class="text-white/55 text-[0.95rem] leading-relaxed max-w-sm">
                     Ribuan soal terkurasi dengan pembahasan lengkap, siap diakses kapan pun kamu butuh.
                 </p>
             </div>
 
             <div class="relative z-10 text-xs text-white/30 fade-up tracking-wide" style="animation-delay:.15s">
-                &copy; {{ new Date().getFullYear() }} KPM SMART. Hak cipta dilindungi.
+                &copy; {{ year }} KPM SMART. Hak cipta dilindungi.
             </div>
         </div>
 
@@ -47,7 +49,7 @@ import { Link } from '@inertiajs/vue3';
                 <!-- Mobile brand -->
                 <div class="lg:hidden flex items-center justify-center gap-3 mb-8 relative">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-[0.65rem] bg-gradient-to-br from-dry-sage to-fern flex items-center justify-center text-white font-bold text-base shadow-lg shadow-fern/20">K</div>
+                        <div class="w-10 h-10 shrink-0 rounded-[0.65rem] bg-gradient-to-br from-dry-sage to-fern flex items-center justify-center text-white font-bold text-base shadow-lg shadow-fern/20" aria-hidden="true">K</div>
                         <div class="leading-tight text-left">
                             <span class="font-bold text-foreground block text-[0.9rem] tracking-tight">KPM SMART</span>
                             <span class="text-[0.65rem] text-muted-foreground tracking-wide">Platform belajar & bank soal</span>

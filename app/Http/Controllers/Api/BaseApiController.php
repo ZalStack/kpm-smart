@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class BaseApiController extends Controller
 {
@@ -37,37 +39,53 @@ class BaseApiController extends Controller
     }
 
     /**
-     * Resolve user from Sanctum token, query parameter user_id, or fallback by role
+     * Resolve user yang sedang melakukan request.
+     *
+     * Sumber utama adalah Sanctum token. Parameter query `?user_id=` SENGAJA
+     * tidak dipercaya untuk role biasa: jika diterima, siapa pun bisa membaca
+     * data user lain hanya dengan menebak ID (celah IDOR).
+     *
+     * Pengecualian hanya untuk role admin, yang memang perlu melihat data user
+     * tertentu — dan route admin dijaga middleware `role:admin`.
      */
-    protected function resolveUser(\Illuminate\Http\Request $request, ?string $role = null, bool $allowNull = false): ?\App\Models\User
+    protected function resolveUser(Request $request): ?User
     {
-        $user = auth('sanctum')->user() ?? $request->user();
+        $user = $request->user();
 
-        if ($user) {
-            return $user;
-        }
-
-        if ($request->filled('user_id')) {
-            return \App\Models\User::find($request->user_id);
-        }
-
-        if ($allowNull) {
+        if (! $user) {
             return null;
         }
 
-        if ($role) {
-            return \App\Models\User::where('role', $role)->first();
+        if ($user->role === 'admin' && $request->filled('user_id')) {
+            return User::find($request->input('user_id')) ?? $user;
         }
 
-        return \App\Models\User::first();
+        return $user;
     }
 
     /**
-     * Resolve user ID from query param, Sanctum token, or fallback by role
+     * Resolve user ID dari Sanctum token.
+     *
+     * Pengecualian: admin boleh menitipkan `?user_id=` untuk melihat data user
+     * lain, karena route admin sudah dijaga middleware `role:admin`. Untuk role
+     * lain, `?user_id=` diabaikan dan ID milik sendiri yang dipakai.
      */
-    protected function resolveUserId(\Illuminate\Http\Request $request, ?string $role = null, bool $allowNull = false): ?int
+    protected function resolveUserId(Request $request): ?int
     {
-        $id = $request->input('user_id', $this->resolveUser($request, $role, $allowNull)?->id);
-        return $id ? (int) $id : null;
+        $user = $request->user();
+
+        if (! $user) {
+            return null;
+        }
+
+        if ($user->role === 'admin' && $request->filled('user_id')) {
+            $targetId = (int) $request->input('user_id');
+
+            if ($targetId > 0 && User::whereKey($targetId)->exists()) {
+                return $targetId;
+            }
+        }
+
+        return (int) $user->id;
     }
 }

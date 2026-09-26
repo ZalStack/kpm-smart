@@ -5,6 +5,8 @@ const props = defineProps({
     variant: { type: String, default: 'default' },
     size: { type: String, default: 'default' },
     asChild: { type: Boolean, default: false },
+    /** Tampilkan spinner dan kunci klik. Pakai ini alih-alih mengelola disabled manual. */
+    loading: { type: Boolean, default: false },
 });
 
 const variants = {
@@ -26,13 +28,22 @@ const sizes = {
 
 <template>
     <button
+        :disabled="loading || $attrs.disabled"
+        :aria-busy="loading ? 'true' : undefined"
         :class="cn(
-            'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+            'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-[background-color,color,box-shadow,transform] duration-150',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+            'active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50',
             variants[variant],
             sizes[size],
             $attrs.class
         )"
     >
+        <span
+            v-if="loading"
+            class="h-4 w-4 shrink-0 rounded-full border-2 border-current border-t-transparent animate-spin"
+            aria-hidden="true"
+        />
         <slot />
     </button>
 </template>

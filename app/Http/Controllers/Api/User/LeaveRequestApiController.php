@@ -15,7 +15,7 @@ class LeaveRequestApiController extends BaseApiController
      */
     public function index(Request $request): JsonResponse
     {
-        $userId = $this->resolveUserId($request, 'user');
+        $userId = $this->resolveUserId($request);
         $perPage = (int) $request->input('per_page', 10);
 
         $leaveRequests = LeaveRequest::where('user_id', $userId)
