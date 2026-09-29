@@ -49,9 +49,8 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
-// Admin Routes
-Route::middleware(['auth', 'role:admin'])
-    ->prefix('admin')
+// Admin Routes (tanpa autentikasi)
+Route::prefix('admin')
     ->name('admin.')
     ->group(function () {
         Route::redirect('/', '/admin/dashboard');
@@ -166,8 +165,8 @@ Route::middleware('auth')->prefix('push')->name('push.')->group(function () {
     Route::post('/resubscribe', [PushNotificationController::class, 'resubscribe'])->name('resubscribe');
 });
 
-// User Routes
-Route::middleware(['auth', 'role:user'])->name('user.')->group(function () {
+// User Routes (tanpa autentikasi)
+Route::name('user.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'userDashboard'])->name('dashboard');
 
     // Profile

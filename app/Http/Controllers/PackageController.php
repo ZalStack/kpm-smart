@@ -373,41 +373,14 @@ class PackageController extends Controller
         $totalCards = count($package->cards ?? []);
         $totalQuestions = count($package->questions ?? []);
 
-        $completedSession = $package->practiceSessions()
-            ->where('user_id', auth()->id())
-            ->where('status', 'completed')
-            ->latest()
-            ->first();
-
-        $inProgressSession = $package->practiceSessions()
-            ->where('user_id', auth()->id())
-            ->where('status', 'in_progress')
-            ->latest()
-            ->first();
-
-        // Per-card completion status (1-attempt restriction)
-        $completedCardIds = $package->practiceSessions()
-            ->where('user_id', auth()->id())
-            ->where('status', 'completed')
-            ->whereNotNull('card_id')
-            ->pluck('id', 'card_id')
-            ->toArray();
-
-        $inProgressCardIds = $package->practiceSessions()
-            ->where('user_id', auth()->id())
-            ->where('status', 'in_progress')
-            ->whereNotNull('card_id')
-            ->pluck('id', 'card_id')
-            ->toArray();
-
         return Inertia::render('Packages/PackageDetail', [
             'package' => $package,
             'totalCards' => $totalCards,
             'totalQuestions' => $totalQuestions,
-            'completedSession' => $completedSession,
-            'inProgressSession' => $inProgressSession,
-            'completedCardIds' => $completedCardIds,
-            'inProgressCardIds' => $inProgressCardIds,
+            'completedSession' => null,
+            'inProgressSession' => null,
+            'completedCardIds' => [],
+            'inProgressCardIds' => [],
         ]);
     }
 

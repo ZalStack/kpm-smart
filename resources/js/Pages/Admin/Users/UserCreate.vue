@@ -196,9 +196,12 @@ function submit() {
                                 <Label class="text-sm font-semibold">Level</Label>
                                 <Select v-model="form.level" class="h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-all duration-200">
                                     <option value="">Pilih Level</option>
-                                    <option value="LEVEL BERBAKAT A">LEVEL BERBAKAT A</option>
-                                    <option value="LEVEL BERBAKAT B">LEVEL BERBAKAT B</option>
-                                    <option value="LEVEL BERBAKAT C">LEVEL BERBAKAT C</option>
+                                    <option value="A1">A1</option>
+                                    <option value="A2">A2</option>
+                                    <option value="B1">B1</option>
+                                    <option value="B2">B2</option>
+                                    <option value="C1">C1</option>
+                                    <option value="C2">C2</option>
                                 </Select>
                             </div>
                             <div class="space-y-2">

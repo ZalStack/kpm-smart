@@ -11,8 +11,8 @@ class NotificationController extends Controller
 {
     public function index()
     {
-        $notifications = NotificationService::getAll(auth()->id(), 20);
-        $unreadCount = NotificationService::getUnreadCount(auth()->id());
+        $notifications = collect();
+        $unreadCount = 0;
 
         return Inertia::render('Notifications/NotificationIndex', [
             'notifications' => $notifications,
@@ -22,8 +22,8 @@ class NotificationController extends Controller
 
     public function adminIndex()
     {
-        $notifications = NotificationService::getAll(auth()->id(), 10);
-        $unreadCount = NotificationService::getUnreadCount(auth()->id());
+        $notifications = collect();
+        $unreadCount = 0;
 
         return Inertia::render('Admin/Notifications/NotificationIndex', [
             'notifications' => $notifications,
@@ -77,7 +77,7 @@ class NotificationController extends Controller
     public function unreadCount(): JsonResponse
     {
         return response()->json([
-            'unread_count' => NotificationService::getUnreadCount(auth()->id()),
+            'unread_count' => 0,
         ]);
     }
 }

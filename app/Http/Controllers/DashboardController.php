@@ -12,10 +12,8 @@ class DashboardController extends Controller
 {
     public function userDashboard()
     {
-        $user = Auth::user();
         $packages = Package::where('is_active', true)->take(6)->get();
-        $sessions = PracticeSession::where('user_id', $user->id)
-            ->where('status', 'completed')
+        $sessions = PracticeSession::where('status', 'completed')
             ->selectRaw('COUNT(*) as total, MAX(total_score) as best, AVG(total_score) as avg_score')
             ->first();
 
@@ -23,14 +21,12 @@ class DashboardController extends Controller
         $bestScore = (float) ($sessions->best ?? 0);
         $averageScore = (float) ($sessions->avg_score ?? 0);
 
-        $gamification = app(\App\Http\Controllers\GamificationController::class)->getGamificationData($user->id);
-
         return Inertia::render('Dashboard/UserDashboard', [
             'packages' => $packages,
             'totalAttempts' => $totalAttempts,
             'bestScore' => $bestScore,
             'averageScore' => round($averageScore, 1),
-            'gamification' => $gamification,
+            'gamification' => null,
         ]);
     }
 

@@ -64,12 +64,9 @@ class PushNotificationController extends Controller
 
     public function status(): JsonResponse
     {
-        $subscriptions = PushNotificationService::getSubscriptions(auth()->id());
-        $hasPermission = $subscriptions->isNotEmpty();
-
         return response()->json([
-            'subscribed' => $hasPermission,
-            'subscription_count' => $subscriptions->count(),
+            'subscribed' => false,
+            'subscription_count' => 0,
         ]);
     }
 

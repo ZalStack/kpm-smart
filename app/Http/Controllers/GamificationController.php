@@ -134,42 +134,15 @@ class GamificationController extends Controller
             ->filter(fn($item) => $item['user'] !== null)
             ->values();
 
-        $currentUserRank = null;
-        $currentUserData = PracticeSession::where('user_id', Auth::id())
-            ->where('status', 'completed')
-            ->select(DB::raw('COUNT(*) as total_attempts'), DB::raw('AVG(total_score) as avg_score'), DB::raw('MAX(total_score) as best_score'))
-            ->first();
-
-        if ($currentUserData && $currentUserData->total_attempts > 0) {
-            $rank = DB::table('practice_sessions')
-                ->where('status', 'completed')
-                ->select('user_id')
-                ->groupBy('user_id')
-                ->havingRaw('AVG(total_score) > ? OR (AVG(total_score) = ? AND MAX(total_score) > ?) OR (AVG(total_score) = ? AND MAX(total_score) = ? AND user_id < ?)', [
-                    $currentUserData->avg_score, $currentUserData->avg_score, $currentUserData->best_score,
-                    $currentUserData->avg_score, $currentUserData->best_score, Auth::id()
-                ])
-                ->get()->count() + 1;
-
-            $currentUserRank = [
-                'rank' => $rank,
-                'total_attempts' => $currentUserData->total_attempts,
-                'avg_score' => round($currentUserData->avg_score, 1),
-                'best_score' => round($currentUserData->best_score, 1),
-            ];
-        }
-
         return Inertia::render('Gamification/Leaderboard', [
             'leaderboard' => $users,
-            'currentUserRank' => $currentUserRank,
+            'currentUserRank' => null,
         ]);
     }
 
     public function analytics()
     {
-        $userId = Auth::id();
-        $sessions = PracticeSession::where('user_id', $userId)
-            ->where('status', 'completed')
+        $sessions = PracticeSession::where('status', 'completed')
             ->with('package')
             ->orderBy('finished_at', 'asc')
             ->get();
@@ -221,10 +194,6 @@ class GamificationController extends Controller
 
     public function certificate(PracticeSession $session)
     {
-        if ($session->user_id !== Auth::id()) {
-            return redirect()->back()->with('error', 'Akses ditolak!');
-        }
-
         if ($session->status !== 'completed') {
             return redirect()->back()->with('error', 'Sesi belum selesai!');
         }

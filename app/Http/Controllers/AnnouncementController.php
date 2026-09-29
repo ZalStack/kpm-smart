@@ -108,29 +108,12 @@ class AnnouncementController extends Controller
     // User/Admin: show single announcement detail (for click from notification)
     public function show(Announcement $announcement)
     {
-        if (!$announcement->is_active && auth()->user()->role !== 'admin') {
-            abort(404);
-        }
-
-        // Mark related notification as read if exists
-        $notification = Notification::where('user_id', auth()->id())
-            ->where('type', 'announcement')
-            ->whereJsonContains('data->announcement_id', $announcement->id)
-            ->latest()
-            ->first();
-
-        if ($notification && !$notification->isRead()) {
-            $notification->markAsRead();
-        }
-
         // Determine layout based on role
-        $page = auth()->user()->role === 'admin' ? 'Admin/Announcements/AnnouncementShow' : 'Announcements/AnnouncementShow';
+        $page = 'Announcements/AnnouncementShow';
 
-        // For admin, still render admin layout page
-        // For user, render user layout
         return Inertia::render($page, [
             'announcement' => $announcement->load('creator'),
-            'notification' => $notification,
+            'notification' => null,
         ]);
     }
 }

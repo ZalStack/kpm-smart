@@ -67,6 +67,7 @@ class AdminUserController extends Controller
             'allBidang' => $allBidang,
             'allLevel' => $allLevel,
             'allKelas' => $allKelas,
+            'levelOptions' => ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
             'filters' => $request->only(['search', 'status', 'bidang', 'level', 'kelas']),
         ]);
     }
@@ -91,7 +92,7 @@ class AdminUserController extends Controller
             'phone' => 'nullable|string|max:20',
             'student_class' => 'nullable|string|max:50',
             'bidang' => 'nullable|string|max:100',
-            'level' => 'nullable|string|max:50',
+            'level' => 'nullable|string|in:A1,A2,B1,B2,C1,C2',
             'school_name' => 'nullable|string|max:255',
             'address' => 'nullable|string',
             'gender' => 'nullable|string|in:Laki-laki,Perempuan',
@@ -172,7 +173,7 @@ class AdminUserController extends Controller
             'phone' => 'nullable|string|max:20',
             'student_class' => 'nullable|string|max:50',
             'bidang' => 'nullable|string|max:100',
-            'level' => 'nullable|string|max:50',
+            'level' => 'nullable|string|in:A1,A2,B1,B2,C1,C2',
             'school_name' => 'nullable|string|max:255',
             'address' => 'nullable|string',
             'gender' => 'nullable|string|in:Laki-laki,Perempuan',
@@ -260,7 +261,7 @@ class AdminUserController extends Controller
     public function updateLevel(Request $request, User $user)
     {
         $validated = $request->validate([
-            'level' => 'nullable|string|max:50',
+            'level' => 'nullable|string|in:A1,A2,B1,B2,C1,C2',
         ]);
 
         $user->level = $validated['level'] ?: null;
@@ -282,18 +283,14 @@ class AdminUserController extends Controller
     }
 
     /**
-     * Reset (hapus) semua data user yang diimport dari Excel.
-     * Import user selalu punya email generated (akhirname@gmail.com)
-     * dan student_name diisi. User manual/sync dari parent app tidak punya student_name.
+     * Reset (hapus) semua data user (role = user).
+     * Hanya user biasa yang dihapus, admin tidak akan terhapus.
      */
     public function resetImportedUsers()
     {
-        $deleted = User::where('role', 'user')
-            ->whereNotNull('student_name')
-            ->where('email', 'like', '%@gmail.com')
-            ->delete();
+        $deleted = User::where('role', 'user')->delete();
 
-        return back()->with('success', "Berhasil menghapus {$deleted} data user import.");
+        return back()->with('success', "Berhasil menghapus {$deleted} data user.");
     }
 
     /**
@@ -436,65 +433,90 @@ class AdminUserController extends Controller
     private function detectColumns(array $rows): array
     {
         $colMap = [];
-        $sampleRows = array_slice($rows, 0, 5);
-
-        foreach ($sampleRows as $row) {
-            foreach ($row as $i => $val) {
-                $v = strtolower(trim((string) ($val ?? '')));
-                if ($v === '') continue;
-                if ($v === 'nama' || (empty($colMap['nama']) && strlen($v) > 3 && preg_match('/^[a-z\s]+$/', $v) && str_contains($v, 'nama'))) $colMap['nama'] = $i;
-                elseif ($v === 'kelas' || (empty($colMap['kelas']) && $v === 'kelas')) $colMap['kelas'] = $i;
-                elseif ($v === 'bidang' || (empty($colMap['bidang']) && $v === 'bidang')) $colMap['bidang'] = $i;
-                elseif ((str_contains($v, 'sekolah') || str_contains($v, 'asal')) && empty($colMap['sekolah'])) $colMap['sekolah'] = $i;
-                elseif ($v === 'password' && empty($colMap['password'])) $colMap['password'] = $i;
-                elseif (($v === 'level' || str_contains($v, 'berbakat') || str_contains($v, 'level')) && empty($colMap['level'])) $colMap['level'] = $i;
-            }
-            if (count($colMap) >= 4) break;
+        
+        // Cari header di baris pertama
+        if (empty($rows)) {
+            return $colMap;
         }
-
+        
+        $headerRow = $rows[0];
+        foreach ($headerRow as $i => $val) {
+            $v = strtolower(trim((string) ($val ?? '')));
+            if ($v === '') continue;
+            
+            if (str_contains($v, 'nama')) {
+                $colMap['nama'] = $i;
+            } elseif (str_contains($v, 'kelas')) {
+                $colMap['kelas'] = $i;
+            } elseif (str_contains($v, 'bidang')) {
+                $colMap['bidang'] = $i;
+            } elseif (str_contains($v, 'sekolah') || str_contains($v, 'asal')) {
+                $colMap['sekolah'] = $i;
+            } elseif (str_contains($v, 'password')) {
+                $colMap['password'] = $i;
+            } elseif (str_contains($v, 'level')) {
+                $colMap['level'] = $i;
+            }
+        }
+        
+        // Fallback: jika header tidak terdeteksi, cari berdasarkan pola data
+        if (empty($colMap['nama'])) {
+            foreach (array_slice($rows, 0, 5) as $row) {
+                foreach ($row as $i => $val) {
+                    $v = trim((string) ($val ?? ''));
+                    if ($v !== '' && strlen($v) > 3 && !is_numeric($v) && !in_array(strtoupper($v), ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'])) {
+                        $colMap['nama'] = $i;
+                        break 2;
+                    }
+                }
+            }
+        }
+        
         if (empty($colMap['level'])) {
             foreach (array_slice($rows, 1, 20) as $row) {
                 foreach ($row as $i => $val) {
-                    $v = strtolower(trim((string) ($val ?? '')));
-                    if (str_contains($v, 'berbakat')) {
+                    $v = strtoupper(trim((string) ($val ?? '')));
+                    if (in_array($v, ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'])) {
                         $colMap['level'] = $i;
                         break 2;
                     }
                 }
             }
         }
-
+        
         if (empty($colMap['kelas'])) {
             foreach (array_slice($rows, 1, 10) as $row) {
                 foreach ($row as $i => $val) {
                     $v = trim((string) ($val ?? ''));
-                    if ($v !== '' && is_numeric($v) && (int) $v >= 1 && (int) $v <= 12 && empty($colMap['kelas'])) {
+                    if ($v !== '' && is_numeric($v) && (int) $v >= 1 && (int) $v <= 12) {
                         $colMap['kelas'] = $i;
                         break 2;
                     }
                 }
             }
         }
-
+        
         if (empty($colMap['bidang'])) {
             foreach (array_slice($rows, 1, 10) as $row) {
                 foreach ($row as $i => $val) {
                     $v = strtoupper(trim((string) ($val ?? '')));
-                    if ($v !== '' && preg_match('/^[A-Z\s]+$/', $v) && strlen($v) <= 15 && empty($colMap['bidang'])) {
+                    if ($v !== '' && preg_match('/^[A-Z\s]+$/', $v) && strlen($v) <= 15) {
                         $colMap['bidang'] = $i;
                         break 2;
                     }
                 }
             }
         }
-
+        
         if (empty($colMap['sekolah'])) {
             foreach (array_slice($rows, 1, 5) as $row) {
                 foreach ($row as $i => $val) {
                     $v = trim((string) ($val ?? ''));
-                    if ($v !== '' && strlen($v) > 5 && !is_numeric($v) && empty($colMap['sekolah'])
-                        && $i !== ($colMap['nama'] ?? -1) && $i !== ($colMap['kelas'] ?? -1)
-                        && $i !== ($colMap['bidang'] ?? -1) && $i !== ($colMap['level'] ?? -1)
+                    if ($v !== '' && strlen($v) > 5 && !is_numeric($v) 
+                        && $i !== ($colMap['nama'] ?? -1) 
+                        && $i !== ($colMap['kelas'] ?? -1)
+                        && $i !== ($colMap['bidang'] ?? -1) 
+                        && $i !== ($colMap['level'] ?? -1)
                         && $i !== ($colMap['password'] ?? -1)) {
                         $colMap['sekolah'] = $i;
                         break 2;

@@ -21,6 +21,8 @@ const props = defineProps({
     filters: { type: Object, default: () => ({}) },
 });
 
+const levelOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+
 const searchVal = ref(props.filters?.search || props.search || '');
 const statusVal = ref(props.filters?.status || props.status || '');
 const bidangVal = ref(props.filters?.bidang || '');
@@ -187,10 +189,10 @@ function updateLevel(user, newLevel) {
                         <option value="">Semua Bidang</option>
                         <option v-for="b in allBidang" :key="b" :value="b">{{ b }}</option>
                     </Select>
-                    <Select v-model="levelVal" class="w-full sm:w-44 h-11 rounded-xl bg-muted/50 border-border/60">
+                    <select v-model="levelVal" class="w-full sm:w-44 h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background transition-colors">
                         <option value="">Semua Level</option>
-                        <option v-for="l in allLevel" :key="l" :value="l">{{ l }}</option>
-                    </Select>
+                        <option v-for="l in levelOptions" :key="l" :value="l">{{ l }}</option>
+                    </select>
                     <Select v-model="kelasVal" class="w-full sm:w-44 h-11 rounded-xl bg-muted/50 border-border/60">
                         <option value="">Semua Kelas</option>
                         <option v-for="k in allKelas" :key="k" :value="k">{{ k }}</option>
@@ -292,7 +294,7 @@ function updateLevel(user, newLevel) {
                                         :class="user.level ? 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/15' : 'bg-muted/60 text-muted-foreground border-border/60 hover:bg-muted'"
                                     >
                                         <option value="">Pilih Level</option>
-                                        <option v-for="l in allLevel" :key="l" :value="l">{{ l }}</option>
+                                        <option v-for="l in levelOptions" :key="l" :value="l">{{ l }}</option>
                                     </select>
                                     <svg class="absolute right-2 w-3 h-3 pointer-events-none" :class="user.level ? 'text-primary/60' : 'text-muted-foreground/60'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -386,7 +388,7 @@ function updateLevel(user, newLevel) {
                             :class="user.level ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted/60 text-muted-foreground border-border/60'"
                         >
                             <option value="">Level</option>
-                            <option v-for="l in allLevel" :key="l" :value="l">{{ l }}</option>
+                            <option v-for="l in levelOptions" :key="l" :value="l">{{ l }}</option>
                         </select>
                         <svg class="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none" :class="user.level ? 'text-primary/60' : 'text-muted-foreground/60'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />

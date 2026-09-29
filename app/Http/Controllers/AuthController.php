@@ -140,9 +140,8 @@ class AuthController extends Controller
 
     public function showProfile()
     {
-        $user = Auth::user();
         return Inertia::render('Profile/Edit', [
-            'user' => $user,
+            'user' => null,
         ]);
     }
 
@@ -213,9 +212,8 @@ class AuthController extends Controller
 
     public function adminShowProfile()
     {
-        $user = Auth::user();
         return Inertia::render('Admin/Profile/Edit', [
-            'user' => $user,
+            'user' => null,
         ]);
     }
 

@@ -14,7 +14,7 @@ class LeaveRequestController extends Controller
 {
     public function index()
     {
-        $leaveRequests = LeaveRequest::where('user_id', Auth::id())
+        $leaveRequests = LeaveRequest::with('user')
             ->latest()
             ->paginate(10);
 

@@ -18,15 +18,6 @@ class PracticeController extends Controller
 
     public function startRedirect(Package $package)
     {
-        $inProgress = PracticeSession::where('user_id', Auth::id())
-            ->where('package_id', $package->id)
-            ->where('status', 'in_progress')
-            ->first();
-
-        if ($inProgress) {
-            return redirect()->route('user.practice.show', $inProgress->id);
-        }
-
         return redirect()->route('user.packages.show', $package->id);
     }
 
@@ -215,8 +206,7 @@ class PracticeController extends Controller
 
     public function history()
     {
-        $sessions = PracticeSession::where('user_id', Auth::id())
-            ->with('package')
+        $sessions = PracticeSession::with('package')
             ->where('status', 'completed')
             ->orderBy('created_at', 'desc')
             ->get();
@@ -227,10 +217,6 @@ class PracticeController extends Controller
 
     public function show(PracticeSession $session)
     {
-        if ($session->user_id !== Auth::id()) {
-            return redirect()->back()->with('error', 'Akses ditolak!');
-        }
-
         $package = $session->package;
 
         if ($session->status === 'in_progress') {
@@ -339,8 +325,7 @@ class PracticeController extends Controller
 
     public function statistics()
     {
-        $sessions = PracticeSession::where('user_id', Auth::id())
-            ->where('status', 'completed')
+        $sessions = PracticeSession::where('status', 'completed')
             ->with('package')
             ->get();
 

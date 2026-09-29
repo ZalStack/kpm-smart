@@ -177,7 +177,7 @@ function confirmReset() {
                                         <td class="px-4 py-3">IPA</td>
                                         <td class="px-4 py-3">SDN Menteng 01</td>
                                         <td class="px-4 py-3 text-muted-foreground">(dihapus)</td>
-                                        <td class="px-4 py-3">Berbakat A</td>
+                                        <td class="px-4 py-3">A1</td>
                                     </tr>
                                     <tr class="border-b border-border/30 bg-muted/20">
                                         <td class="px-4 py-3 text-muted-foreground">2</td>
@@ -186,7 +186,7 @@ function confirmReset() {
                                         <td class="px-4 py-3">IPA</td>
                                         <td class="px-4 py-3">SDIT Al Azhar 13</td>
                                         <td class="px-4 py-3 text-muted-foreground">(dihapus)</td>
-                                        <td class="px-4 py-3">Berbakat B</td>
+                                        <td class="px-4 py-3">B2</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -262,7 +262,7 @@ function confirmReset() {
                                 </li>
                                 <li class="flex items-start gap-2">
                                     <span class="inline-flex items-center justify-center w-5 h-5 rounded bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">7</span>
-                                    <span><strong>Level</strong> &mdash; Level/tingkatan user (opsional)</span>
+                                    <span><strong>Level</strong> &mdash; Level user: A1, A2, B1, B2, C1, atau C2 (opsional)</span>
                                 </li>
                             </ul>
                         </div>
