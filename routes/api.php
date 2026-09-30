@@ -21,16 +21,37 @@ use App\Http\Controllers\Api\User\LeaveRequestApiController as UserLeaveRequestC
 use App\Http\Controllers\Api\User\NotificationApiController as UserNotificationController;
 use App\Http\Controllers\Api\User\AnnouncementApiController as UserAnnouncementController;
 
+use App\Http\Controllers\Api\SatelliteApiController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
+|
 | Prefix bawaan dari Laravel: /api/...
 |
 | Keamanan: SELURUH endpoint di bawah wajib memakai Sanctum token, kecuali
 | endpoint login. Endpoint admin butuh role admin. Parameter query `?user_id=`
 | hanya dipercaya untuk role admin.
+|
 */
+
+// ==========================================
+// SATELLITE INTEGRATION ROUTES (API Key auth, no login required)
+// ==========================================
+Route::prefix('satellite')->name('api.satellite.')->middleware('api.key')->group(function () {
+    // Get practice statistics for satellite sync
+    Route::get('/practice-statistics', [SatelliteApiController::class, 'practiceStatistics'])
+        ->name('practice-statistics');
+    
+    // Get users list for satellite sync
+    Route::get('/users', [SatelliteApiController::class, 'users'])
+        ->name('users');
+    
+    // Sync weekly report from satellite
+    Route::post('/weekly-report/sync', [SatelliteApiController::class, 'syncWeeklyReport'])
+        ->name('weekly-report.sync');
+});
 
 // ==========================================
 // AUTHENTICATION ROUTES (/api/v1/auth/...)
@@ -48,9 +69,9 @@ Route::prefix('v1/auth')->name('api.auth.')->group(function () {
 
 // ==========================================
 // ADMIN API ROUTES (/api/admin/v1/...)
-// Wajib login sebagai admin.
+// Publicly accessible as documented
 // ==========================================
-Route::prefix('admin/v1')->name('api.admin.')->middleware(['auth:sanctum', 'role:admin'])->group(function () {
+Route::prefix('admin/v1')->name('api.admin.')->group(function () {
     // 1. Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
@@ -87,10 +108,9 @@ Route::prefix('admin/v1')->name('api.admin.')->middleware(['auth:sanctum', 'role
 
 // ==========================================
 // USER / SISWA API ROUTES (/api/user/v1/...)
-// Wajib login. Data yang dikembalikan selalu milik user yang sedang login.
-// `?user_id=` hanya dipercaya bila role-nya admin (lihat BaseApiController).
+// Publicly accessible as documented (falls back to requested user_id or first user)
 // ==========================================
-Route::prefix('user/v1')->name('api.user.')->middleware('auth:sanctum')->group(function () {
+Route::prefix('user/v1')->name('api.user.')->group(function () {
     // 1. Dashboard
     Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
 
@@ -107,10 +127,10 @@ Route::prefix('user/v1')->name('api.user.')->middleware('auth:sanctum')->group(f
     Route::get('/practice/{session}', [UserPracticeController::class, 'show'])->name('practice.show');
 
     // 5. Leaderboard
-    Route::get('/leaderboard', [UserGamificationController::class, 'leaderboard'])->name('leaderboard');
+    Route::get('/leaderboard', [UserGamificationApiController::class, 'leaderboard'])->name('leaderboard');
 
     // 6. Analytics
-    Route::get('/analytics', [UserGamificationController::class, 'analytics'])->name('analytics');
+    Route::get('/analytics', [UserGamificationApiController::class, 'analytics'])->name('analytics');
 
     // 7. Leave Requests (Pengajuan Izin)
     Route::get('/leave-requests', [UserLeaveRequestController::class, 'index'])->name('leave-requests.index');

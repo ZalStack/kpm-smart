@@ -523,7 +523,7 @@
     "src": "node_modules/katex/dist/fonts/KaTeX_Typewriter-Regular.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-C4bXxtte.css",
+    "file": "assets/app-B9GEkRnc.css",
     "name": "app",
     "names": [
       "app.css"
@@ -1211,7 +1211,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-BWvE2iWf.js",
+    "file": "assets/app-zc9h352s.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -1269,7 +1269,7 @@
       "resources/js/Pages/Profile/Edit.vue"
     ],
     "css": [
-      "assets/app-C4bXxtte.css"
+      "assets/app-B9GEkRnc.css"
     ]
   }
 }
