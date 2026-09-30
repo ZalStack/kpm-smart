@@ -206,7 +206,7 @@
     "name": "utils"
   },
   "resources/css/app.css": {
-    "file": "assets/app-kmoMZeaY.css",
+    "file": "assets/app-qKinepgM.css",
     "name": "app",
     "names": [
       "app.css"
@@ -891,7 +891,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-C8Imum1-.js",
+    "file": "assets/app-D8SdR7dE.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -949,7 +949,7 @@
       "resources/js/Pages/Profile/Edit.vue"
     ],
     "css": [
-      "assets/app-kmoMZeaY.css"
+      "assets/app-qKinepgM.css"
     ]
   }
 }
