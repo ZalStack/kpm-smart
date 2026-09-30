@@ -4,6 +4,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import { Icon } from '@iconify/vue/offline';
 import UserLayout from '@/Layouts/UserLayout.vue';
 import confetti from 'canvas-confetti';
+import MathRenderer from '@/Components/shared/MathRenderer.vue';
 const route = inject('route');
 
 const props = defineProps({
@@ -224,7 +225,7 @@ onMounted(() => {
                                 </div>
 
                                 <!-- Question text -->
-                                <p class="text-sm leading-relaxed mb-3 font-medium" v-html="result.question"></p>
+                                <p class="text-sm leading-relaxed mb-3 font-medium"><MathRenderer :text="result.question" /></p>
 
                                 <!-- Pilihan Ganda: Options (show all with highlight) -->
                                 <div v-if="!result.type || result.type === 'pilihan_ganda'" class="space-y-1.5 mb-3">
@@ -238,7 +239,7 @@ onMounted(() => {
                                         <span class="flex-shrink-0">
                                              <Icon v-if="opt === result.correct_answer" icon="mdi:check-circle" class="w-4 h-4 text-green-600" /><Icon v-else-if="opt === result.user_answer && !result.is_correct" icon="mdi:close-circle" class="w-4 h-4 text-red-500" /><span v-else class="text-muted-foreground/50">○</span>
                                         </span>
-                                         <span v-html="opt"></span>
+                                         <MathRenderer :text="opt" />
                                     </div>
                                 </div>
 
@@ -280,7 +281,7 @@ onMounted(() => {
                                     <span class="text-blue-500 flex-shrink-0 mt-0.5"><Icon icon="mdi:lightbulb-outline" class="w-5 h-5 text-blue-500" /></span>
                                     <div>
                                         <p class="text-[10px] font-bold text-blue-700 mb-0.5 uppercase tracking-wider">Pembahasan</p>
-                                        <p class="text-xs text-blue-800 leading-relaxed" v-html="result.explanation"></p>
+                                        <p class="text-xs text-blue-800 leading-relaxed"><MathRenderer :text="result.explanation" /></p>
                                     </div>
                                 </div>
                             </div>

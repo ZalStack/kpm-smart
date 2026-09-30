@@ -9,6 +9,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import UserLayout from '@/Layouts/UserLayout.vue';
 import Badge from '@/Components/ui/badge/Badge.vue';
 import Card from '@/Components/ui/card/Card.vue';
+import MathRenderer from '@/Components/shared/MathRenderer.vue';
 
 const props = defineProps({
     session: { type: Object, required: true },
@@ -86,7 +87,7 @@ function formatDate(dateStr) {
                             <div class="flex-1 min-w-0">
                                 <Badge :variant="result.is_correct ? 'success' : 'destructive'" class="text-[10px] mb-2"><Icon :icon="result.is_correct ? 'mdi:check-circle' : 'mdi:close-circle'" class="w-3 h-3 inline-block mr-0.5 align-middle" /> {{ result.is_correct ? 'Benar' : 'Salah' }}</Badge>
                                 <div v-if="result.image" class="mb-3"><img :src="result.image.startsWith('/') || result.image.startsWith('http') ? result.image : '/storage/' + result.image" alt="Gambar" class="max-w-full h-auto rounded-xl border border-border/40 max-h-48 object-contain shadow-sm" @error="$event.target.style.display='none'" /></div>
-                                <p class="text-sm leading-relaxed mb-3" v-html="result.question"></p>
+                                <p class="text-sm leading-relaxed mb-3"><MathRenderer :text="result.question" /></p>
                                 <div v-if="!result.type || result.type === 'pilihan_ganda'" class="space-y-1.5 text-sm">
                                     <p v-if="result.user_answer" class="flex items-center gap-1.5"><span class="text-muted-foreground">Jawaban Anda:</span> <span :class="result.is_correct ? 'text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded' : 'text-red-500 font-semibold bg-red-50 px-1.5 py-0.5 rounded'">{{ result.user_answer }}</span></p>
                                     <p v-if="!result.is_correct" class="flex items-center gap-1.5"><span class="text-muted-foreground">Jawaban Benar:</span> <span class="text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">{{ result.correct_answer }}</span></p>
@@ -109,7 +110,7 @@ function formatDate(dateStr) {
                                         </div>
                                     </div>
                                 </div>
-                                <div v-if="showExplanation && result.explanation" class="mt-3 p-3.5 bg-gradient-to-r from-blue-50 to-blue-100/30 border border-blue-100 rounded-xl text-sm text-blue-800 shadow-sm"><Icon icon="mdi:lightbulb-on-outline" class="w-4 h-4 inline-block mr-1 align-middle text-blue-500" /> <strong class="text-blue-700">Pembahasan:</strong> <span v-html="result.explanation"></span></div>
+                                <div v-if="showExplanation && result.explanation" class="mt-3 p-3.5 bg-gradient-to-r from-blue-50 to-blue-100/30 border border-blue-100 rounded-xl text-sm text-blue-800 shadow-sm"><Icon icon="mdi:lightbulb-on-outline" class="w-4 h-4 inline-block mr-1 align-middle text-blue-500" /> <strong class="text-blue-700">Pembahasan:</strong> <MathRenderer :text="result.explanation" /></div>
                             </div>
                         </div>
                     </div>

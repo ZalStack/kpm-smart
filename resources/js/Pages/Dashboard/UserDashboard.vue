@@ -18,7 +18,16 @@ const props = defineProps({
     gamification: { type: Object, default: () => ({}) },
 });
 
-const g = computed(() => props.gamification);
+const g = computed(() => props.gamification || {
+    xp: 0,
+    level: 1,
+    xp_in_level: 0,
+    badge: 'Pemula',
+    streak: { current: 0, best: 0 },
+    total_attempts: 0,
+    avg_score: 0,
+    best_score: 0,
+});
 const xpProgress = computed(() => g.value.xp_in_level || 0);
 </script>
 
