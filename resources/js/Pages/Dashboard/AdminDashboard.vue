@@ -1,10 +1,11 @@
 <script setup>
 import { inject } from 'vue';
-const route = inject('route');
-
 import { Head, Link } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import StatCard from '@/Components/shared/StatCard.vue';
+import { Icon } from '@iconify/vue/offline';
+
+const route = inject('route');
 
 const props = defineProps({
     totalUsers: { type: Number, default: 0 },
@@ -17,69 +18,134 @@ const props = defineProps({
 
 <template>
     <AdminLayout>
-        <Head title="Dasbor Admin - KPM SMART" />
+        <Head title="Dasbor Administrator - KPM SMART" />
 
-        <template #header-title>Dasbor</template>
-        <template #header-sub>Kelola sistem membership dengan mudah</template>
+        <template #header-title>
+            <div class="flex items-center gap-2">
+                <span class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <Icon icon="mdi:view-dashboard" class="w-5 h-5" />
+                </span>
+                <span>Dasbor Administrator</span>
+            </div>
+        </template>
+        <template #header-sub>
+            Pusat kendali manajemen siswa, paket soal, izin, dan statistik evaluasi pembelajaran
+        </template>
 
-        <!-- Stats -->
-        <div class="anim-fade-in-up grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-8">
-            <StatCard title="Total Pengguna" :value="totalUsers" color="pine-teal" icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z'/></svg>" />
-            <StatCard title="Total Soal" :value="totalPackages" color="fern" icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'/></svg>" />
-            <StatCard title="Total Sesi" :value="totalSessions" color="dry-sage" icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z'/></svg>" />
-        </div>
+        <div class="space-y-7">
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                <StatCard
+                    title="Total Siswa Terdaftar"
+                    :value="totalUsers"
+                    color="pine-teal"
+                    icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z'/></svg>"
+                />
+                <StatCard
+                    title="Total Paket Soal"
+                    :value="totalPackages"
+                    color="fern"
+                    icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'/></svg>"
+                />
+                <StatCard
+                    title="Total Sesi Ujian Selesai"
+                    :value="totalSessions"
+                    color="dry-sage"
+                    icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z'/></svg>"
+                />
+            </div>
 
-        <!-- Quick Actions -->
-        <div class="anim-fade-in-up anim-delay-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mb-8">
-            <Link :href="route('admin.users.index')" class="group rounded-2xl border bg-card p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div class="w-11 h-11 rounded-xl bg-pine-teal/10 flex items-center justify-center text-pine-teal mb-3 group-hover:scale-110 transition-transform duration-300">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
-                </div>
-                <h3 class="font-semibold text-sm sm:text-base mb-1">Kelola Pengguna</h3>
-                <p class="text-xs sm:text-sm text-muted-foreground">Tambah, edit, atau hapus pengguna</p>
-            </Link>
-            <Link :href="route('admin.packages.index')" class="group rounded-2xl border bg-card p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div class="w-11 h-11 rounded-xl bg-fern/10 flex items-center justify-center text-fern mb-3 group-hover:scale-110 transition-transform duration-300">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                </div>
-                <h3 class="font-semibold text-sm sm:text-base mb-1">Kelola Soal</h3>
-                <p class="text-xs sm:text-sm text-muted-foreground">Buat dan kelola soal tugas</p>
-            </Link>
-            <Link :href="route('admin.practice-statistics.index')" class="group rounded-2xl border bg-card p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div class="w-11 h-11 rounded-xl bg-dry-sage/10 flex items-center justify-center text-dry-sage mb-3 group-hover:scale-110 transition-transform duration-300">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
-                </div>
-                <h3 class="font-semibold text-sm sm:text-base mb-1">Statistik</h3>
-                <p class="text-xs sm:text-sm text-muted-foreground">Lihat statistik pengerjaan tugas</p>
-            </Link>
-        </div>
+            <!-- Quick Action Cards Grid -->
+            <div>
+                <h3 class="text-sm font-bold uppercase tracking-wider text-foreground/80 mb-3 flex items-center gap-1.5">
+                    <Icon icon="mdi:lightning-bolt" class="w-4 h-4 text-amber-500" /> Akses Cepat Pengelolaan
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Link :href="route('admin.users.index')"
+                          class="group rounded-2xl border border-border/60 bg-card p-5 shadow-sm hover:shadow-xl hover:border-primary/40 transition-all duration-300 hover:-translate-y-1">
+                        <div class="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                            <Icon icon="mdi:account-group-outline" class="w-6 h-6" />
+                        </div>
+                        <h4 class="font-bold text-sm sm:text-base text-foreground mb-1 group-hover:text-primary transition-colors">Kelola Siswa</h4>
+                        <p class="text-xs text-muted-foreground">Tambah data siswa, import akun, dan atur kelas belajar.</p>
+                    </Link>
 
-        <!-- Recent Users -->
-        <div class="anim-fade-in-up anim-delay-2 rounded-2xl border bg-card shadow-sm overflow-hidden">
-            <div class="p-6 border-b bg-gradient-to-r from-muted/30 to-transparent">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg sm:text-xl font-semibold">Pengguna Terbaru</h3>
-                    <Link :href="route('admin.users.index')" class="text-sm text-primary hover:text-primary/80 font-medium transition">Lihat Semua</Link>
+                    <Link :href="route('admin.packages.index')"
+                          class="group rounded-2xl border border-border/60 bg-card p-5 shadow-sm hover:shadow-xl hover:border-primary/40 transition-all duration-300 hover:-translate-y-1">
+                        <div class="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                            <Icon icon="mdi:package-variant-closed" class="w-6 h-6" />
+                        </div>
+                        <h4 class="font-bold text-sm sm:text-base text-foreground mb-1 group-hover:text-primary transition-colors">Bank Soal Tugas</h4>
+                        <p class="text-xs text-muted-foreground">Buat paket soal baru, atur waktu, dan susun kunci jawaban.</p>
+                    </Link>
+
+                    <Link :href="route('admin.practice-statistics.index')"
+                          class="group rounded-2xl border border-border/60 bg-card p-5 shadow-sm hover:shadow-xl hover:border-primary/40 transition-all duration-300 hover:-translate-y-1">
+                        <div class="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                            <Icon icon="mdi:chart-box-outline" class="w-6 h-6" />
+                        </div>
+                        <h4 class="font-bold text-sm sm:text-base text-foreground mb-1 group-hover:text-primary transition-colors">Statistik Evaluasi</h4>
+                        <p class="text-xs text-muted-foreground">Analisis nilai rata-rata, tingkat kelulusan, dan akurasi kelas.</p>
+                    </Link>
+
+                    <Link :href="route('admin.leave-requests.index')"
+                          class="group rounded-2xl border border-border/60 bg-card p-5 shadow-sm hover:shadow-xl hover:border-primary/40 transition-all duration-300 hover:-translate-y-1">
+                        <div class="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                            <Icon icon="mdi:calendar-account-outline" class="w-6 h-6" />
+                        </div>
+                        <h4 class="font-bold text-sm sm:text-base text-foreground mb-1 group-hover:text-primary transition-colors">Pengajuan Izin</h4>
+                        <p class="text-xs text-muted-foreground">Tinjau dan setujui permohonan izin ketidakhadiran siswa.</p>
+                    </Link>
                 </div>
             </div>
-            <div class="divide-y">
-                <div v-if="recentUsers.length === 0" class="p-6 text-center">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-muted/50 flex items-center justify-center">
-                        <svg class="w-8 h-8 text-muted-foreground/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+
+            <!-- Recent Users Section -->
+            <div class="rounded-3xl border border-border/60 bg-card shadow-sm overflow-hidden">
+                <div class="p-5 sm:p-6 border-b border-border/50 flex items-center justify-between bg-muted/20">
+                    <div class="flex items-center gap-2">
+                        <Icon icon="mdi:account-clock-outline" class="w-5 h-5 text-primary" />
+                        <h3 class="text-base sm:text-lg font-bold text-foreground">Siswa Terbaru Terdaftar</h3>
                     </div>
-                    <p class="text-muted-foreground text-sm">Belum ada pengguna</p>
+                    <Link :href="route('admin.users.index')"
+                          class="text-xs sm:text-sm font-semibold text-primary hover:text-primary/80 transition inline-flex items-center gap-1">
+                        Lihat Semua Siswa <Icon icon="mdi:arrow-right" class="w-4 h-4" />
+                    </Link>
                 </div>
-                <div v-for="u in recentUsers" :key="u.id" class="flex items-center gap-4 px-6 py-4 hover:bg-muted/50 transition-colors duration-200">
-                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
-                        {{ (u.name || 'U').charAt(0).toUpperCase() }}
+
+                <div class="divide-y divide-border/40">
+                    <div v-if="recentUsers.length === 0" class="p-12 text-center">
+                        <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground">
+                            <Icon icon="mdi:account-off-outline" class="w-8 h-8" />
+                        </div>
+                        <p class="text-sm font-semibold text-foreground">Belum Ada Pengguna Baru</p>
+                        <p class="text-xs text-muted-foreground mt-1">Data siswa yang baru didaftarkan akan muncul di sini.</p>
                     </div>
-                    <div class="min-w-0 flex-1">
-                        <p class="text-sm font-medium truncate">{{ u.name }}</p>
-                        <p class="text-xs text-muted-foreground truncate">{{ u.email }}</p>
+
+                    <div v-for="u in recentUsers" :key="u.id"
+                         class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 sm:px-6 py-4 hover:bg-muted/30 transition-colors">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black text-sm flex-shrink-0">
+                                {{ (u.name || 'U').charAt(0).toUpperCase() }}
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-bold text-foreground truncate">{{ u.name }}</p>
+                                <p class="text-xs text-muted-foreground truncate">{{ u.email }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 self-start sm:self-auto pl-13 sm:pl-0">
+                            <span v-if="u.student_class" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground border">
+                                Kelas {{ u.student_class }}
+                            </span>
+                            <span :class="['text-xs font-bold px-2.5 py-1 rounded-full border', u.is_active ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/40' : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800/40']">
+                                {{ u.is_active ? 'Aktif' : 'Nonaktif' }}
+                            </span>
+                            <Link :href="route('admin.users.show', u.id)"
+                                  class="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted transition">
+                                <Icon icon="mdi:chevron-right" class="w-5 h-5" />
+                            </Link>
+                        </div>
                     </div>
-                    <span :class="['badge text-xs', u.is_active ? 'badge-success' : 'badge-danger']">
-                        {{ u.is_active ? 'Aktif' : 'Nonaktif' }}
-                    </span>
                 </div>
             </div>
         </div>

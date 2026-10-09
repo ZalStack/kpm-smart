@@ -87,116 +87,126 @@ function submit() {
     <AdminLayout>
         <Head :title="'Import PDF - ' + package.title" />
 
-        <template #header-title>Import Soal dari PDF</template>
+        <template #header-title>
+            <div class="flex items-center gap-2">
+                <span class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <Icon icon="mdi:file-pdf-box" class="w-5 h-5" />
+                </span>
+                <span>Import Soal dari PDF</span>
+            </div>
+        </template>
         <template #header-sub>{{ package.title }}</template>
 
-        <Link :href="route('admin.packages.edit.questions', package.id)" class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-all duration-200 mb-6 hover:translate-x-[-2px]">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
-            Kembali ke Daftar Soal
-        </Link>
+        <div class="max-w-4xl mx-auto space-y-6">
+            <Link :href="route('admin.packages.edit.questions', package.id)"
+                  class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition group">
+                <Icon icon="mdi:arrow-left" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                Kembali ke Daftar Soal
+            </Link>
 
-        <div>
-            <div class="bg-card rounded-2xl border shadow-sm overflow-hidden animate-fade-in-up">
-                <!-- Info Header -->
-                <div class="p-5 sm:p-6 bg-gradient-to-r from-green-600 to-emerald-700 text-white">
-                    <h2 class="font-bold text-base sm:text-lg inline-flex items-center gap-2">
-                        <Icon icon="mdi:file-document-outline" class="w-5 h-5 inline-block align-middle mr-1" /> Import Soal dari PDF
-                    </h2>
-                    <p class="text-xs text-white/80 mt-1">Upload file PDF untuk menambahkan soal secara otomatis</p>
+            <form @submit.prevent="submit" class="space-y-6">
+                <!-- Guidance Box -->
+                <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm space-y-4">
+                    <div class="flex items-center gap-2 pb-4 border-b border-border/50">
+                        <Icon icon="mdi:information-outline" class="w-5 h-5 text-primary" />
+                        <h3 class="font-bold text-base tracking-tight text-foreground">Panduan Format Dokumen</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-muted-foreground">
+                        <div class="p-3.5 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
+                            <p class="font-bold text-foreground flex items-center gap-1.5">
+                                <Icon icon="mdi:format-list-numbered" class="w-4 h-4 text-primary" /> Penomoran Soal
+                            </p>
+                            <p>Diawali nomor + titik, contoh: <code class="bg-background px-1.5 py-0.5 rounded border text-foreground font-mono">1. Hasil dari...</code></p>
+                        </div>
+
+                        <div class="p-3.5 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
+                            <p class="font-bold text-foreground flex items-center gap-1.5">
+                                <Icon icon="mdi:format-list-bulleted" class="w-4 h-4 text-emerald-600" /> Pilihan Ganda
+                            </p>
+                            <p>Opsi di baris baru berawalan A-E, contoh: <code class="bg-background px-1.5 py-0.5 rounded border text-foreground font-mono">A. 24 cm</code></p>
+                        </div>
+
+                        <div class="p-3.5 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
+                            <p class="font-bold text-foreground flex items-center gap-1.5">
+                                <Icon icon="mdi:form-textbox" class="w-4 h-4 text-blue-600" /> Isian Singkat
+                            </p>
+                            <p>Soal tanpa opsi akan menjadi isian singkat. Jawaban: <code class="bg-background px-1.5 py-0.5 rounded border text-foreground font-mono">Jawaban: 42</code></p>
+                        </div>
+
+                        <div class="p-3.5 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
+                            <p class="font-bold text-foreground flex items-center gap-1.5">
+                                <Icon icon="mdi:image-outline" class="w-4 h-4 text-amber-600" /> Gambar & Rumus
+                            </p>
+                            <p>Format <code class="bg-background px-1.5 py-0.5 rounded border text-foreground font-mono">[GAMBAR:file.png]</code> dan rumus LaTeX <code class="bg-background px-1.5 py-0.5 rounded border text-foreground font-mono">$x^2$</code>.</p>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Format Information -->
-                <div class="m-5 sm:m-6 bg-primary/5 border border-primary/20 rounded-xl p-4">
-                    <p class="font-semibold text-sm mb-2 inline-flex items-center gap-2 text-primary">
-                        <Icon icon="mdi:information-outline" class="w-5 h-5 inline-block align-middle mr-1" /> Format PDF yang Didukung
-                    </p>
-                    <ul class="space-y-1.5 text-xs text-muted-foreground leading-relaxed">
-                        <li class="flex items-start gap-2">
-                            <Icon icon="mdi:check" class="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span>Setiap soal diawali <strong>nomor + titik</strong>, contoh: <code class="bg-muted px-1 py-0.5 rounded text-[11px]">1. Ibu kota Indonesia adalah...</code></span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <Icon icon="mdi:check" class="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span><strong>Pilihan Ganda:</strong> Opsi di baris terpisah diawali huruf A-E + titik. Contoh: <code class="bg-muted px-1 py-0.5 rounded text-[11px]">A. Jakarta</code></span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <Icon icon="mdi:check" class="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                            <span><strong>Isian Singkat:</strong> Soal tanpa opsi A-E otomatis jadi isian singkat. Jawaban: <code class="bg-muted px-1 py-0.5 rounded text-[11px]">Jawaban: Jakarta</code> atau <code class="bg-muted px-1 py-0.5 rounded text-[11px]">Solusi: 24</code></span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <Icon icon="mdi:check" class="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span><strong>Gambar:</strong> Sertakan <code class="bg-muted px-1 py-0.5 rounded text-[11px]">[GAMBAR:nama_file.png]</code> di soal, lalu upload ZIP gambar. Gambar PDF juga otomatis diekstrak.</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <Icon icon="mdi:check" class="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span><strong>Tabel & Rumus:</strong> Tabel tab-separated dan rumus LaTeX (contoh <code class="bg-muted px-1 py-0.5 rounded text-[11px]">$2^{2002}$</code>) otomatis terdeteksi.</span>
-                        </li>
-                    </ul>
-                </div>
+                <!-- Form Upload Card -->
+                <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm space-y-5">
+                    <div class="flex items-center gap-2 pb-4 border-b border-border/50">
+                        <Icon icon="mdi:upload-outline" class="w-5 h-5 text-primary" />
+                        <h3 class="font-bold text-base tracking-tight text-foreground">Upload Berkas</h3>
+                    </div>
 
-                <form @submit.prevent="submit" class="p-5 sm:p-6 pt-0 space-y-5">
                     <!-- Card Selection -->
-                    <div class="space-y-2">
-                        <Label for="card_id">Pilih Card Tujuan <span class="text-destructive">*</span></Label>
-                        <Select id="card_id" v-model="selectedCard" required class="w-full transition-all duration-200 focus:shadow-md focus:ring-2 focus:ring-primary/20">
-                            <option value="" disabled>-- Pilih Card --</option>
+                    <div class="space-y-1.5">
+                        <Label for="card_id" class="text-xs font-semibold text-foreground">
+                            Pilih Card Tujuan <span class="text-destructive">*</span>
+                        </Label>
+                        <Select id="card_id" v-model="selectedCard" required class="w-full h-11 rounded-xl bg-background">
+                            <option value="" disabled>-- Pilih Card Tujuan Soal --</option>
                             <option v-for="c in cards" :key="c.id" :value="c.id">{{ c.title }}</option>
                         </Select>
-                        <p v-if="cards.length === 0" class="text-xs text-destructive">
-                            <Icon icon="mdi:alert-outline" class="w-4 h-4 inline-block align-middle mr-1" /> Soal ini belum memiliki Card. Silakan buat Card terlebih dahulu di tab Card sebelum import soal.
+                        <p v-if="cards.length === 0" class="text-xs text-destructive font-medium">
+                            Paket soal ini belum memiliki Card. Buat Card terlebih dahulu di tab Card sebelum import.
                         </p>
                     </div>
 
                     <!-- PDF File -->
-                    <div class="space-y-2">
-                        <Label for="pdf_file">File PDF Soal <span class="text-destructive">*</span></Label>
+                    <div class="space-y-1.5 pt-2">
+                        <Label for="pdf_file" class="text-xs font-semibold text-foreground">
+                            File PDF Soal <span class="text-destructive">*</span>
+                        </Label>
                         <input id="pdf_file" type="file" accept=".pdf" required @change="handlePdfChange"
-                               class="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:shadow-md transition-all duration-200" />
-                        <p class="text-xs text-muted-foreground">Format: PDF teks berurutan. Maks 2MB.</p>
+                               class="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-xs sm:text-sm file:border-0 file:bg-muted file:px-3 file:py-1 file:rounded-lg file:text-xs file:font-semibold file:text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition" />
+                        <p class="text-[11px] text-muted-foreground">Format PDF dengan teks yang dapat diseleksi (bukan hasil scan gambar murni). Maksimal 2MB.</p>
                     </div>
 
                     <!-- Answer Key PDF -->
-                    <div class="space-y-2">
-                        <Label for="answer_key_pdf">File PDF Kunci Jawaban (Opsional)</Label>
+                    <div class="space-y-1.5 pt-2">
+                        <Label for="answer_key_pdf" class="text-xs font-semibold text-foreground">
+                            File PDF Kunci Jawaban (Opsional)
+                        </Label>
                         <input id="answer_key_pdf" type="file" accept=".pdf" @change="handleAnswerKeyChange"
-                               class="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:shadow-md transition-all duration-200" />
-                        <p class="text-xs text-muted-foreground">Format: PDF berisi kunci jawaban. Untuk pilihan ganda: <code class="bg-muted px-1 py-0.5 rounded text-[11px]">1. A</code>. Untuk isian singkat: <code class="bg-muted px-1 py-0.5 rounded text-[11px]">1. Jakarta</code>. Maks 2MB.</p>
+                               class="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-xs sm:text-sm file:border-0 file:bg-muted file:px-3 file:py-1 file:rounded-lg file:text-xs file:font-semibold file:text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition" />
+                        <p class="text-[11px] text-muted-foreground">Format kunci: <code class="bg-muted px-1.5 py-0.5 rounded text-[10px]">1. A</code> atau <code class="bg-muted px-1.5 py-0.5 rounded text-[10px]">1. Jawaban</code>. Maksimal 2MB.</p>
                     </div>
 
                     <!-- Images ZIP -->
-                    <div class="space-y-2">
-                        <Label for="images_zip">File ZIP Gambar Soal (Opsional)</Label>
+                    <div class="space-y-1.5 pt-2">
+                        <Label for="images_zip" class="text-xs font-semibold text-foreground">
+                            File ZIP Gambar Pendukung (Opsional)
+                        </Label>
                         <input id="images_zip" type="file" accept=".zip" @change="handleZipChange"
-                               class="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:shadow-md transition-all duration-200" />
-                        <p class="text-xs text-muted-foreground">Gunakan jika ingin menyertakan kumpulan gambar dengan format [GAMBAR:nama_file]. Maks 20MB.</p>
+                               class="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-xs sm:text-sm file:border-0 file:bg-muted file:px-3 file:py-1 file:rounded-lg file:text-xs file:font-semibold file:text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition" />
+                        <p class="text-[11px] text-muted-foreground">Arsip ZIP yang memuat seluruh file gambar yang dirujuk dalam kode tag [GAMBAR:nama_file]. Maksimal 20MB.</p>
                     </div>
+                </div>
 
-                    <div class="flex items-center justify-end gap-3 pt-4 border-t">
-                        <Link :href="route('admin.packages.edit.questions', package.id)" class="inline-flex items-center justify-center px-4 py-2 border rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 active:scale-95">
-                            Batal
-                        </Link>
-                        <Button type="submit" :disabled="isProcessing || cards.length === 0" class="transition-all duration-300 hover:shadow-lg active:scale-95">
-                            {{ isProcessing ? 'Mengimpor & Memproses...' : '' }}<Icon v-if="!isProcessing" icon="mdi:send" class="w-4 h-4 inline-block align-middle mr-1" />{{ isProcessing ? '' : 'Import & Generate Soal' }}
-                        </Button>
-                    </div>
-                </form>
-            </div>
+                <!-- Action Bar -->
+                <div class="bg-card rounded-3xl border border-border/60 p-5 sm:p-6 shadow-sm flex items-center justify-end gap-3">
+                    <Link :href="route('admin.packages.edit.questions', package.id)" class="px-5 py-2.5 rounded-xl border border-border text-xs sm:text-sm font-semibold hover:bg-muted transition">
+                        Batal
+                    </Link>
+                    <Button type="submit" :disabled="isProcessing || cards.length === 0" class="h-11 px-6 rounded-xl font-semibold gap-2 shadow-sm">
+                        <Icon v-if="isProcessing" icon="mdi:loading" class="w-4 h-4 animate-spin" />
+                        <Icon v-else icon="mdi:send" class="w-4 h-4" />
+                        <span>{{ isProcessing ? 'Mengimpor & Memproses...' : 'Import & Generate Soal' }}</span>
+                    </Button>
+                </div>
+            </form>
         </div>
     </AdminLayout>
 </template>
-
-<style scoped>
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(12px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-.animate-fade-in-up {
-    animation: fadeInUp 0.4s ease-out both;
-}
-</style>

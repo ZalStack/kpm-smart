@@ -3,57 +3,71 @@ const year = new Date().getFullYear();
 </script>
 
 <template>
-    <div class="grid lg:grid-cols-2 min-h-screen">
-        <!-- LEFT: Brand panel -->
-        <div class="hidden lg:flex brand-panel relative overflow-hidden text-white flex-col justify-between p-12 xl:p-16">
-            <div class="grid-dots absolute inset-0 opacity-[0.04]"></div>
-            <div class="pattern-overlay absolute inset-0"></div>
-            <div class="absolute w-[420px] h-[420px] rounded-full bg-fern opacity-[0.18] -top-28 -right-28 anim-blob blur-[80px]"></div>
-            <div class="absolute w-[340px] h-[340px] rounded-full bg-dry-sage opacity-[0.14] -bottom-20 -left-20 anim-blob blur-[72px]" style="animation-delay:-4s"></div>
-            <div class="absolute w-[260px] h-[260px] rounded-full bg-pine-teal opacity-[0.13] top-1/2 -left-24 anim-blob blur-[64px]" style="animation-delay:-8s"></div>
-            <div class="absolute w-[200px] h-[200px] rounded-full bg-fern opacity-[0.08] bottom-1/3 right-1/4 anim-blob-slow blur-[56px]" style="animation-delay:-6s"></div>
+    <div class="grid lg:grid-cols-12 min-h-screen bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground">
+        <!-- LEFT: Artistic Brand Panel (5 cols on lg, 6 cols on xl) -->
+        <div class="hidden lg:flex lg:col-span-5 xl:col-span-5 brand-panel relative overflow-hidden text-white flex-col justify-between p-10 xl:p-14 select-none">
+            <div class="grid-dots absolute inset-0 opacity-15"></div>
+            <div class="absolute -top-32 -right-32 w-80 h-80 rounded-full bg-emerald-400/20 blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-teal-400/20 blur-3xl pointer-events-none"></div>
+            <div class="absolute top-1/2 left-1/3 w-64 h-64 rounded-full bg-amber-400/10 blur-3xl pointer-events-none"></div>
 
-            <div class="relative z-10 fade-up max-w-lg">
-                <div class="flex items-center gap-4 mb-14">
-                    <div class="w-12 h-12 shrink-0 rounded-[0.9rem] bg-gradient-to-br from-dry-sage to-fern flex items-center justify-center text-white font-bold text-xl shadow-xl shadow-fern/25 ring-pulse" aria-hidden="true">K</div>
+            <!-- Top Brand Header -->
+            <div class="relative z-10">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-11 h-11 shrink-0 rounded-2xl bg-white/20 backdrop-blur border border-white/30 flex items-center justify-center text-white font-extrabold text-xl shadow-lg shadow-black/10">
+                        K
+                    </div>
                     <div class="leading-tight">
-                        <span class="font-bold text-lg tracking-wide block">KPM SMART</span>
-                        <span class="text-[0.7rem] text-white/50 tracking-widest uppercase">Platform belajar & bank soal</span>
+                        <span class="font-extrabold text-lg tracking-tight block text-white">KPM SMART</span>
+                        <span class="text-[11px] text-emerald-200/80 tracking-wider uppercase font-semibold">Sistem Belajar & Tugas</span>
                     </div>
                 </div>
-
-                <!-- Bukan <h1>: halaman sudah punya <h1> di panel form, dan
-                 satu dokumen sebaiknya hanya punya satu heading level-1. -->
-                <p class="text-[2.4rem] xl:text-[2.9rem] font-bold leading-[1.15] mb-6 tracking-tight text-balance">
-                    Setiap login,<br>
-                    <span class="bg-gradient-to-r from-dry-sage to-fern bg-clip-text text-transparent">satu langkah</span><br>
-                    lebih siap ujian.
-                </p>
-                <p class="text-white/55 text-[0.95rem] leading-relaxed max-w-sm">
-                    Ribuan soal terkurasi dengan pembahasan lengkap, siap diakses kapan pun kamu butuh.
-                </p>
             </div>
 
-            <div class="relative z-10 text-xs text-white/30 fade-up tracking-wide" style="animation-delay:.15s">
+            <!-- Middle Motivation Feature Card -->
+            <div class="relative z-10 my-auto py-10 max-w-md">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur border border-white/20 text-xs font-semibold text-emerald-100 mb-6">
+                    <span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+                    Platform Latihan Mandiri
+                </div>
+                <h2 class="text-3xl xl:text-4xl font-extrabold leading-tight text-white tracking-tight text-balance mb-4">
+                    Belajar Lebih Terarah,<br>
+                    <span class="bg-gradient-to-r from-emerald-200 via-teal-200 to-amber-200 bg-clip-text text-transparent">Raih Prestasi Maksimal.</span>
+                </h2>
+                <p class="text-emerald-100/80 text-sm leading-relaxed mb-8">
+                    Akses ribuan soal terkurasi dengan pembahasan detail, pemantauan statistik pengerjaan, dan papan peringkat interaktif.
+                </p>
+
+                <!-- Features list pills -->
+                <div class="space-y-3 text-xs text-white/90 font-medium">
+                    <div class="flex items-center gap-3 bg-white/10 backdrop-blur border border-white/15 px-4 py-2.5 rounded-xl">
+                        <span class="w-5 h-5 rounded-lg bg-emerald-400/30 flex items-center justify-center text-emerald-200 font-bold">✓</span>
+                        <span>Bank soal berkualitas dengan rumus matematika presisi</span>
+                    </div>
+                    <div class="flex items-center gap-3 bg-white/10 backdrop-blur border border-white/15 px-4 py-2.5 rounded-xl">
+                        <span class="w-5 h-5 rounded-lg bg-emerald-400/30 flex items-center justify-center text-emerald-200 font-bold">✓</span>
+                        <span>Sistem anti-kecurangan & pengingat jadwal otomatis</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Copyright -->
+            <div class="relative z-10 text-xs text-emerald-200/60 font-medium">
                 &copy; {{ year }} KPM SMART. Hak cipta dilindungi.
             </div>
         </div>
 
-        <!-- RIGHT: Form panel -->
-        <div class="right-bg relative overflow-hidden flex items-center justify-center p-5 sm:p-10 lg:p-16">
-            <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-fern opacity-[0.06] blur-3xl"></div>
-            <div class="absolute -bottom-28 -left-24 w-80 h-80 rounded-full bg-dry-sage opacity-[0.07] blur-3xl"></div>
-            <div class="absolute top-1/2 right-1/3 w-64 h-64 rounded-full bg-dry-sage opacity-[0.04] blur-3xl anim-blob-slow" style="animation-delay:-3s"></div>
-
-            <div class="relative z-10 w-full max-w-md fade-up" style="animation-delay:.05s">
-                <!-- Mobile brand -->
-                <div class="lg:hidden flex items-center justify-center gap-3 mb-8 relative">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 shrink-0 rounded-[0.65rem] bg-gradient-to-br from-dry-sage to-fern flex items-center justify-center text-white font-bold text-base shadow-lg shadow-fern/20" aria-hidden="true">K</div>
-                        <div class="leading-tight text-left">
-                            <span class="font-bold text-foreground block text-[0.9rem] tracking-tight">KPM SMART</span>
-                            <span class="text-[0.65rem] text-muted-foreground tracking-wide">Platform belajar & bank soal</span>
-                        </div>
+        <!-- RIGHT: Form Panel (7 cols on lg, 7 cols on xl) -->
+        <div class="lg:col-span-7 xl:col-span-7 right-bg relative overflow-y-auto flex items-center justify-center p-6 sm:p-12 lg:p-16">
+            <div class="w-full max-w-md my-auto">
+                <!-- Mobile Brand Header -->
+                <div class="lg:hidden flex items-center justify-center gap-3 mb-8">
+                    <div class="w-10 h-10 shrink-0 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-white font-extrabold text-base shadow-md shadow-emerald-600/25">
+                        K
+                    </div>
+                    <div class="leading-tight text-left">
+                        <span class="font-extrabold text-foreground block text-base tracking-tight">KPM SMART</span>
+                        <span class="text-[11px] text-muted-foreground font-semibold">Platform Belajar & Tugas</span>
                     </div>
                 </div>
 
@@ -62,52 +76,3 @@ const year = new Date().getFullYear();
         </div>
     </div>
 </template>
-
-<style scoped>
-@keyframes floatSlow { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-14px) } }
-@keyframes blob {
-    0%   { transform: translate(0, 0)       scale(1); }
-    25%  { transform: translate(18px, -12px) scale(1.04); }
-    50%  { transform: translate(-10px, 16px) scale(0.97); }
-    75%  { transform: translate(14px, 8px)   scale(1.03); }
-    100% { transform: translate(0, 0)        scale(1); }
-}
-@keyframes blobSlow {
-    0%,100% { transform: translate(0,0) scale(1); }
-    50%     { transform: translate(12px,-10px) scale(1.05); }
-}
-@keyframes fadeUp {
-    from { opacity:0; transform:translateY(20px); }
-    to   { opacity:1; transform:translateY(0); }
-}
-@keyframes ringPulse {
-    0%,100% { box-shadow:0 0 0 0 rgba(161,203,53,.4); }
-    50%     { box-shadow:0 0 0 12px rgba(161,203,53,0); }
-}
-
-.pattern-overlay {
-    background-image:
-        radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0);
-    background-size: 32px 32px;
-}
-
-.brand-panel {
-    background:
-        radial-gradient(95% 65% at 88% 8%, rgba(161,203,53,.35), transparent 58%),
-        radial-gradient(70% 55% at 0% 92%, rgba(255,222,78,.15), transparent 60%),
-        radial-gradient(60% 50% at 65% 100%, rgba(255,157,77,.12), transparent 62%),
-        linear-gradient(150deg, #3D5A14 0%, #5A7A1E 35%, #769826 65%, #A1CB35 100%);
-}
-
-.right-bg {
-    background:
-        radial-gradient(45% 40% at 8% 0%, rgba(161,203,53,.08), transparent 60%),
-        radial-gradient(42% 38% at 100% 92%, rgba(255,222,78,.06), transparent 60%),
-        linear-gradient(135deg, #fafdf9 0%, #f8fcf5 50%, #f4f9f0 100%);
-}
-
-.anim-blob     { animation: blob 14s cubic-bezier(.45,.05,.55,.95) infinite; }
-.anim-blob-slow { animation: blobSlow 18s cubic-bezier(.45,.05,.55,.95) infinite; }
-.fade-up { opacity:0; animation: fadeUp .8s cubic-bezier(.16,1,.3,1) forwards; }
-.ring-pulse { animation: ringPulse 3s ease-in-out infinite; }
-</style>

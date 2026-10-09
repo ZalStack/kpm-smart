@@ -43,7 +43,7 @@ const isUserRole = computed(() => {
 });
 
 const allTabs = [
-    { label: 'Dashboard', route: 'user.dashboard', icon: 'mdi:view-dashboard-outline', iconActive: 'mdi:view-dashboard', match: 'user.dashboard' },
+    { label: 'Dasbor', route: 'user.dashboard', icon: 'mdi:view-dashboard-outline', iconActive: 'mdi:view-dashboard', match: 'user.dashboard' },
     { label: 'Tugas PR', route: 'user.packages.index', icon: 'mdi:book-open-variant', iconActive: 'mdi:book-open-page-variant', match: 'user.packages.*' },
     { label: 'Riwayat', route: 'user.practice.history', icon: 'mdi:history', iconActive: 'mdi:history', match: 'user.practice.*' },
     { label: 'Peringkat', route: 'user.leaderboard', icon: 'mdi:trophy-outline', iconActive: 'mdi:trophy', match: 'user.leaderboard' },
@@ -106,6 +106,7 @@ function getNotifHref(n) {
     }
     return route('user.notifications.index');
 }
+
 async function handleNotifClick(n) {
     try {
         await fetch(route('user.notifications.mark-read', n.id), {
@@ -132,7 +133,7 @@ function closeAllDropdowns() {
 onMounted(() => {
     if (user.value) {
         loadNotifications();
-        pollInterval = setInterval(loadNotifications, 10000);
+        pollInterval = setInterval(loadNotifications, 15000);
     }
     clickHandler = (e) => {
         if (!e.target.closest('#userDropdown')) userDropdownOpen.value = false;
@@ -140,11 +141,7 @@ onMounted(() => {
         if (!e.target.closest('#pushNotifWrap') && !e.target.closest('#pushNotifWrapMobile')) pushNotifOpen.value = false;
     };
     keyHandler = (e) => {
-        if (e.key !== 'Escape') return;
-        // Escape menutup dropdown teratas lebih dulu, baru semua dropdown.
-        if (userDropdownOpen.value || notifDropdownOpen.value || pushNotifOpen.value) {
-            closeAllDropdowns();
-        }
+        if (e.key === 'Escape') closeAllDropdowns();
     };
     document.addEventListener('click', clickHandler);
     document.addEventListener('keydown', keyHandler);
@@ -158,228 +155,218 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="min-h-screen flex flex-col bg-background">
+    <div class="min-h-screen flex flex-col bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground">
         <!-- ======================== DESKTOP TOP NAVBAR ======================== -->
-        <nav class="hidden md:block sticky top-0 z-50 w-full border-b border-border/30 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-[0_1px_3px_0_rgb(0,0,0,0.04)]">
+        <nav class="hidden md:block sticky top-0 z-50 w-full border-b border-border/80 bg-card/85 backdrop-blur-md shadow-2xs">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center h-16">
-                    <Link :href="user?.role === 'admin' ? route('admin.dashboard') : (user ? route('user.dashboard') : '/')" class="flex items-center gap-2.5 text-lg font-bold text-foreground hover:text-primary transition-all duration-300 group">
-                        <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground text-sm font-bold shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-300">K</span>
-                        <span class="tracking-tight">KPM SMART</span>
+                    <!-- Brand -->
+                    <Link
+                        :href="user?.role === 'admin' ? route('admin.dashboard') : (user ? route('user.dashboard') : '/')"
+                        class="flex items-center gap-3 text-lg font-bold text-foreground hover:text-primary transition-all duration-200 group"
+                    >
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-white text-base font-extrabold shadow-sm shadow-emerald-600/20 group-hover:scale-105 transition-transform duration-200">
+                            K
+                        </div>
+                        <div class="leading-tight">
+                            <span class="tracking-tight text-base font-extrabold block">KPM SMART</span>
+                            <span class="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider block -mt-0.5">Platform Belajar</span>
+                        </div>
                     </Link>
 
-                    <div class="flex items-center gap-1">
-                        <template v-if="user">
-                            <template v-if="user.role === 'user'">
-                                <nav class="hidden md:flex items-center gap-0.5" aria-label="Navigasi utama">
-                                    <Link
-                                        v-for="tab in allTabs"
-                                        :key="tab.route"
-                                        :href="route(tab.route)"
-                                        :aria-current="isActive(tab.match) ? 'page' : undefined"
-                                        class="nav-link relative inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-lg transition-all duration-200"
-                                        :class="{ 'text-foreground bg-accent': isActive(tab.match) }"
-                                    >
-                                        {{ tab.label }}
-                                    </Link>
-                                </nav>
-                            </template>
-
-                            <!-- Desktop Notification Bell -->
-                            <div class="relative" id="notifWrap">
-                                <button
-                                    @click="toggleNotifDropdown"
-                                    :aria-expanded="notifDropdownOpen"
-                                    aria-haspopup="true"
-                                    aria-label="Notifikasi"
-                                    class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground transition-all duration-200 relative"
+                    <!-- Navigation Links -->
+                    <div class="flex items-center gap-1.5">
+                        <template v-if="user && user.role === 'user'">
+                            <nav class="flex items-center gap-1 bg-muted/60 p-1 rounded-2xl border border-border/60" aria-label="Navigasi utama">
+                                <Link
+                                    v-for="tab in allTabs"
+                                    :key="tab.route"
+                                    :href="route(tab.route)"
+                                    :aria-current="isActive(tab.match) ? 'page' : undefined"
+                                    :class="[
+                                        'inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all duration-200 select-none',
+                                        isActive(tab.match)
+                                            ? 'bg-card text-foreground shadow-xs font-bold text-primary'
+                                            : 'text-muted-foreground hover:text-foreground hover:bg-card/50'
+                                    ]"
                                 >
-                                    <Icon icon="mdi:bell-outline" class="w-[18px] h-[18px]" />
-                                    <span v-if="unreadCount > 0" class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm ring-2 ring-background">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
-                                </button>
-                                <Transition name="dropdown">
-                                    <div v-if="notifDropdownOpen" class="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-popover text-popover-foreground rounded-xl shadow-xl border py-2 z-50">
-                                        <div class="px-4 py-3 border-b flex items-center justify-between">
-                                            <p class="text-sm font-semibold">Notifikasi</p>
-                                            <button @click="markAllRead" class="text-xs text-muted-foreground hover:text-foreground font-medium transition-colors duration-200">Tandai semua dibaca</button>
-                                        </div>
-                                        <div class="max-h-72 overflow-y-auto">
-                                            <div v-if="notifications.length === 0" class="px-4 py-10 text-center">
-                                                <Icon icon="mdi:bell-off-outline" class="w-10 h-10 text-muted-foreground/40 mx-auto mb-2" />
-                                                <p class="text-sm text-muted-foreground font-medium">Tidak ada notifikasi</p>
-                                                <p class="text-xs text-muted-foreground/60 mt-0.5">Notifikasi baru akan muncul di sini</p>
-                                            </div>
-                                            <Link v-for="n in notifications" :key="n.id" :href="getNotifHref(n)" @click="handleNotifClick(n)" class="flex items-center gap-3 px-4 py-3 hover:bg-accent/70 transition-all duration-200 border-b border-border/40 last:border-0" :class="{ 'bg-accent/40': !n.is_read }">
-                                                <div :class="['flex-shrink-0 w-2 h-2 rounded-full', n.is_read ? 'opacity-0' : (n.type==='announcement' ? 'bg-amber-500' : 'bg-primary/60')]"></div>
-                                                <div class="min-w-0 flex-1">
-                                                    <p class="text-sm font-medium truncate flex items-center gap-1.5"><span v-if="n.type==='announcement'" class="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">PENGUMUMAN</span><span v-if="n.type==='sps_reminder'" class="text-[9px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">SPS</span>{{ n.title }}</p>
-                                                    <p class="text-xs text-muted-foreground truncate mt-0.5">{{ n.message }}</p>
-                                                </div>
-                                                <span class="text-[10px] text-muted-foreground/70 whitespace-nowrap">{{ n.created_at }}</span>
-                                            </Link>
-                                        </div>
-                                        <div class="border-t mx-2 mt-1 pt-1">
-                                            <Link :href="route('user.notifications.index')" class="block px-3 py-2.5 text-sm text-center text-muted-foreground hover:text-foreground hover:bg-accent/70 transition-all duration-200 rounded-lg font-medium">Lihat Semua Notifikasi</Link>
-                                        </div>
-                                    </div>
-                                </Transition>
-                            </div>
+                                    <Icon :icon="isActive(tab.match) ? tab.iconActive : tab.icon" class="w-4 h-4" />
+                                    {{ tab.label }}
+                                </Link>
+                            </nav>
+                        </template>
 
-                            <!-- Desktop Push Notification Toggle -->
-                            <div v-if="pushSupported && user?.role === 'user'" class="relative" id="pushNotifWrap">
-                                <button @click="pushNotifOpen = !pushNotifOpen" :aria-expanded="pushNotifOpen" aria-haspopup="true" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground transition-all duration-200 relative" :title="pushSubscribed ? 'Notifikasi aktif' : 'Aktifkan notifikasi'" :aria-label="pushSubscribed ? 'Notifikasi browser aktif' : 'Aktifkan notifikasi browser'">
-                                    <Icon :icon="pushSubscribed ? 'mdi:bell-ring-outline' : 'mdi:bell-off-outline'" class="w-[18px] h-[18px]" :class="pushSubscribed ? 'text-green-500' : ''" />
-                                </button>
-                                <Transition name="dropdown">
-                                    <div v-if="pushNotifOpen" class="absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] bg-popover text-popover-foreground rounded-xl shadow-xl border py-2 z-50">
-                                        <div class="px-4 py-3 border-b">
-                                            <p class="text-sm font-semibold">Notifikasi Browser</p>
-                                            <p class="text-xs text-muted-foreground mt-0.5">Dapatkan pengingat SPS harian langsung di browser</p>
-                                        </div>
-                                        <div class="px-4 py-3">
-                                            <div v-if="pushSubscribed" class="flex items-center gap-3">
-                                                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                                                    <Icon icon="mdi:check-circle" class="w-5 h-5 text-green-600" />
-                                                </div>
-                                                <div>
-                                                    <p class="text-sm font-medium text-green-700">Notifikasi Aktif</p>
-                                                    <p class="text-xs text-muted-foreground">Kamu akan mendapat pengingat SPS</p>
-                                                </div>
-                                            </div>
-                                            <div v-else class="flex items-center gap-3">
-                                                <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-                                                    <Icon icon="mdi:bell-off" class="w-5 h-5 text-amber-600" />
-                                                </div>
-                                                <div>
-                                                    <p class="text-sm font-medium">Notifikasi Nonaktif</p>
-                                                    <p class="text-xs text-muted-foreground">Aktifkan untuk pengingat SPS harian</p>
-                                                </div>
-                                            </div>
-                                            <p v-if="pushError" class="text-xs text-destructive mt-2">{{ pushError }}</p>
-                                        </div>
-                                        <div class="px-4 pb-3">
-                                            <button @click="togglePushNotification" :disabled="pushLoading" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200" :class="pushSubscribed ? 'bg-destructive/10 text-destructive hover:bg-destructive/20' : 'bg-primary text-primary-foreground hover:bg-primary/90'">
-                                                <Icon v-if="pushLoading" icon="mdi:loading" class="w-4 h-4 animate-spin" />
-                                                <Icon v-else :icon="pushSubscribed ? 'mdi:bell-off' : 'mdi:bell-check'" class="w-4 h-4" />
-                                                {{ pushLoading ? 'Memproses...' : (pushSubscribed ? 'Nonaktifkan' : 'Aktifkan Sekarang') }}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </Transition>
-                            </div>
+                        <!-- Notification Bell -->
+                        <div v-if="user" class="relative ml-2" id="notifWrap">
+                            <button
+                                @click="toggleNotifDropdown"
+                                :aria-expanded="notifDropdownOpen"
+                                aria-label="Notifikasi"
+                                class="inline-flex items-center justify-center w-10 h-10 rounded-xl text-muted-foreground hover:bg-accent/70 hover:text-foreground transition border border-border/60 relative"
+                            >
+                                <Icon icon="mdi:bell-outline" class="w-5 h-5" />
+                                <span
+                                    v-if="unreadCount > 0"
+                                    class="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-xs ring-2 ring-background animate-pulse-soft"
+                                >
+                                    {{ unreadCount > 99 ? '99+' : unreadCount }}
+                                </span>
+                            </button>
 
-                            <!-- Desktop User Dropdown -->
-                            <div class="relative" id="userDropdown">
-                                <button @click="toggleUserDropdown" :aria-expanded="userDropdownOpen" aria-haspopup="true" class="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-200 px-2 py-1.5 rounded-lg hover:bg-accent/70">
-                                    <span class="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-xs font-bold text-primary-foreground shadow-sm overflow-hidden">
-                                        <img v-if="profilePhotoUrl" :src="profilePhotoUrl" class="w-full h-full object-cover" alt="" />
-                                        <span v-else>{{ (user?.name || 'A').charAt(0).toUpperCase() }}</span>
-                                    </span>
-                                    <span class="text-sm max-w-[10rem] truncate">{{ user.name?.substring(0, 15) }}</span>
-                                    <Icon icon="mdi:chevron-down" class="w-3.5 h-3.5 transition-transform duration-200" :class="{ 'rotate-180': userDropdownOpen }" />
-                                    <span class="sr-only">Buka menu akun</span>
-                                </button>
-                                <Transition name="dropdown">
-                                    <div v-if="userDropdownOpen" class="absolute right-0 mt-2 w-56 bg-popover text-popover-foreground rounded-xl shadow-xl py-1.5 z-50 border">
-                                        <div class="px-4 py-3 border-b mx-1">
-                                            <p class="font-semibold text-sm truncate">{{ user.name }}</p>
-                                            <p class="text-xs text-muted-foreground truncate mt-0.5">{{ user.email }}</p>
+                            <Transition name="dropdown">
+                                <div v-if="notifDropdownOpen" class="absolute right-0 mt-2 w-80 sm:w-96 max-w-[calc(100vw-2rem)] bg-card text-card-foreground rounded-2xl shadow-xl border border-border/80 py-2 z-50">
+                                    <div class="px-4 py-3 border-b border-border/60 flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <p class="text-sm font-bold text-foreground">Notifikasi</p>
+                                            <span v-if="unreadCount > 0" class="text-[10px] bg-rose-100 text-rose-700 font-bold px-1.5 py-0.5 rounded-full">{{ unreadCount }} baru</span>
                                         </div>
-                                        <div class="py-1">
-                                            <Link :href="route('user.profile.edit')" class="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-accent/70 hover:text-accent-foreground transition-all duration-200 rounded-lg mx-1.5">
-                                                <Icon icon="mdi:account-outline" class="w-4 h-4" /> Profil Saya
-                                            </Link>
-                                            <Link v-if="user.role === 'user'" :href="route('user.practice.statistics')" class="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-accent/70 hover:text-accent-foreground transition-all duration-200 rounded-lg mx-1.5">
-                                                <Icon icon="mdi:chart-bar" class="w-4 h-4" /> Statistik
-                                            </Link>
+                                        <button @click="markAllRead" class="text-xs text-primary hover:text-primary/80 font-semibold transition">Tandai dibaca</button>
+                                    </div>
+                                    <div class="max-h-72 overflow-y-auto divide-y divide-border/40">
+                                        <div v-if="notifications.length === 0" class="px-4 py-10 text-center">
+                                            <div class="w-12 h-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto mb-2 text-muted-foreground/50">
+                                                <Icon icon="mdi:bell-off-outline" class="w-6 h-6" />
+                                            </div>
+                                            <p class="text-xs font-semibold text-muted-foreground">Tidak ada notifikasi baru</p>
                                         </div>
-                                        <div class="border-t mx-3 my-1"></div>
-                                        <Link :href="route('logout')" method="post" as="button" class="flex items-center gap-2.5 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-all duration-200 w-full text-left rounded-lg mx-1.5">
-                                            <Icon icon="mdi:logout" class="w-4 h-4" /> Keluar
+                                        <Link
+                                            v-for="n in notifications"
+                                            :key="n.id"
+                                            :href="getNotifHref(n)"
+                                            @click="handleNotifClick(n)"
+                                            class="flex items-start gap-3 px-4 py-3 hover:bg-accent/60 transition-colors"
+                                            :class="{ 'bg-primary/5': !n.is_read }"
+                                        >
+                                            <div :class="['w-2 h-2 rounded-full mt-1.5 shrink-0', n.is_read ? 'bg-transparent' : (n.type === 'announcement' ? 'bg-amber-500' : 'bg-primary')]"></div>
+                                            <div class="min-w-0 flex-1">
+                                                <p class="text-xs font-bold text-foreground truncate flex items-center gap-1.5">
+                                                    <span v-if="n.type === 'announcement'" class="text-[9px] font-extrabold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">PENGUMUMAN</span>
+                                                    <span v-if="n.type === 'sps_reminder'" class="text-[9px] font-extrabold bg-sky-100 text-sky-800 px-1.5 py-0.5 rounded">SPS</span>
+                                                    {{ n.title }}
+                                                </p>
+                                                <p class="text-xs text-muted-foreground truncate mt-0.5">{{ n.message }}</p>
+                                                <span class="text-[10px] text-muted-foreground/60 block mt-1">{{ n.created_at }}</span>
+                                            </div>
                                         </Link>
                                     </div>
-                                </Transition>
-                            </div>
-                        </template>
-                        <Link v-else :href="route('login')" class="inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-lg transition-all duration-200">Masuk</Link>
+                                    <div class="border-t border-border/60 pt-2 px-2">
+                                        <Link :href="route('user.notifications.index')" class="block py-2 text-center text-xs text-primary hover:bg-accent/60 rounded-xl font-bold transition">
+                                            Lihat Semua Notifikasi
+                                        </Link>
+                                    </div>
+                                </div>
+                            </Transition>
+                        </div>
+
+                        <!-- Browser Push Toggle -->
+                        <div v-if="pushSupported && isUserRole" class="relative" id="pushNotifWrap">
+                            <button
+                                @click="pushNotifOpen = !pushNotifOpen"
+                                :aria-expanded="pushNotifOpen"
+                                aria-label="Notifikasi browser"
+                                class="inline-flex items-center justify-center w-10 h-10 rounded-xl text-muted-foreground hover:bg-accent/70 hover:text-foreground transition border border-border/60 relative"
+                                :title="pushSubscribed ? 'Notifikasi aktif' : 'Aktifkan notifikasi'"
+                            >
+                                <Icon :icon="pushSubscribed ? 'mdi:bell-ring-outline' : 'mdi:bell-off-outline'" class="w-5 h-5" :class="pushSubscribed ? 'text-emerald-600' : ''" />
+                            </button>
+
+                            <Transition name="dropdown">
+                                <div v-if="pushNotifOpen" class="absolute right-0 mt-2 w-72 bg-card text-card-foreground rounded-2xl shadow-xl border border-border/80 py-3 px-4 z-50">
+                                    <p class="text-xs font-bold text-foreground">Notifikasi Pengingat SPS</p>
+                                    <p class="text-[11px] text-muted-foreground mt-0.5">Dapatkan notifikasi langsung di browsermu ketika waktu pengerjaan dimulai.</p>
+                                    <div class="mt-3 pt-3 border-t border-border/60">
+                                        <button
+                                            @click="togglePushNotification"
+                                            :disabled="pushLoading"
+                                            class="w-full py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition"
+                                            :class="pushSubscribed ? 'bg-rose-50 text-rose-700 hover:bg-rose-100' : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs'"
+                                        >
+                                            <Icon :icon="pushSubscribed ? 'mdi:bell-off' : 'mdi:bell-check'" class="w-4 h-4" />
+                                            {{ pushLoading ? 'Memproses...' : (pushSubscribed ? 'Nonaktifkan Pengingat' : 'Aktifkan Pengingat') }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </Transition>
+                        </div>
+
+                        <!-- User Profile Dropdown -->
+                        <div v-if="user" class="relative ml-1" id="userDropdown">
+                            <button
+                                @click="toggleUserDropdown"
+                                class="inline-flex items-center gap-2 hover:bg-accent/70 rounded-xl p-1.5 sm:px-2.5 transition border border-border/60"
+                            >
+                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-teal-700 text-white font-bold text-xs flex items-center justify-center overflow-hidden shadow-2xs">
+                                    <img v-if="profilePhotoUrl" :src="profilePhotoUrl" class="w-full h-full object-cover" />
+                                    <span v-else>{{ (user?.name || 'A').charAt(0).toUpperCase() }}</span>
+                                </div>
+                                <span class="text-xs font-bold text-foreground max-w-[120px] truncate leading-tight">{{ user.name }}</span>
+                                <Icon icon="mdi:chevron-down" class="w-3.5 h-3.5 text-muted-foreground transition-transform duration-200" :class="{ 'rotate-180': userDropdownOpen }" />
+                            </button>
+
+                            <Transition name="dropdown">
+                                <div v-if="userDropdownOpen" class="absolute right-0 mt-2 w-56 bg-card text-card-foreground rounded-2xl shadow-xl border border-border/80 py-2 z-50">
+                                    <div class="px-4 py-3 border-b border-border/60">
+                                        <p class="text-xs font-bold text-foreground truncate">{{ user?.name }}</p>
+                                        <p class="text-[11px] text-muted-foreground truncate mt-0.5">{{ user?.email }}</p>
+                                    </div>
+                                    <div class="py-1 px-1.5 space-y-0.5">
+                                        <Link :href="route('user.profile.edit')" class="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-foreground hover:bg-accent/70 rounded-xl transition">
+                                            <Icon icon="mdi:account-outline" class="w-4 h-4 text-muted-foreground" />
+                                            Profil Saya
+                                        </Link>
+                                        <Link v-if="user.role === 'user'" :href="route('user.practice.statistics')" class="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-foreground hover:bg-accent/70 rounded-xl transition">
+                                            <Icon icon="mdi:chart-bar" class="w-4 h-4 text-muted-foreground" />
+                                            Statistik Saya
+                                        </Link>
+                                    </div>
+                                    <div class="border-t border-border/60 my-1"></div>
+                                    <div class="px-1.5">
+                                        <Link :href="route('logout')" method="post" as="button" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition text-left">
+                                            <Icon icon="mdi:logout" class="w-4 h-4" />
+                                            Keluar
+                                        </Link>
+                                    </div>
+                                </div>
+                            </Transition>
+                        </div>
+
+                        <Link v-else :href="route('login')" class="inline-flex items-center justify-center px-4 py-2 text-xs font-bold bg-primary text-primary-foreground rounded-xl shadow-xs hover:bg-primary/90 transition">
+                            Masuk
+                        </Link>
                     </div>
                 </div>
             </div>
         </nav>
 
         <!-- ======================== MOBILE TOP BAR ======================== -->
-        <nav class="md:hidden sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 border-b border-border/20">
+        <nav class="md:hidden sticky top-0 z-40 w-full bg-card/90 backdrop-blur-md border-b border-border/80 shadow-2xs">
             <div class="flex items-center justify-between h-14 px-4">
-                <Link :href="route('user.dashboard')" class="flex items-center gap-2 text-base font-bold text-foreground">
-                    <span class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground text-xs font-bold shadow-sm">K</span>
-                    <span class="tracking-tight">KPM SMART</span>
+                <Link :href="route('user.dashboard')" class="flex items-center gap-2.5 text-foreground font-bold">
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-white text-xs font-extrabold shadow-2xs">
+                        K
+                    </div>
+                    <span class="tracking-tight text-sm font-extrabold">KPM SMART</span>
                 </Link>
-                <div class="flex items-center gap-1">
-                    <!-- Mobile Notification Bell -->
+
+                <div class="flex items-center gap-2">
+                    <!-- Notification Bell Mobile -->
                     <div class="relative" id="notifWrapMobile">
-                        <button @click="toggleNotifDropdown" :aria-expanded="notifDropdownOpen" aria-haspopup="true" aria-label="Notifikasi" class="relative inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:bg-accent/70 transition-all duration-200">
+                        <button
+                            @click="toggleNotifDropdown"
+                            class="relative inline-flex items-center justify-center w-9 h-9 rounded-xl text-muted-foreground hover:bg-accent/70 transition border border-border/60"
+                        >
                             <Icon icon="mdi:bell-outline" class="w-5 h-5" />
-                            <span v-if="unreadCount > 0" class="absolute top-1 right-1 min-w-[16px] h-[16px] bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm ring-2 ring-background">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+                            <span v-if="unreadCount > 0" class="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-xs">
+                                {{ unreadCount > 99 ? '99+' : unreadCount }}
+                            </span>
                         </button>
-                        <Transition name="dropdown">
-                            <div v-if="notifDropdownOpen" class="absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] bg-popover text-popover-foreground rounded-xl shadow-xl border py-2 z-50">
-                                <div class="px-4 py-3 border-b flex items-center justify-between">
-                                    <p class="text-sm font-semibold">Notifikasi</p>
-                                    <button @click="markAllRead" class="text-xs text-muted-foreground hover:text-foreground font-medium transition-colors duration-200">Tandai semua dibaca</button>
-                                </div>
-                                <div class="max-h-64 overflow-y-auto">
-                                    <div v-if="notifications.length === 0" class="px-4 py-8 text-center">
-                                        <Icon icon="mdi:bell-off-outline" class="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
-                                        <p class="text-sm text-muted-foreground font-medium">Tidak ada notifikasi</p>
-                                    </div>
-                                    <Link v-for="n in notifications" :key="n.id" :href="route('user.notifications.index')" class="flex items-center gap-3 px-4 py-3 hover:bg-accent/70 transition-all duration-200 border-b border-border/40 last:border-0" :class="{ 'bg-accent/40': !n.is_read }">
-                                        <div class="flex-shrink-0 w-2 h-2 rounded-full bg-primary/60" :class="{ 'opacity-0': n.is_read }"></div>
-                                        <div class="min-w-0 flex-1">
-                                            <p class="text-sm font-medium truncate">{{ n.title }}</p>
-                                            <p class="text-xs text-muted-foreground truncate mt-0.5">{{ n.message }}</p>
-                                        </div>
-                                        <span class="text-[10px] text-muted-foreground/70 whitespace-nowrap">{{ n.created_at }}</span>
-                                    </Link>
-                                </div>
-                                <div class="border-t mx-2 mt-1 pt-1">
-                                    <Link :href="route('user.notifications.index')" class="block px-3 py-2.5 text-sm text-center text-muted-foreground hover:text-foreground hover:bg-accent/70 transition-all duration-200 rounded-lg font-medium">Lihat Semua</Link>
-                                </div>
-                            </div>
-                        </Transition>
                     </div>
-                    <!-- Mobile Push Notification Toggle -->
-                    <div v-if="pushSupported && isUserRole" class="relative" id="pushNotifWrapMobile">
-                        <button @click="pushNotifOpen = !pushNotifOpen" :aria-expanded="pushNotifOpen" aria-haspopup="true" class="relative inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:bg-accent/70 transition-all duration-200" :title="pushSubscribed ? 'Notifikasi aktif' : 'Aktifkan notifikasi'" :aria-label="pushSubscribed ? 'Notifikasi browser aktif' : 'Aktifkan notifikasi browser'">
-                            <Icon :icon="pushSubscribed ? 'mdi:bell-ring-outline' : 'mdi:bell-off-outline'" class="w-5 h-5" :class="pushSubscribed ? 'text-green-500' : ''" />
-                        </button>
-                        <Transition name="dropdown">
-                            <div v-if="pushNotifOpen" class="absolute right-0 mt-2 w-64 max-w-[calc(100vw-2rem)] bg-popover text-popover-foreground rounded-xl shadow-xl border py-2 z-50">
-                                <div class="px-4 py-3 border-b">
-                                    <p class="text-sm font-semibold">Notifikasi Browser</p>
-                                    <p class="text-xs text-muted-foreground mt-0.5">Pengingat SPS harian</p>
-                                </div>
-                                <div class="px-4 py-3">
-                                    <div v-if="pushSubscribed" class="flex items-center gap-2">
-                                        <Icon icon="mdi:check-circle" class="w-4 h-4 text-green-600" />
-                                        <span class="text-sm font-medium text-green-700">Aktif</span>
-                                    </div>
-                                    <div v-else class="flex items-center gap-2">
-                                        <Icon icon="mdi:bell-off" class="w-4 h-4 text-amber-600" />
-                                        <span class="text-sm font-medium">Nonaktif</span>
-                                    </div>
-                                    <p v-if="pushError" class="text-xs text-destructive mt-2">{{ pushError }}</p>
-                                </div>
-                                <div class="px-4 pb-3">
-                                    <button @click="togglePushNotification" :disabled="pushLoading" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200" :class="pushSubscribed ? 'bg-destructive/10 text-destructive' : 'bg-primary text-primary-foreground'">
-                                        <Icon v-if="pushLoading" icon="mdi:loading" class="w-4 h-4 animate-spin" />
-                                        {{ pushLoading ? '...' : (pushSubscribed ? 'Nonaktifkan' : 'Aktifkan') }}
-                                    </button>
-                                </div>
-                            </div>
-                        </Transition>
-                    </div>
-                    <!-- Mobile Profile Avatar -->
-                    <Link :href="route('user.profile.edit')" class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-xs font-bold text-primary-foreground shadow-sm overflow-hidden">
+
+                    <!-- Profile Avatar Mobile -->
+                    <Link
+                        :href="route('user.profile.edit')"
+                        class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-xs font-bold text-white shadow-2xs overflow-hidden border border-border/60"
+                    >
                         <img v-if="profilePhotoUrl" :src="profilePhotoUrl" class="w-full h-full object-cover" />
                         <span v-else>{{ (user?.name || 'A').charAt(0).toUpperCase() }}</span>
                     </Link>
@@ -388,74 +375,59 @@ onUnmounted(() => {
         </nav>
 
         <!-- ======================== MAIN CONTENT ======================== -->
-        <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 md:py-8 w-full animate-fade-in pb-24 md:pb-8">
+        <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full animate-fade-in pb-24 md:pb-12">
             <FlashMessage />
-            <div v-if="$slots['header-title']" class="mb-5 md:mb-6">
-                <h1 class="text-lg font-semibold tracking-tight truncate"><slot name="header-title" /></h1>
-                <p v-if="$slots['header-sub']" class="text-xs text-muted-foreground mt-0.5 truncate"><slot name="header-sub" /></p>
+            <div v-if="$slots['header-title']" class="mb-6">
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-foreground"><slot name="header-title" /></h1>
+                <p v-if="$slots['header-sub']" class="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed"><slot name="header-sub" /></p>
             </div>
             <slot />
         </main>
 
         <!-- ======================== DESKTOP FOOTER ======================== -->
-        <footer class="hidden md:block border-t bg-muted/30 pt-10 pb-6 mt-auto">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center text-muted-foreground text-sm">&copy; {{ new Date().getFullYear() }} KPM SMART. Hak cipta dilindungi.</div>
+        <footer class="hidden md:block border-t border-border/60 bg-card py-8 mt-auto">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-foreground">KPM SMART</span>
+                    <span>&copy; {{ new Date().getFullYear() }} Semua hak cipta dilindungi.</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <Link :href="route('pages.features')" class="hover:text-primary transition">Fitur</Link>
+                    <Link :href="route('pages.guide')" class="hover:text-primary transition">Panduan</Link>
+                    <Link :href="route('pages.faq')" class="hover:text-primary transition">FAQ</Link>
+                </div>
             </div>
         </footer>
 
-        <!-- ======================== MOBILE BOTTOM NAV (Android Style) ======================== -->
-        <nav v-if="isUserRole" class="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 dark:bg-card/95 backdrop-blur-xl supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-card/80 border-t border-border/30 safe-area-pb shadow-[0_-2px_10px_0_rgb(0,0,0,0.06)]">
-            <div class="grid grid-cols-5 h-[60px]" role="tablist">
+        <!-- ======================== MOBILE BOTTOM NAVIGATION ======================== -->
+        <nav v-if="isUserRole" class="md:hidden fixed bottom-0 inset-x-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border/80 safe-area-bottom shadow-lg">
+            <div class="grid grid-cols-5 h-16 items-center px-1" role="tablist">
                 <Link
                     v-for="tab in bottomTabs"
                     :key="tab.route"
                     :href="route(tab.route)"
                     :aria-current="isActive(tab.match) ? 'page' : undefined"
-                    class="bottom-tab flex flex-col items-center justify-center gap-0.5 relative transition-all duration-200"
-                    :class="isActive(tab.match) ? 'text-primary' : 'text-muted-foreground'"
+                    class="flex flex-col items-center justify-center gap-1 py-1 relative transition-all duration-200 select-none"
+                    :class="isActive(tab.match) ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'"
                 >
-                    <div class="relative">
-                        <Icon :icon="isActive(tab.match) ? tab.iconActive : tab.icon" class="w-[22px] h-[22px] transition-all duration-200" :class="isActive(tab.match) ? 'scale-110' : ''" />
-                        <div v-if="isActive(tab.match)" class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-5 h-[3px] rounded-full bg-primary"></div>
+                    <div class="relative flex items-center justify-center">
+                        <Icon
+                            :icon="isActive(tab.match) ? tab.iconActive : tab.icon"
+                            class="w-5 h-5 transition-transform duration-200"
+                            :class="isActive(tab.match) ? 'scale-110 text-primary' : ''"
+                        />
+                        <div v-if="isActive(tab.match)" class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-1 rounded-full bg-primary"></div>
                     </div>
-                    <span class="text-[10px] font-medium leading-tight mt-1 transition-all duration-200">{{ tab.label }}</span>
+                    <span class="text-[10px] leading-tight transition-all duration-200">{{ tab.label }}</span>
                 </Link>
             </div>
         </nav>
-
     </div>
 </template>
 
 <style scoped>
 .dropdown-enter-active { transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
 .dropdown-leave-active { transition: all 0.15s ease-in; }
-.dropdown-enter-from { opacity: 0; transform: scale(0.95) translateY(-4px); }
-.dropdown-leave-to { opacity: 0; transform: scale(0.95) translateY(-4px); }
-
-.nav-link {
-  position: relative;
-}
-
-.bottom-tab {
-  -webkit-tap-highlight-color: transparent;
-}
-
-.bottom-tab:active {
-  transform: scale(0.9);
-}
-
-/* iOS safe area for bottom nav */
-.safe-area-pb {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-.scrollbar-hidden::-webkit-scrollbar {
-  display: none;
-}
-
-.scrollbar-hidden {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+.dropdown-enter-from { opacity: 0; transform: scale(0.96) translateY(-6px); }
+.dropdown-leave-to { opacity: 0; transform: scale(0.96) translateY(-6px); }
 </style>

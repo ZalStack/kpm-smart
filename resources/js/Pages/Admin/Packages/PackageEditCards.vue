@@ -68,110 +68,163 @@ function getCardQuestionCount(cardId) {
     <AdminLayout>
         <Head :title="'Kelola Card - ' + package.title" />
 
-        <template #header-title>Kelola Card</template>
+        <template #header-title>
+            <div class="flex items-center gap-2">
+                <span class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <Icon icon="mdi:clipboard-text-outline" class="w-5 h-5" />
+                </span>
+                <span>Kelola Card</span>
+            </div>
+        </template>
         <template #header-sub>{{ package.title }}</template>
 
-        <!-- Navigation / Tabs Header -->
-        <div class="space-y-4 mb-6">
-            <Link :href="route('admin.packages.index')" class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-all duration-200 hover:translate-x-[-2px]">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
-                Kembali ke Daftar Soal
-            </Link>
-
-            <div class="flex flex-wrap gap-2 pt-2">
-                <Link :href="route('admin.packages.edit.informasi', package.id)" class="px-4 py-2 rounded-lg text-sm font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-all duration-200 hover:shadow-sm active:scale-95">
-                    <Icon icon="mdi:pencil-outline" class="w-4 h-4 inline-block align-middle mr-1" /> Informasi
+        <div class="max-w-5xl mx-auto space-y-6">
+            <!-- Navigation Tab Pills -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <Link :href="route('admin.packages.index')"
+                      class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition group">
+                    <Icon icon="mdi:arrow-left" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                    Kembali ke Bank Soal
                 </Link>
-                <Link :href="route('admin.packages.edit.cards', package.id)" class="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground shadow-sm transition-all duration-300 hover:shadow-md hover:shadow-primary/20 active:scale-95 relative">
-                    <span class="absolute bottom-0 left-2 right-2 h-0.5 bg-white/60 rounded-full"></span>
-                    <Icon icon="mdi:clipboard-text-outline" class="w-4 h-4 inline-block align-middle mr-1" /> Card
-                </Link>
-                <Link :href="route('admin.packages.edit.questions', package.id)" class="px-4 py-2 rounded-lg text-sm font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-all duration-200 hover:shadow-sm active:scale-95">
-                    <Icon icon="mdi:help-circle-outline" class="w-4 h-4 inline-block align-middle mr-1" /> Soal
-                </Link>
-                <Link :href="route('admin.packages.detail', package.id)" class="px-4 py-2 rounded-lg text-sm font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-all duration-200 hover:shadow-sm active:scale-95">
-                    <Icon icon="mdi:eye-outline" class="w-4 h-4 inline-block align-middle mr-1" /> Detail
-                </Link>
-            </div>
-        </div>
 
-        <!-- Stats -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            <div class="stat-tile p-4 animate-fade-in-up" style="animation-delay: 0ms">
-                <p class="text-xs text-muted-foreground">Total Card</p>
-                <p class="text-2xl font-bold mt-1">{{ totalCards }}</p>
-            </div>
-            <div class="stat-tile p-4 animate-fade-in-up" style="animation-delay: 50ms">
-                <p class="text-xs text-muted-foreground">Total Soal</p>
-                <p class="text-2xl font-bold mt-1 text-primary">{{ totalQuestions }}</p>
-            </div>
-            <div class="stat-tile p-4 animate-fade-in-up" style="animation-delay: 100ms">
-                <p class="text-xs text-muted-foreground">Rata-rata Soal / Card</p>
-                <p class="text-2xl font-bold mt-1 text-green-600">{{ avgQuestions }}</p>
-            </div>
-        </div>
-
-        <!-- Add Card Form -->
-        <div class="bg-card rounded-2xl border shadow-sm p-5 mb-6 animate-fade-in-up" style="animation-delay: 150ms">
-            <h3 class="font-semibold text-base mb-3 flex items-center gap-2 bg-gradient-to-r from-primary/10 to-transparent px-3 py-1.5 rounded-lg w-fit">
-                <Icon icon="mdi:plus" class="w-5 h-5 inline-block align-middle mr-1" /> Tambah Card Baru
-            </h3>
-            <form @submit.prevent="submitAddCard" class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <Label for="card_title">Judul Card <span class="text-destructive">*</span></Label>
-                        <Input id="card_title" v-model="form.card_title" required placeholder="Contoh: Bab 1: Aljabar Dasar" class="transition-all duration-200 focus:shadow-md focus:ring-2 focus:ring-primary/20" />
-                        <p v-if="form.errors.card_title" class="text-xs text-destructive">{{ form.errors.card_title }}</p>
-                    </div>
-                    <div class="space-y-2">
-                        <Label for="card_description">Deskripsi <span class="text-destructive">*</span></Label>
-                        <Input id="card_description" v-model="form.card_description" required placeholder="Deskripsi singkat topik materi card" class="transition-all duration-200 focus:shadow-md focus:ring-2 focus:ring-primary/20" />
-                        <p v-if="form.errors.card_description" class="text-xs text-destructive">{{ form.errors.card_description }}</p>
-                    </div>
-                </div>
-                <div class="flex justify-end">
-                    <Button type="submit" :disabled="form.processing" class="transition-all duration-300 hover:shadow-lg active:scale-95">
-                        {{ form.processing ? 'Menambahkan...' : '' }}<Icon v-if="!form.processing" icon="mdi:plus" class="w-4 h-4 inline-block align-middle mr-1" />{{ form.processing ? '' : 'Tambah Card' }}
-                    </Button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Cards List -->
-        <div class="bg-card rounded-2xl border shadow-sm overflow-hidden animate-fade-in-up" style="animation-delay: 200ms">
-            <div class="p-4 border-b bg-gradient-to-r from-muted/50 to-muted/30 flex items-center justify-between">
-                <h3 class="font-semibold text-sm inline-flex items-center gap-1.5"><Icon icon="mdi:clipboard-text-outline" class="w-5 h-5 inline-block align-middle mr-1" /> Daftar Card ({{ totalCards }})</h3>
-            </div>
-
-            <div v-if="!package.cards || package.cards.length === 0" class="p-12 text-center text-muted-foreground text-sm">
-                <div class="flex flex-col items-center gap-3">
-                    <div class="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center">
-                        <Icon icon="mdi:clipboard-text-outline" class="w-8 h-8 text-muted-foreground/50" />
-                    </div>
-                    <p class="font-medium">Belum ada card pada soal ini.</p>
-                    <p class="text-xs text-muted-foreground">Gunakan form di atas untuk membuat card pertama.</p>
+                <div class="flex items-center gap-1.5 p-1 bg-muted/60 rounded-xl w-fit">
+                    <Link :href="route('admin.packages.edit.informasi', package.id)"
+                          class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition">
+                        <Icon icon="mdi:pencil-outline" class="w-3.5 h-3.5" /> Informasi
+                    </Link>
+                    <Link :href="route('admin.packages.edit.cards', package.id)"
+                          class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-card text-foreground shadow-sm flex items-center gap-1.5">
+                        <Icon icon="mdi:clipboard-text-outline" class="w-3.5 h-3.5 text-primary" /> Card ({{ totalCards }})
+                    </Link>
+                    <Link :href="route('admin.packages.edit.questions', package.id)"
+                          class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition">
+                        <Icon icon="mdi:help-circle-outline" class="w-3.5 h-3.5" /> Soal ({{ totalQuestions }})
+                    </Link>
+                    <Link :href="route('admin.packages.detail', package.id)"
+                          class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition">
+                        <Icon icon="mdi:eye-outline" class="w-3.5 h-3.5" /> Detail
+                    </Link>
                 </div>
             </div>
 
-            <div v-else class="divide-y">
-                <div v-for="(card, cardIdx) in package.cards" :key="card.id" class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/40 transition-all duration-200 border-b border-border/50 last:border-0" :style="{ animationDelay: cardIdx * 50 + 'ms' }">
-                    <div class="min-w-0 flex-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            <h4 class="font-semibold text-base truncate">{{ card.title }}</h4>
-                            <span class="inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary transition-all duration-200">
-                                {{ getCardQuestionCount(card.id) }} soal
-                            </span>
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-card rounded-2xl border border-border/60 p-4 sm:p-5 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <Icon icon="mdi:card-multiple-outline" class="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p class="text-xs text-muted-foreground font-medium">Total Card</p>
+                        <p class="text-2xl font-black tracking-tight text-foreground">{{ totalCards }}</p>
+                    </div>
+                </div>
+
+                <div class="bg-card rounded-2xl border border-border/60 p-4 sm:p-5 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+                        <Icon icon="mdi:help-circle-outline" class="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p class="text-xs text-muted-foreground font-medium">Total Soal</p>
+                        <p class="text-2xl font-black tracking-tight text-foreground">{{ totalQuestions }}</p>
+                    </div>
+                </div>
+
+                <div class="bg-card rounded-2xl border border-border/60 p-4 sm:p-5 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                        <Icon icon="mdi:chart-timeline-variant-shimmer" class="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p class="text-xs text-muted-foreground font-medium">Rata-rata Soal/Card</p>
+                        <p class="text-2xl font-black tracking-tight text-foreground">{{ avgQuestions }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Card Form Card -->
+            <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm space-y-5">
+                <div class="flex items-center gap-2 pb-4 border-b border-border/50">
+                    <Icon icon="mdi:plus-circle-outline" class="w-5 h-5 text-primary" />
+                    <h3 class="font-bold text-base tracking-tight">Tambah Card Baru</h3>
+                </div>
+
+                <form @submit.prevent="submitAddCard" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <Label for="card_title" class="text-xs font-semibold text-foreground">
+                                Judul Card <span class="text-destructive">*</span>
+                            </Label>
+                            <Input id="card_title" v-model="form.card_title" required placeholder="Contoh: Bab 1: Aljabar & Geometri" class="h-11 rounded-xl bg-background" />
+                            <p v-if="form.errors.card_title" class="text-xs text-destructive">{{ form.errors.card_title }}</p>
                         </div>
-                        <p class="text-sm text-muted-foreground line-clamp-2">{{ card.description }}</p>
+
+                        <div class="space-y-1.5">
+                            <Label for="card_description" class="text-xs font-semibold text-foreground">
+                                Deskripsi <span class="text-destructive">*</span>
+                            </Label>
+                            <Input id="card_description" v-model="form.card_description" required placeholder="Deskripsi materi atau petunjuk pengerjaan..." class="h-11 rounded-xl bg-background" />
+                            <p v-if="form.errors.card_description" class="text-xs text-destructive">{{ form.errors.card_description }}</p>
+                        </div>
                     </div>
 
-                    <div class="flex items-center gap-2 flex-shrink-0">
-                        <Link :href="route('admin.packages.edit.questions', package.id)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted hover:bg-muted/80 text-xs font-medium transition-all duration-200 hover:shadow-sm active:scale-95">
-                            <Icon icon="mdi:help-circle-outline" class="w-4 h-4 inline-block align-middle mr-1" /> Lihat Soal
-                        </Link>
-                        <button type="button" @click="confirmDelete(card)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-destructive/10 hover:bg-destructive/20 text-destructive text-xs font-medium transition-all duration-200 hover:shadow-sm active:scale-95">
-                            <Icon icon="mdi:delete-outline" class="w-4 h-4 inline-block align-middle mr-1" /> Hapus
-                        </button>
+                    <div class="flex justify-end pt-2">
+                        <Button type="submit" :disabled="form.processing" class="h-11 px-6 rounded-xl font-semibold gap-2 shadow-sm">
+                            <Icon v-if="form.processing" icon="mdi:loading" class="w-4 h-4 animate-spin" />
+                            <Icon v-else icon="mdi:plus" class="w-4 h-4" />
+                            <span>{{ form.processing ? 'Menambahkan...' : 'Tambah Card' }}</span>
+                        </Button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Cards List -->
+            <div class="bg-card rounded-3xl border border-border/60 overflow-hidden shadow-sm">
+                <div class="p-5 sm:p-6 border-b border-border/50 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <Icon icon="mdi:format-list-numbered" class="w-5 h-5 text-primary" />
+                        <h3 class="font-bold text-base tracking-tight">Daftar Card</h3>
+                    </div>
+                    <span class="text-xs font-semibold text-muted-foreground bg-muted/60 px-3 py-1 rounded-full">
+                        {{ totalCards }} Card
+                    </span>
+                </div>
+
+                <div v-if="!package.cards || package.cards.length === 0" class="p-12 text-center text-muted-foreground">
+                    <div class="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-3">
+                        <Icon icon="mdi:clipboard-text-outline" class="w-8 h-8 text-muted-foreground/40" />
+                    </div>
+                    <p class="font-semibold text-foreground">Belum ada card pada paket ini</p>
+                    <p class="text-xs text-muted-foreground mt-1">Gunakan formulir di atas untuk membuat card pertama.</p>
+                </div>
+
+                <div v-else class="divide-y divide-border/50">
+                    <div v-for="(card, index) in package.cards" :key="card.id"
+                         class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/30 transition-colors">
+                        <div class="flex items-start gap-4 min-w-0">
+                            <div class="w-10 h-10 rounded-2xl bg-primary/10 text-primary font-black text-sm flex items-center justify-center shrink-0">
+                                {{ index + 1 }}
+                            </div>
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2.5 flex-wrap">
+                                    <h4 class="font-bold text-sm sm:text-base text-foreground truncate">{{ card.title }}</h4>
+                                    <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">
+                                        <Icon icon="mdi:help-circle-outline" class="w-3.5 h-3.5" />
+                                        {{ getCardQuestionCount(card.id) }} Soal
+                                    </span>
+                                </div>
+                                <p class="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{{ card.description }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 self-end sm:self-center shrink-0">
+                            <Link :href="route('admin.packages.edit.questions', package.id)"
+                                  class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-muted hover:bg-muted/80 text-xs font-semibold text-foreground transition">
+                                <Icon icon="mdi:format-list-bulleted" class="w-4 h-4 text-primary" /> Kelola Soal
+                            </Link>
+                            <button type="button" @click="confirmDelete(card)"
+                                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-destructive/10 hover:bg-destructive/20 text-xs font-semibold text-destructive transition">
+                                <Icon icon="mdi:trash-can-outline" class="w-4 h-4" /> Hapus
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -187,19 +240,3 @@ function getCardQuestionCount(cardId) {
         />
     </AdminLayout>
 </template>
-
-<style scoped>
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(12px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-.animate-fade-in-up {
-    animation: fadeInUp 0.4s ease-out both;
-}
-</style>

@@ -1,15 +1,13 @@
 <script setup>
 import { inject, onMounted, computed } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, Head, Link } from '@inertiajs/vue3';
 import confetti from 'canvas-confetti';
 import { Icon } from '@iconify/vue/offline';
-const route = inject('route');
-
-import { Head, Link } from '@inertiajs/vue3';
 import UserLayout from '@/Layouts/UserLayout.vue';
 import Badge from '@/Components/ui/badge/Badge.vue';
-import Card from '@/Components/ui/card/Card.vue';
 import MathRenderer from '@/Components/shared/MathRenderer.vue';
+
+const route = inject('route');
 
 const props = defineProps({
     session: { type: Object, required: true },
@@ -30,7 +28,7 @@ onMounted(() => {
     if (props.session?.total_score >= 80) {
         const duration = 2000;
         const end = Date.now() + duration;
-        const colors = ['#16a34a', '#22c55e', '#facc15', '#f59e0b', '#10b981'];
+        const colors = ['#10b981', '#059669', '#f59e0b', '#3b82f6', '#14b8a6'];
         (function frame() {
             confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors });
             confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors });
@@ -42,109 +40,161 @@ onMounted(() => {
 function formatDate(dateStr) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
-    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 </script>
 
 <template>
     <UserLayout>
-        <Head title="Detail Riwayat - KPM SMART" />
+        <Head title="Detail Riwayat Tugas - KPM SMART" />
 
-        <template #header-title>Detail Riwayat</template>
-        <template #header-sub>{{ session.package?.title }}</template>
-
-
-        <Link :href="route('user.practice.history')" class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-all duration-300 mb-4 hover:gap-2.5 group">
-            <svg class="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
-            Kembali ke Riwayat
+        <!-- Back Navigation -->
+        <Link
+            :href="route('user.practice.history')"
+            class="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-all duration-200 mb-6 group select-none"
+        >
+            <Icon icon="mdi:arrow-left" class="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" />
+            Kembali ke Riwayat Pengerjaan
         </Link>
 
         <template v-if="!allHidden">
             <div class="max-w-3xl mx-auto space-y-6">
+                <!-- Summary Card -->
+                <div class="bg-card rounded-3xl border border-border/80 p-6 shadow-xs anim-fade-in">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                        <div class="p-3.5 rounded-2xl bg-muted/40 border border-border/60 col-span-2 sm:col-span-1">
+                            <p class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Judul Soal</p>
+                            <p class="text-xs font-bold text-foreground truncate mt-1">{{ session.package?.title }}</p>
+                        </div>
+                        <div v-if="showScore" class="p-3.5 rounded-2xl bg-emerald-50 text-emerald-900 border border-emerald-200">
+                            <p class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">Nilai Akhir</p>
+                            <p class="text-2xl sm:text-3xl font-black text-emerald-600 mt-0.5">{{ Number(session.total_score || 0).toFixed(1) }}</p>
+                        </div>
+                        <div v-if="showAnswerKey" class="p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-100">
+                            <p class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">Benar</p>
+                            <p class="text-2xl sm:text-3xl font-black text-emerald-600 mt-0.5">{{ session.correct_answer }}</p>
+                        </div>
+                        <div v-if="showAnswerKey" class="p-3.5 rounded-2xl bg-rose-50/60 border border-rose-100">
+                            <p class="text-[10px] font-bold text-rose-700 uppercase tracking-wider">Salah</p>
+                            <p class="text-2xl sm:text-3xl font-black text-rose-500 mt-0.5">{{ session.wrong_answer }}</p>
+                        </div>
+                    </div>
 
-                <!-- Summary -->
-                <Card class="p-5 shadow-card border border-border/60 rounded-2xl anim-show-fade">
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center">
-                        <div class="p-3 rounded-xl bg-muted/30"><p class="text-xs text-muted-foreground font-medium">Soal</p><p class="text-sm font-semibold truncate mt-1">{{ session.package?.title }}</p></div>
-                        <div v-if="showScore" class="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5"><p class="text-xs text-muted-foreground font-medium">Skor</p><p class="text-3xl font-extrabold bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent mt-1">{{ Number(session.total_score || 0).toFixed(1) }}</p></div>
-                        <div v-if="showAnswerKey" class="p-3 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100/50"><p class="text-xs text-emerald-700/60 font-medium">Benar</p><p class="text-3xl font-extrabold text-emerald-600 mt-1">{{ session.correct_answer }}</p></div>
-                        <div v-if="showAnswerKey" class="p-3 rounded-xl bg-gradient-to-br from-red-50 to-red-100/50"><p class="text-xs text-red-700/60 font-medium">Salah</p><p class="text-3xl font-extrabold text-red-500 mt-1">{{ session.wrong_answer }}</p></div>
-                        <div class="p-3 rounded-xl bg-muted/30"><p class="text-xs text-muted-foreground font-medium">Tanggal</p><p class="text-sm font-medium mt-1">{{ formatDate(session.created_at) }}</p></div>
+                    <div v-if="!showScore || !showAnswerKey" class="mt-4 text-center">
+                        <span class="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/80 px-3.5 py-1.5 rounded-full font-medium">
+                            <Icon icon="mdi:lock-outline" class="w-3.5 h-3.5" />
+                            Beberapa informasi disembunyikan oleh pengatur soal
+                        </span>
                     </div>
-                    <div v-if="!showScore || !showAnswerKey" class="mt-3 text-center">
-                        <span class="text-xs text-muted-foreground bg-muted/80 px-3 py-1.5 rounded-full font-medium"><Icon icon="mdi:lock-outline" class="w-3 h-3 inline-block mr-1 align-middle" /> Beberapa informasi disembunyikan oleh pengatur soal</span>
-                    </div>
-                </Card>
+                </div>
 
                 <!-- Answer Details -->
                 <div v-if="showAnswerKey" class="space-y-4">
-                    <h3 class="text-lg font-semibold flex items-center gap-1.5"><Icon icon="mdi:clipboard-text-outline" class="w-5 h-5 text-primary" /> Detail Jawaban</h3>
-                    <div v-for="(result, idx) in results" :key="idx"
-                         :class="['anim-show-item bg-card rounded-2xl border border-border/60 p-4 border-l-4 shadow-sm hover:shadow-md transition-shadow duration-300', result.is_correct ? 'border-l-emerald-500' : 'border-l-red-500']"
-                         :style="{ animationDelay: (idx * 0.08) + 's' }">
-                        <div class="flex items-start gap-3">
-                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-muted to-muted/60 flex items-center justify-center text-xs font-bold shadow-sm">{{ idx + 1 }}</span>
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-base font-bold text-foreground flex items-center gap-2">
+                            <Icon icon="mdi:clipboard-text-outline" class="w-5 h-5 text-primary" />
+                            Detail & Pembahasan Soal
+                        </h3>
+                        <span class="text-xs text-muted-foreground font-semibold">{{ results.length }} Soal</span>
+                    </div>
+
+                    <div
+                        v-for="(result, idx) in results"
+                        :key="idx"
+                        :class="[
+                            'bg-card rounded-2xl border border-border/80 p-5 shadow-xs transition-all border-l-4 anim-fade-in',
+                            result.is_correct ? 'border-l-emerald-500' : 'border-l-rose-500'
+                        ]"
+                    >
+                        <div class="flex items-start gap-3.5">
+                            <span class="shrink-0 w-8 h-8 rounded-xl bg-muted font-bold text-xs flex items-center justify-center text-foreground shadow-2xs">
+                                {{ idx + 1 }}
+                            </span>
+
                             <div class="flex-1 min-w-0">
-                                <Badge :variant="result.is_correct ? 'success' : 'destructive'" class="text-[10px] mb-2"><Icon :icon="result.is_correct ? 'mdi:check-circle' : 'mdi:close-circle'" class="w-3 h-3 inline-block mr-0.5 align-middle" /> {{ result.is_correct ? 'Benar' : 'Salah' }}</Badge>
-                                <div v-if="result.image" class="mb-3"><img :src="result.image.startsWith('/') || result.image.startsWith('http') ? result.image : '/storage/' + result.image" alt="Gambar" class="max-w-full h-auto rounded-xl border border-border/40 max-h-48 object-contain shadow-sm" @error="$event.target.style.display='none'" /></div>
-                                <p class="text-sm leading-relaxed mb-3"><MathRenderer :text="result.question" /></p>
-                                <div v-if="!result.type || result.type === 'pilihan_ganda'" class="space-y-1.5 text-sm">
-                                    <p v-if="result.user_answer" class="flex items-center gap-1.5"><span class="text-muted-foreground">Jawaban Anda:</span> <span :class="result.is_correct ? 'text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded' : 'text-red-500 font-semibold bg-red-50 px-1.5 py-0.5 rounded'">{{ result.user_answer }}</span></p>
-                                    <p v-if="!result.is_correct" class="flex items-center gap-1.5"><span class="text-muted-foreground">Jawaban Benar:</span> <span class="text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">{{ result.correct_answer }}</span></p>
+                                <div class="mb-2">
+                                    <Badge :variant="result.is_correct ? 'success' : 'destructive'" class="text-[10px] font-bold">
+                                        <Icon :icon="result.is_correct ? 'mdi:check-circle' : 'mdi:close-circle'" class="w-3.5 h-3.5" />
+                                        {{ result.is_correct ? 'Jawaban Benar' : 'Jawaban Salah' }}
+                                    </Badge>
                                 </div>
-                                <div v-else class="mb-3 space-y-2">
-                                    <div class="bg-muted/30 rounded-xl p-4 space-y-2 border border-border/40">
-                                        <div v-if="result.user_answer" class="flex items-start gap-2">
-                                            <span class="text-xs font-medium text-muted-foreground mt-0.5">Jawaban Anda:</span>
-                                            <span :class="[
-                                                'text-sm font-semibold px-2.5 py-1 rounded-lg',
-                                                result.is_correct ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200 line-through'
-                                            ]">{{ result.user_answer }}</span>
+
+                                <div v-if="result.image" class="mb-3">
+                                    <img
+                                        :src="result.image.startsWith('/') || result.image.startsWith('http') ? result.image : '/storage/' + result.image"
+                                        alt="Gambar Soal"
+                                        class="max-w-full h-auto rounded-xl border border-border/60 max-h-48 object-contain shadow-2xs"
+                                        @error="$event.target.style.display='none'"
+                                    />
+                                </div>
+
+                                <p class="text-sm leading-relaxed mb-3 text-foreground font-medium">
+                                    <MathRenderer :text="result.question" />
+                                </p>
+
+                                <!-- Pilihan Ganda -->
+                                <div v-if="!result.type || result.type === 'pilihan_ganda'" class="space-y-1 text-xs">
+                                    <p v-if="result.user_answer" class="flex items-center gap-2">
+                                        <span class="text-muted-foreground">Jawabanmu:</span>
+                                        <span :class="result.is_correct ? 'text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md' : 'text-rose-700 font-bold bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md'">
+                                            {{ result.user_answer }}
+                                        </span>
+                                    </p>
+                                    <p v-if="!result.is_correct" class="flex items-center gap-2 mt-1">
+                                        <span class="text-muted-foreground">Kunci Jawaban:</span>
+                                        <span class="text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                                            {{ result.correct_answer }}
+                                        </span>
+                                    </p>
+                                </div>
+
+                                <!-- Isian Singkat -->
+                                <div v-else class="mb-3 space-y-2 text-xs">
+                                    <div class="bg-muted/40 rounded-xl p-3.5 space-y-1.5 border border-border/60">
+                                        <div v-if="result.user_answer" class="flex items-center gap-2">
+                                            <span class="font-medium text-muted-foreground">Jawabanmu:</span>
+                                            <span :class="result.is_correct ? 'font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200' : 'font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 line-through'">
+                                                {{ result.user_answer }}
+                                            </span>
                                         </div>
-                                        <div v-else class="flex items-center gap-2 text-xs text-muted-foreground italic">
-                                            <Icon icon="mdi:checkbox-blank-circle-outline" class="w-4 h-4" /> Tidak dijawab
+                                        <div v-else class="text-muted-foreground italic flex items-center gap-1">
+                                            <Icon icon="mdi:checkbox-blank-circle-outline" class="w-3.5 h-3.5" /> Tidak dijawab
                                         </div>
-                                        <div class="flex items-start gap-2">
-                                            <span class="text-xs font-medium text-muted-foreground mt-0.5">Kunci Jawaban:</span>
-                                            <span class="text-sm font-bold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">{{ result.correct_answer }}</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-medium text-muted-foreground">Kunci Jawaban:</span>
+                                            <span class="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                                {{ result.correct_answer }}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
-                                <div v-if="showExplanation && result.explanation" class="mt-3 p-3.5 bg-gradient-to-r from-blue-50 to-blue-100/30 border border-blue-100 rounded-xl text-sm text-blue-800 shadow-sm"><Icon icon="mdi:lightbulb-on-outline" class="w-4 h-4 inline-block mr-1 align-middle text-blue-500" /> <strong class="text-blue-700">Pembahasan:</strong> <MathRenderer :text="result.explanation" /></div>
+
+                                <!-- Explanation Box -->
+                                <div v-if="showExplanation && result.explanation" class="mt-3.5 p-4 bg-sky-50/70 border border-sky-200/80 rounded-2xl text-xs text-sky-950 leading-relaxed space-y-1">
+                                    <p class="font-bold text-sky-800 flex items-center gap-1.5">
+                                        <Icon icon="mdi:lightbulb-outline" class="w-4 h-4 text-sky-600" />
+                                        Pembahasan:
+                                    </p>
+                                    <div class="text-sky-900">
+                                        <MathRenderer :text="result.explanation" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div v-else class="bg-card rounded-2xl border border-border/60 p-10 text-center shadow-sm anim-show-fade">
-                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-muted/80 to-muted/40 flex items-center justify-center mx-auto mb-5 shadow-inner"><Icon icon="mdi:lock-outline" class="w-8 h-8 text-muted-foreground/70" /></div>
-                    <p class="text-muted-foreground font-medium">Kunci Jawaban Disembunyikan oleh Pengatur Soal</p>
-                </div>
-
                 <!-- Certificate Download -->
-                <div v-if="session.status === 'completed'" class="flex justify-center anim-show-fade">
-                    <a :href="route('user.practice.certificate', session.id)"
-                       class="inline-flex items-center gap-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-3.5 rounded-2xl text-sm font-semibold hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 min-h-[48px]">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
-                        Unduh Sertifikat
+                <div v-if="session.status === 'completed'" class="flex justify-center pt-2">
+                    <a
+                        :href="route('user.practice.certificate', session.id)"
+                        class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3.5 rounded-2xl text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all duration-200 active:scale-95"
+                    >
+                        <Icon icon="mdi:certificate-outline" class="w-5 h-5" />
+                        Unduh Sertifikat Pengerjaan
                     </a>
                 </div>
             </div>
         </template>
     </UserLayout>
 </template>
-
-<style scoped>
-@keyframes showFadeInUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.anim-show-item {
-    animation: showFadeInUp 0.5s ease-out both;
-}
-@keyframes showFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-.anim-show-fade { animation: showFadeIn 0.4s ease-out both; }
-</style>

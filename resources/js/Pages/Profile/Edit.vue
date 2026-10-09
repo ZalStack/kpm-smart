@@ -1,14 +1,15 @@
 <script setup>
 import { inject, ref, computed } from 'vue';
 import { Head, useForm, usePage, Link } from '@inertiajs/vue3';
+import { Icon } from '@iconify/vue/offline';
 import UserLayout from '@/Layouts/UserLayout.vue';
 import Input from '@/Components/ui/input/Input.vue';
 import Label from '@/Components/ui/label/Label.vue';
 import Button from '@/Components/ui/button/Button.vue';
 import Select from '@/Components/ui/select/Select.vue';
 import Textarea from '@/Components/ui/textarea/Textarea.vue';
-const route = inject('route');
 
+const route = inject('route');
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
 
@@ -45,7 +46,7 @@ function handlePhotoSelect(e) {
 
 function processFile(file) {
     if (file.size > 2 * 1024 * 1024) {
-        alert('Ukuran foto maksimal 2MB');
+        alert('Ukuran foto profil maksimal 2MB');
         return;
     }
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
@@ -80,103 +81,125 @@ function submit() {
 
 <template>
     <UserLayout>
-        <Head title="Profil Saya - KPM SMART" />
+        <Head title="Pengaturan Profil - KPM SMART" />
 
-        <template #header-title>Profil Saya</template>
-        <template #header-sub>Perbarui informasi profil dan keamanan akun Anda</template>
+        <template #header-title>
+            <div class="flex items-center gap-2">
+                <span class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <Icon icon="mdi:account-cog-outline" class="w-5 h-5" />
+                </span>
+                <span>Pengaturan Profil Siswa</span>
+            </div>
+        </template>
+        <template #header-sub>
+            Kelola data diri, kontak, foto profil, dan keamanan akun belajarmu
+        </template>
 
-        <div class="space-y-6">
-            <!-- Profile Photo Section -->
-            <div class="anim-fade-in-up rounded-2xl border bg-card shadow-card overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                <div class="p-6 border-b bg-gradient-to-r from-primary/5 to-transparent">
-                    <h2 class="text-lg font-semibold flex items-center gap-2">
-                        <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
-                        Foto Profil
-                    </h2>
-                    <p class="text-sm text-muted-foreground mt-1">Upload foto profil Anda (JPG, PNG, WebP, maks 2MB)</p>
-                </div>
-                <div class="p-6">
-                    <div class="flex flex-col sm:flex-row items-center gap-6">
-                        <!-- Photo Preview -->
-                        <div class="relative group">
-                            <div v-if="profilePhotoUrl"
-                                 class="w-28 h-28 rounded-2xl overflow-hidden ring-4 ring-primary/10 shadow-card">
-                                <img :src="profilePhotoUrl" alt="Foto Profil" class="w-full h-full object-cover" />
-                            </div>
-                            <div v-else
-                                 class="w-28 h-28 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ring-4 ring-primary/10 shadow-card">
-                                <span class="text-4xl font-bold text-primary">{{ userInitial }}</span>
-                            </div>
-                            <div v-if="photoPreview" @click="removePhoto"
-                                 class="absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center cursor-pointer shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                            </div>
+        <div class="max-w-4xl mx-auto space-y-6">
+
+            <!-- Profile Overview & Photo Card -->
+            <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm">
+                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                    <!-- Photo Avatar -->
+                    <div class="relative group shrink-0">
+                        <div v-if="profilePhotoUrl"
+                             class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden ring-4 ring-primary/10 border-2 border-border/50 shadow-md">
+                            <img :src="profilePhotoUrl" alt="Foto Profil" class="w-full h-full object-cover" />
+                        </div>
+                        <div v-else
+                             class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center ring-4 ring-primary/10 shadow-md">
+                            <span class="text-3xl sm:text-4xl font-black text-primary">{{ userInitial }}</span>
                         </div>
 
-                        <!-- Upload Area -->
-                        <div class="flex-1 w-full">
-                            <div @dragover.prevent="photoDragOver = true" @dragleave="photoDragOver = false" @drop="handleDrop"
-                                 :class="['border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer min-h-[120px] flex flex-col items-center justify-center',
-                                          photoDragOver ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50 hover:bg-muted/30']"
-                                 @click="$refs.fileInput.click()">
-                                <svg class="w-8 h-8 mx-auto text-muted-foreground mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
-                                <p class="text-sm font-medium text-foreground">Klik atau seret foto ke sini</p>
-                                <p class="text-xs text-muted-foreground mt-1">JPG, PNG, WebP · Maks 2MB</p>
-                            </div>
-                            <input ref="fileInput" type="file" accept=".jpg,.jpeg,.png,.webp" class="hidden" @change="handlePhotoSelect" />
-                            <p v-if="form.errors?.profile_photo" class="text-xs text-red-500 mt-2">{{ form.errors.profile_photo }}</p>
+                        <button v-if="photoPreview"
+                                type="button"
+                                @click="removePhoto"
+                                class="absolute -top-2 -right-2 w-7 h-7 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition">
+                            <Icon icon="mdi:close" class="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    <!-- Details & Dropzone -->
+                    <div class="flex-1 space-y-3 text-center sm:text-left w-full">
+                        <div>
+                            <h2 class="text-lg sm:text-xl font-bold text-foreground">{{ user?.name }}</h2>
+                            <p class="text-xs sm:text-sm text-muted-foreground">{{ user?.email }}</p>
                         </div>
+
+                        <!-- Admin tags -->
+                        <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+                            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                                <Icon icon="mdi:school" class="w-3.5 h-3.5" /> Kelas: {{ user?.student_class || '-' }}
+                            </span>
+                            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40">
+                                <Icon icon="mdi:calculator-variant" class="w-3.5 h-3.5" /> {{ user?.bidang || '-' }}
+                            </span>
+                            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40">
+                                <Icon icon="mdi:star-outline" class="w-3.5 h-3.5" /> Level: {{ user?.level || '-' }}
+                            </span>
+                        </div>
+
+                        <!-- Dropzone trigger -->
+                        <div @dragover.prevent="photoDragOver = true"
+                             @dragleave="photoDragOver = false"
+                             @drop="handleDrop"
+                             @click="$refs.fileInput.click()"
+                             :class="[
+                                 'border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all duration-200 mt-2',
+                                 photoDragOver ? 'border-primary bg-primary/5' : 'border-border/70 hover:border-primary/50 hover:bg-muted/30'
+                             ]">
+                            <p class="text-xs font-bold text-foreground">Klik atau seret foto baru ke sini untuk mengganti avatar</p>
+                            <p class="text-[11px] text-muted-foreground mt-0.5">JPG, PNG, atau WebP (Maks. 2MB)</p>
+                        </div>
+                        <input ref="fileInput" type="file" accept=".jpg,.jpeg,.png,.webp" class="hidden" @change="handlePhotoSelect" />
+                        <p v-if="form.errors?.profile_photo" class="text-xs text-destructive mt-1">{{ form.errors.profile_photo }}</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Profile Information -->
-            <div class="anim-fade-in-up anim-delay-1 rounded-2xl border bg-card shadow-card overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                <div class="p-6 border-b bg-gradient-to-r from-primary/5 to-transparent">
-                    <h2 class="text-lg font-semibold flex items-center gap-2">
-                        <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
-                        Informasi Profil
-                    </h2>
-                    <p class="text-sm text-muted-foreground mt-1">Perbarui data diri Anda</p>
+            <!-- Profile Form -->
+            <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm">
+                <div class="flex items-center justify-between pb-4 border-b border-border/50 mb-6">
+                    <div class="flex items-center gap-2">
+                        <Icon icon="mdi:card-account-details-outline" class="w-5 h-5 text-primary" />
+                        <h3 class="font-bold text-base text-foreground">Informasi Data Pribadi</h3>
+                    </div>
+                    <span class="text-xs text-muted-foreground">Tanda (<span class="text-destructive">*</span>) wajib diisi</span>
                 </div>
-                <form @submit.prevent="submit" class="p-6 space-y-5">
+
+                <form @submit.prevent="submit" class="space-y-5">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div class="space-y-2">
-                            <Label for="name">Nama Lengkap <span class="text-red-500">*</span></Label>
-                            <Input id="name" v-model="form.name" required placeholder="Masukkan nama lengkap" />
+                            <Label for="name">Nama Lengkap <span class="text-destructive">*</span></Label>
+                            <Input id="name" v-model="form.name" required placeholder="Masukkan nama lengkap" class="rounded-xl" />
+                            <p v-if="form.errors?.name" class="text-xs text-destructive">{{ form.errors.name }}</p>
                         </div>
+
                         <div class="space-y-2">
-                            <Label for="phone">Nomor Telepon <span class="text-red-500">*</span></Label>
-                            <Input id="phone" v-model="form.phone" required placeholder="Masukkan nomor telepon" />
+                            <Label for="phone">Nomor WhatsApp / Telepon <span class="text-destructive">*</span></Label>
+                            <Input id="phone" v-model="form.phone" required placeholder="08xxxxxxxxxx" class="rounded-xl" />
+                            <p v-if="form.errors?.phone" class="text-xs text-destructive">{{ form.errors.phone }}</p>
                         </div>
+
                         <div class="space-y-2">
-                            <Label for="student_class">Kelas <span class="text-muted-foreground text-xs font-normal">(ditentukan admin)</span></Label>
-                            <Input id="student_class" :value="form.student_class || '-'" disabled class="opacity-70 cursor-not-allowed bg-muted/30" />
+                            <Label for="school_name">Nama Asal Sekolah <span class="text-destructive">*</span></Label>
+                            <Input id="school_name" v-model="form.school_name" required placeholder="Contoh: SMP Negeri 1..." class="rounded-xl" />
+                            <p v-if="form.errors?.school_name" class="text-xs text-destructive">{{ form.errors.school_name }}</p>
                         </div>
-                        <div class="space-y-2">
-                            <Label for="school_name">Nama Sekolah <span class="text-red-500">*</span></Label>
-                            <Input id="school_name" v-model="form.school_name" required placeholder="Masukkan nama sekolah" />
-                        </div>
-                        <div class="space-y-2">
-                            <Label for="bidang">Bidang <span class="text-muted-foreground text-xs font-normal">(ditentukan admin)</span></Label>
-                            <Input id="bidang" :value="form.bidang || '-'" disabled class="opacity-70 cursor-not-allowed bg-muted/30" />
-                        </div>
-                        <div class="space-y-2">
-                            <Label for="level">Level <span class="text-muted-foreground text-xs font-normal">(ditentukan admin)</span></Label>
-                            <Input id="level" :value="form.level || '-'" disabled class="opacity-70 cursor-not-allowed bg-muted/30" />
-                        </div>
+
                         <div class="space-y-2">
                             <Label for="gender">Jenis Kelamin</Label>
-                            <Select id="gender" v-model="form.gender">
-                                <option value="">Pilih</option>
+                            <Select id="gender" v-model="form.gender" class="rounded-xl">
+                                <option value="">Pilih Jenis Kelamin</option>
                                 <option value="Laki-laki">Laki-laki</option>
                                 <option value="Perempuan">Perempuan</option>
                             </Select>
                         </div>
+
                         <div class="space-y-2">
                             <Label for="religion">Agama</Label>
-                            <Select id="religion" v-model="form.religion">
-                                <option value="">Pilih</option>
+                            <Select id="religion" v-model="form.religion" class="rounded-xl">
+                                <option value="">Pilih Agama</option>
                                 <option value="Islam">Islam</option>
                                 <option value="Kristen">Kristen</option>
                                 <option value="Katolik">Katolik</option>
@@ -185,61 +208,56 @@ function submit() {
                                 <option value="Konghucu">Konghucu</option>
                             </Select>
                         </div>
+
+                        <div class="space-y-2">
+                            <Label for="student_class">Kelas (Dikelola Administrator)</Label>
+                            <Input id="student_class" :value="form.student_class || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
+                        </div>
                     </div>
+
                     <div class="space-y-2">
-                        <Label for="address">Alamat</Label>
-                        <Textarea id="address" v-model="form.address" :rows="3" placeholder="Masukkan alamat lengkap" />
+                        <Label for="address">Alamat Tempat Tinggal</Label>
+                        <Textarea id="address" v-model="form.address" rows="3" placeholder="Tuliskan alamat lengkap..." class="rounded-xl resize-none text-sm" />
                     </div>
 
-                    <div v-if="form.errors && Object.keys(form.errors).length > 0" class="bg-red-50 border border-red-200 border-l-4 border-l-red-500 text-red-700 px-4 py-3 rounded-xl text-sm flex items-start gap-2">
-                        <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/></svg>
-                        <ul class="space-y-0.5">
-                            <li v-for="(error, key) in form.errors" :key="key">{{ error }}</li>
-                        </ul>
-                    </div>
-
-                    <div v-if="page.props.flash?.success" class="bg-emerald-50 border border-emerald-200 border-l-4 border-l-emerald-500 text-emerald-700 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
-                        <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <!-- Flash Message -->
+                    <div v-if="page.props.flash?.success" class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs sm:text-sm font-medium flex items-center gap-2">
+                        <Icon icon="mdi:check-circle" class="w-5 h-5 shrink-0" />
                         {{ page.props.flash.success }}
                     </div>
 
-                    <div class="flex flex-col sm:flex-row justify-end gap-3 pt-2">
-                        <Button type="submit" :disabled="form.processing" class="sm:w-auto w-full hover:shadow-md active:scale-[0.98] transition-all duration-200 min-h-12">
-                            <svg v-if="form.processing" class="w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                            {{ form.processing ? 'Menyimpan...' : 'Simpan Perubahan' }}
+                    <!-- Action Buttons -->
+                    <div class="flex items-center justify-end pt-3">
+                        <Button type="submit" :loading="form.processing" class="w-full sm:w-auto gap-2 font-semibold shadow-sm min-h-11">
+                            <Icon v-if="!form.processing" icon="mdi:content-save-outline" class="w-4 h-4" />
+                            {{ form.processing ? 'Menyimpan Perubahan...' : 'Simpan Pembaruan Data' }}
                         </Button>
                     </div>
                 </form>
             </div>
 
-            <!-- Change Password -->
-            <div class="anim-fade-in-up anim-delay-2 rounded-2xl border bg-card shadow-card overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                <div class="p-6 border-b bg-gradient-to-r from-amber-500/5 to-transparent">
-                    <h2 class="text-lg font-semibold flex items-center gap-2">
-                        <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
-                        Keamanan Akun
-                    </h2>
-                    <p class="text-sm text-muted-foreground mt-1">Ubah password untuk menjaga keamanan akun Anda</p>
-                </div>
-                <div class="p-6">
-                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-muted/30 rounded-2xl">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                            </div>
-                            <div>
-                                <p class="font-semibold text-sm">Ubah Password</p>
-                                <p class="text-xs text-muted-foreground">Terakhir diubah: tidak diketahui</p>
-                            </div>
+            <!-- Security & Password Card -->
+            <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-4 text-center sm:text-left">
+                        <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                            <Icon icon="mdi:shield-lock-outline" class="w-6 h-6" />
                         </div>
-                        <Link :href="route('user.profile.change-password')"
-                              class="inline-flex items-center gap-2 bg-amber-500 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-amber-600 hover:shadow-md active:scale-95 transition-all duration-200 shadow-sm w-full sm:w-auto justify-center min-h-10">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
-                            Ubah Password
-                        </Link>
+                        <div>
+                            <h4 class="font-bold text-base text-foreground">Keamanan Kata Sandi</h4>
+                            <p class="text-xs text-muted-foreground mt-0.5">Perbarui kata sandi secara berkala untuk menjaga keamanan akun Anda</p>
+                        </div>
                     </div>
+
+                    <Link :href="route('user.profile.change-password')" class="w-full sm:w-auto">
+                        <Button variant="outline" class="w-full sm:w-auto gap-2 font-semibold shadow-sm min-h-10">
+                            <Icon icon="mdi:key-outline" class="w-4 h-4 text-amber-500" />
+                            Ubah Kata Sandi
+                        </Button>
+                    </Link>
                 </div>
             </div>
+
         </div>
     </UserLayout>
 </template>

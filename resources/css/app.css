@@ -1,43 +1,40 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
     :root {
-        --background: 60 20% 97%;
-        --foreground: 80 15% 12%;
+        --background: 210 20% 98%;
+        --foreground: 222 47% 11%;
         --card: 0 0% 100%;
-        --card-foreground: 80 15% 12%;
+        --card-foreground: 222 47% 11%;
         --popover: 0 0% 100%;
-        --popover-foreground: 80 15% 12%;
-        --primary: 83 67% 37%;
+        --popover-foreground: 222 47% 11%;
+        --primary: 158 64% 39%;
         --primary-foreground: 0 0% 100%;
-        --secondary: 83 62% 50%;
-        --secondary-foreground: 0 0% 100%;
-        --muted: 60 15% 93%;
-        --muted-foreground: 80 10% 40%;
-        --accent: 48 100% 65%;
-        --accent-foreground: 80 15% 12%;
+        --secondary: 158 40% 95%;
+        --secondary-foreground: 158 64% 25%;
+        --muted: 210 40% 96.1%;
+        --muted-foreground: 215 16% 47%;
+        --accent: 158 50% 95%;
+        --accent-foreground: 158 64% 28%;
         --destructive: 0 84% 60%;
         --destructive-foreground: 0 0% 100%;
-        --border: 60 12% 88%;
-        --input: 60 12% 88%;
-        --ring: 83 67% 37%;
-        --radius: 0.5rem;
+        --border: 214 32% 91.4%;
+        --input: 214 32% 91.4%;
+        --ring: 158 64% 39%;
+        --radius: 0.75rem;
 
-        --chart-1: 83 67% 37%;
-        --chart-2: 83 62% 50%;
-        --chart-3: 48 100% 65%;
-        --chart-4: 25 100% 65%;
+        --chart-1: 158 64% 39%;
+        --chart-2: 199 89% 48%;
+        --chart-3: 38 92% 50%;
+        --chart-4: 262 83% 58%;
         --chart-5: 0 84% 60%;
     }
 
     *,
     *::before,
     *::after {
-        font-family: 'Poppins', system-ui, sans-serif;
         border-color: hsl(var(--border));
     }
 
@@ -45,11 +42,13 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         scroll-behavior: smooth;
+        text-rendering: optimizeLegibility;
     }
 
     body {
         background-color: hsl(var(--background));
         color: hsl(var(--foreground));
+        font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     }
 
     ::selection {
@@ -68,7 +67,7 @@
 
     *::-webkit-scrollbar-thumb {
         background: hsl(var(--muted-foreground) / 0.2);
-        border-radius: 10px;
+        border-radius: 9999px;
     }
 
     *::-webkit-scrollbar-thumb:hover {
@@ -79,51 +78,54 @@
 @layer components {
     /* ===== Gradient Text ===== */
     .gradient-text {
-        @apply bg-gradient-to-r from-olive to-lime-vibrant bg-clip-text text-transparent;
+        @apply bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 bg-clip-text text-transparent;
+    }
+
+    .gradient-brand {
+        @apply bg-gradient-to-r from-emerald-600 to-teal-600;
     }
 
     /* ===== Brand Panel (Auth) ===== */
     .brand-panel {
         background:
-            radial-gradient(95% 65% at 88% 8%, rgba(161,203,53,.35), transparent 58%),
-            radial-gradient(70% 55% at 0% 92%, rgba(255,222,78,.15), transparent 60%),
-            radial-gradient(60% 50% at 65% 100%, rgba(255,157,77,.12), transparent 62%),
-            linear-gradient(150deg, #3D5A14 0%, #5A7A1E 35%, #769826 65%, #A1CB35 100%);
+            radial-gradient(85% 65% at 90% 10%, rgba(52, 211, 153, 0.3), transparent 60%),
+            radial-gradient(75% 55% at 5% 90%, rgba(251, 191, 36, 0.15), transparent 60%),
+            radial-gradient(60% 50% at 70% 95%, rgba(59, 130, 246, 0.15), transparent 60%),
+            linear-gradient(145deg, #064e3b 0%, #065f46 30%, #047857 70%, #059669 100%);
     }
 
     .grid-dots {
-        background-image: radial-gradient(rgba(255,255,255,.15) 1px, transparent 1px);
-        background-size: 22px 22px;
+        background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+        background-size: 24px 24px;
     }
 
     .right-bg {
         background:
-            radial-gradient(45% 40% at 8% 0%, rgba(161,203,53,.08), transparent 60%),
-            radial-gradient(42% 38% at 100% 92%, rgba(255,222,78,.06), transparent 60%),
+            radial-gradient(45% 40% at 5% 0%, rgba(16, 185, 129, 0.06), transparent 60%),
+            radial-gradient(40% 35% at 95% 95%, rgba(245, 158, 11, 0.05), transparent 60%),
             hsl(var(--background));
     }
 
     /* ===== Auth Card ===== */
     .auth-card {
-        background: hsl(var(--card) / 0.92);
-        -webkit-backdrop-filter: blur(16px);
-        backdrop-filter: blur(16px);
+        background: hsl(var(--card));
         border: 1px solid hsl(var(--border));
-        box-shadow: 0 24px 60px -24px rgba(118,152,38,.15), 0 0 0 1px rgba(255,255,255,.5) inset;
+        box-shadow: 0 20px 45px -15px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
     }
 
     .btn-auth {
         position: relative;
         overflow: hidden;
-        background: hsl(var(--primary));
-        color: hsl(var(--primary-foreground));
-        box-shadow: 0 10px 24px -10px rgba(118,152,38,.45);
-        transition: transform .2s ease, box-shadow .25s ease;
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        color: #ffffff;
+        box-shadow: 0 10px 25px -8px rgba(16, 185, 129, 0.5);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .btn-auth:hover {
         transform: translateY(-2px);
-        box-shadow: 0 16px 32px -12px rgba(161,203,53,.5);
+        box-shadow: 0 16px 32px -10px rgba(16, 185, 129, 0.6);
+        background: linear-gradient(135deg, #047857 0%, #059669 100%);
     }
 
     .btn-auth:active {
@@ -131,24 +133,15 @@
     }
 
     .btn-auth[disabled] {
-        opacity: .75;
-        cursor: progress;
+        opacity: 0.7;
+        cursor: not-allowed;
         transform: none;
         box-shadow: none;
     }
 
-    .btn-auth::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(110deg, transparent 32%, rgba(255,255,255,.26) 50%, transparent 68%);
-        animation: sheen 4.5s ease-in-out infinite;
-        pointer-events: none;
-    }
-
     /* ===== Modern Sidebar ===== */
     .sidebar-modern {
-        background: linear-gradient(180deg, #3D5A14 0%, #5A7A1E 30%, #769826 65%, #8AB52E 100%);
+        background: linear-gradient(180deg, #064e3b 0%, #065f46 35%, #047857 70%, #064e3b 100%);
     }
 
     .sidebar-modern::before {
@@ -156,14 +149,14 @@
         position: absolute;
         inset: 0;
         background:
-            radial-gradient(circle at 100% 0%, rgba(161,203,53,.12) 0%, transparent 50%),
-            radial-gradient(circle at 0% 100%, rgba(255,222,78,.06) 0%, transparent 50%);
+            radial-gradient(circle at 100% 0%, rgba(52, 211, 153, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 0% 100%, rgba(251, 191, 36, 0.08) 0%, transparent 50%);
         pointer-events: none;
     }
 
     /* ===== Navigation ===== */
     .nav-active {
-        @apply bg-white/15 text-white;
+        @apply bg-white/15 text-white font-semibold;
     }
 
     .sidebar-scroll::-webkit-scrollbar {
@@ -185,15 +178,15 @@
 
     /* ===== Mobile Navigation ===== */
     .mobile-nav-item {
-        @apply flex flex-col items-center gap-1 py-2 px-3 rounded-md text-muted-foreground
+        @apply flex flex-col items-center justify-center gap-1 py-1 px-2.5 rounded-xl text-muted-foreground
                transition-all duration-200 active:scale-95;
     }
 
     .mobile-nav-item.active {
-        @apply text-fern bg-accent;
+        @apply text-primary font-semibold;
     }
 
-    /* ===== Toggle Switch ===== */
+    /* ===== Modern Toggle Switch ===== */
     .toggle-switch {
         @apply relative inline-flex items-center cursor-pointer flex-shrink-0;
     }
@@ -203,8 +196,7 @@
     }
 
     .toggle-switch .toggle-track {
-        @apply relative h-6 w-11 rounded-full bg-input
-               transition-colors duration-200;
+        @apply relative h-6 w-11 rounded-full bg-slate-200 transition-colors duration-200;
     }
 
     .toggle-switch input:checked ~ .toggle-track {
@@ -212,7 +204,7 @@
     }
 
     .toggle-switch .toggle-thumb {
-        @apply absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-background shadow-lg
+        @apply absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-md
                transition-transform duration-200;
     }
 
@@ -222,40 +214,28 @@
 
     /* ===== Glass Effects ===== */
     .glass-card {
-        @apply bg-background/80 backdrop-blur-xl border shadow-sm rounded-lg;
+        @apply bg-card/90 backdrop-blur-xl border border-border shadow-sm rounded-2xl;
     }
 
     .nav-glass {
-        background: hsl(var(--primary) / 0.95);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
     }
 
     /* ===== Skeleton ===== */
     .skeleton {
-        @apply bg-muted rounded-md animate-pulse;
-    }
-
-    /* ===== Filter Chip ===== */
-    .filter-chip {
-        @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium
-               border border-input bg-background text-foreground
-               hover:bg-accent hover:text-accent-foreground
-               transition-all duration-200 cursor-pointer;
-    }
-
-    .filter-chip.active {
-        @apply bg-olive text-white border-olive;
+        @apply bg-muted rounded-lg animate-pulse;
     }
 
     /* ===== Stat Tile ===== */
     .stat-tile {
         position: relative;
         background: hsl(var(--card));
-        border-radius: var(--radius);
+        border-radius: 1rem;
         border: 1px solid hsl(var(--border));
-        box-shadow: 0 1px 2px rgba(118,152,38,.05);
-        transition: transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s, border-color .3s;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s, border-color 0.25s;
         overflow: hidden;
     }
 
@@ -266,12 +246,12 @@
         height: 3px;
         background: var(--tile-accent, hsl(var(--primary)));
         opacity: 0;
-        transition: opacity .3s;
+        transition: opacity 0.25s;
     }
 
     .stat-tile:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 32px -8px rgba(118,152,38,.12);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px -8px rgba(15, 23, 42, 0.08);
         border-color: var(--tile-accent, hsl(var(--primary)));
     }
 
@@ -280,11 +260,11 @@
     }
 
     .quick-tile {
-        transition: transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s, border-color .3s;
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s, border-color 0.25s;
     }
 
     .quick-tile:hover {
-        transform: translateY(-4px);
+        transform: translateY(-3px);
     }
 
     /* ===== Separator ===== */
@@ -296,10 +276,10 @@
     .spinner {
         width: 18px;
         height: 18px;
-        border-radius: 999px;
-        border: 2.5px solid rgba(255,255,255,.35);
+        border-radius: 9999px;
+        border: 2.5px solid rgba(255, 255, 255, 0.35);
         border-top-color: #fff;
-        animation: spin .7s linear infinite;
+        animation: spin 0.7s linear infinite;
     }
 }
 
@@ -317,37 +297,8 @@
         scrollbar-width: none;
     }
 
-    .line-clamp-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    .line-clamp-3 {
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
     .safe-area-bottom {
         padding-bottom: env(safe-area-inset-bottom, 0px);
-    }
-
-    .scrollbar-thin::-webkit-scrollbar {
-        width: 5px;
-    }
-    .scrollbar-thin::-webkit-scrollbar-track {
-        background: hsl(var(--muted));
-        border-radius: 10px;
-    }
-    .scrollbar-thin::-webkit-scrollbar-thumb {
-        background: hsl(var(--muted-foreground) / 0.3);
-        border-radius: 10px;
-    }
-    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-        background: hsl(var(--muted-foreground) / 0.5);
     }
 }
 
@@ -362,12 +313,12 @@
 }
 
 @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(24px); }
+    from { opacity: 0; transform: translateY(18px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInDown {
-    from { opacity: 0; transform: translateY(-16px); }
+    from { opacity: 0; transform: translateY(-12px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
@@ -377,12 +328,12 @@
 }
 
 @keyframes scaleIn {
-    from { opacity: 0; transform: scale(0.92); }
+    from { opacity: 0; transform: scale(0.96); }
     to { opacity: 1; transform: scale(1); }
 }
 
 @keyframes slideInLeft {
-    from { opacity: 0; transform: translateX(-20px); }
+    from { opacity: 0; transform: translateX(-16px); }
     to { opacity: 1; transform: translateX(0); }
 }
 
@@ -397,7 +348,7 @@
 }
 
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(16px); }
+    from { opacity: 0; transform: translateY(14px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
@@ -408,38 +359,38 @@
 
 @keyframes float {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+    50% { transform: translateY(-8px); }
 }
 
 /* ===== Animation Classes ===== */
 .anim-fade-in-up {
-    animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .anim-fade-in-down {
-    animation: fadeInDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: fadeInDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .anim-fade-in {
-    animation: fadeIn 0.5s ease both;
+    animation: fadeIn 0.4s ease both;
 }
 
 .anim-scale-in {
-    animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .anim-slide-in-left {
-    animation: slideInLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: slideInLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.anim-delay-1 { animation-delay: 50ms; }
-.anim-delay-2 { animation-delay: 100ms; }
-.anim-delay-3 { animation-delay: 150ms; }
-.anim-delay-4 { animation-delay: 200ms; }
-.anim-delay-5 { animation-delay: 250ms; }
-.anim-delay-6 { animation-delay: 300ms; }
-.anim-delay-7 { animation-delay: 350ms; }
-.anim-delay-8 { animation-delay: 400ms; }
+.anim-delay-1 { animation-delay: 40ms; }
+.anim-delay-2 { animation-delay: 80ms; }
+.anim-delay-3 { animation-delay: 120ms; }
+.anim-delay-4 { animation-delay: 160ms; }
+.anim-delay-5 { animation-delay: 200ms; }
+.anim-delay-6 { animation-delay: 240ms; }
+.anim-delay-7 { animation-delay: 280ms; }
+.anim-delay-8 { animation-delay: 320ms; }
 
 /* ===== Print Styles ===== */
 @media print {
@@ -466,30 +417,7 @@
     }
 }
 
-/* ===== Responsive ===== */
-@media (max-width: 640px) {
-    .stat-card {
-        padding: 0.875rem;
-    }
-    .stat-icon {
-        width: 2.75rem;
-        height: 2.75rem;
-    }
-}
-
-/* ===== Touch Device Adjustments ===== */
-@media (hover: none) and (pointer: coarse) {
-    .stat-card:hover,
-    .admin-card-hover:hover {
-        transform: none;
-    }
-}
-
 /* ===== Accessibility ===== */
-
-/* Hormati preferensi pengguna yang mengurangi animasi.中的应用 ini punya
-   banyak animasi tak berujung (float, shimmer, pulse-soft, sheen) yang
-   bisa memicu mual pada pengguna dengan gangguan vestibular. */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -501,21 +429,17 @@
     }
 }
 
-/* Cincin fokus yang konsisten untuk elemen yang dapat difokuskan.
-   Hanya muncul saat navigasi keyboard, tidak saat klik mouse. */
 @layer base {
     :focus-visible {
         outline: 2px solid hsl(var(--ring));
         outline-offset: 2px;
     }
 
-    /* Jangan hapus indikator fokus tanpa diganti (mis. reset Tailwind). */
     :focus:not(:focus-visible) {
         outline: none;
     }
 }
 
-/* Target sentuh minimal 44x44px sesuai pedoman WCAG 2.5.5 / Material. */
 @layer components {
     .tap-target {
         position: relative;
@@ -534,7 +458,6 @@
     }
 }
 
-/* ===== AI Chat Typing Indicator ===== */
 .typing-dot {
     animation: typingBounce 1.4s infinite ease-in-out;
 }

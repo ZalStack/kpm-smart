@@ -1,5 +1,5 @@
 <script setup>
-import { inject,  ref, computed } from 'vue';
+import { inject, ref } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Icon } from '@iconify/vue/offline';
 import UserLayout from '@/Layouts/UserLayout.vue';
@@ -7,6 +7,7 @@ import Button from '@/Components/ui/button/Button.vue';
 import Input from '@/Components/ui/input/Input.vue';
 import Select from '@/Components/ui/select/Select.vue';
 import Pagination from '@/Components/shared/Pagination.vue';
+
 const route = inject('route');
 
 const props = defineProps({
@@ -23,25 +24,21 @@ const kelas = ref(props.filters?.kelas || '');
 const level = ref(props.filters?.level || '');
 
 const packageColors = [
-    'from-purple-500 to-indigo-500', 'from-green-600 to-green-700', 'from-red-500 to-red-600',
-    'from-yellow-400 to-amber-500', 'from-orange-500 to-orange-600', 'from-blue-500 to-blue-600',
-    'from-pink-500 to-pink-600', 'from-teal-500 to-teal-600', 'from-indigo-500 to-indigo-600',
-    'from-rose-500 to-rose-600', 'from-cyan-500 to-cyan-600', 'from-amber-500 to-amber-600',
+    'from-emerald-600 to-teal-700',
+    'from-teal-600 to-cyan-700',
+    'from-indigo-600 to-blue-700',
+    'from-amber-500 to-orange-600',
+    'from-purple-600 to-indigo-700',
+    'from-rose-500 to-red-600',
 ];
 
 const packageIcons = [
-    { icon: 'mdi:book-open-page-variant', color: '' },
-    { icon: 'mdi:book-open-variant', color: '' },
-    { icon: 'mdi:target', color: 'text-emerald-500' },
-    { icon: 'mdi:lightbulb-outline', color: 'text-blue-500' },
-    { icon: 'mdi:rocket-launch', color: '' },
-    { icon: 'mdi:star-shooting', color: '' },
-    { icon: 'mdi:graduation-cap', color: '' },
-    { icon: 'mdi:chart-bar', color: '' },
-    { icon: 'mdi:flash', color: '' },
-    { icon: 'mdi:trophy', color: 'text-yellow-500' },
-    { icon: 'mdi:diamond-stone', color: '' },
-    { icon: 'mdi:fire', color: 'text-orange-500' },
+    'mdi:book-open-page-variant',
+    'mdi:target',
+    'mdi:lightbulb-outline',
+    'mdi:rocket-launch',
+    'mdi:trophy',
+    'mdi:flash',
 ];
 
 function applyFilters() {
@@ -76,125 +73,198 @@ function getTotalCards(pkg) {
 function getTotalQuestions(pkg) {
     return pkg.questions ? pkg.questions.length : 0;
 }
-
-function getScheduleLabel(pkg) {
-    if (pkg.start_date || pkg.end_date) {
-        return pkg.schedule_label || '';
-    }
-    return '';
-}
 </script>
 
 <template>
     <UserLayout>
-        <Head title="Soal Tugas - KPM SMART" />
+        <Head title="Soal Tugas PR - KPM SMART" />
 
-        <template #header-title>Soal Tugas</template>
-        <template #header-sub>Pilih soal tugas yang sesuai untuk dikerjakan</template>
+        <!-- Header -->
+        <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Bank Soal Tugas PR</h1>
+                <p class="text-xs sm:text-sm text-muted-foreground mt-1">Pilih paket soal yang sesuai dengan jenjang dan kelasmu.</p>
+            </div>
+            <div class="text-xs font-semibold text-muted-foreground bg-card border border-border/80 px-3.5 py-1.5 rounded-full self-start sm:self-auto shadow-2xs">
+                {{ packages.total }} Soal Tersedia
+            </div>
+        </div>
 
         <div class="space-y-6">
-            <!-- Filters -->
-            <div class="bg-card rounded-2xl p-5 shadow-card border border-border">
-                <form @submit.prevent="applyFilters" class="flex flex-col sm:flex-row gap-3">
+            <!-- Filter Toolbar -->
+            <div class="bg-card rounded-2xl p-4 sm:p-5 shadow-xs border border-border/80">
+                <form @submit.prevent="applyFilters" class="flex flex-col md:flex-row gap-3">
                     <div class="flex-1 relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"><Icon icon="mdi:magnify" class="w-5 h-5" /></span>
-                        <Input v-model="search" placeholder="Cari soal tugas..." class="pl-11 h-11 text-sm rounded-xl" />
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
+                            <Icon icon="mdi:magnify" class="w-5 h-5" />
+                        </span>
+                        <Input
+                            v-model="search"
+                            placeholder="Cari judul soal atau deskripsi..."
+                            class="pl-10"
+                        />
                     </div>
-                    <Select v-model="bidang" class="w-full sm:w-44 h-11 rounded-xl">
-                        <option value="">Semua Bidang</option>
-                        <option v-for="b in allBidang" :key="b" :value="b">{{ b }}</option>
-                    </Select>
-                    <Select v-model="level" class="w-full sm:w-44 h-11 rounded-xl">
-                        <option value="">Semua Level</option>
-                        <option v-for="l in allLevel" :key="l" :value="l">{{ l }}</option>
-                    </Select>
-                    <Select v-model="kelas" class="w-full sm:w-44 h-11 rounded-xl">
-                        <option value="">Semua Kelas</option>
-                        <option v-for="k in allKelas" :key="k" :value="k">{{ k }}</option>
-                    </Select>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 md:w-auto">
+                        <Select v-model="bidang" class="w-full md:w-36">
+                            <option value="">Semua Bidang</option>
+                            <option v-for="b in allBidang" :key="b" :value="b">{{ b }}</option>
+                        </Select>
+                        <Select v-model="level" class="w-full md:w-36">
+                            <option value="">Semua Level</option>
+                            <option v-for="l in allLevel" :key="l" :value="l">{{ l }}</option>
+                        </Select>
+                        <Select v-model="kelas" class="w-full md:w-36">
+                            <option value="">Semua Kelas</option>
+                            <option v-for="k in allKelas" :key="k" :value="k">{{ k }}</option>
+                        </Select>
+                    </div>
                     <div class="flex gap-2">
-                        <Button type="submit" variant="default" size="sm" class="h-11 px-5 rounded-xl"><Icon icon="mdi:magnify" class="w-4 h-4 mr-1" /> Cari</Button>
-                        <Button type="button" variant="ghost" size="sm" class="h-11 px-4 rounded-xl" @click="resetFilters">Reset</Button>
+                        <Button type="submit" size="default" class="px-5 flex-1 sm:flex-initial">
+                            <Icon icon="mdi:filter-variant" class="w-4 h-4" />
+                            Filter
+                        </Button>
+                        <Button type="button" variant="ghost" size="default" class="px-4" @click="resetFilters">
+                            Reset
+                        </Button>
                     </div>
                 </form>
             </div>
 
-            <p class="text-sm text-muted-foreground font-medium">{{ packages.total }} soal tersedia</p>
-
             <!-- Packages Grid -->
-            <div v-if="packages.data.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
-                <div v-for="(pkg, index) in packages.data" :key="pkg.id"
-                     :style="{ animationDelay: (index * 80) + 'ms' }"
-                     class="relative bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group hover:-translate-y-1.5 border border-border/80 hover:border-primary/30 flex flex-col anim-fade-in-up opacity-0 [animation-fill-mode:forwards]">
-                    <!-- Gradient Header -->
-                    <div class="relative h-40 md:h-44 overflow-hidden">
-                        <img v-if="pkg.thumbnail" :src="'/storage/' + pkg.thumbnail" :alt="pkg.title"
-                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
-                        <div v-else :class="['w-full h-full flex items-center justify-center bg-gradient-to-br relative overflow-hidden', getColorClass(index)]">
-                            <div class="absolute inset-0 opacity-10">
-                                <svg class="w-full h-full" viewBox="0 0 100 100"><circle cx="20" cy="20" r="15" fill="white" opacity="0.3"/><circle cx="80" cy="30" r="20" fill="white" opacity="0.2"/><circle cx="50" cy="70" r="25" fill="white" opacity="0.25"/></svg>
+            <div v-if="packages.data.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+                <div
+                    v-for="(pkg, index) in packages.data"
+                    :key="pkg.id"
+                    :style="{ animationDelay: (index * 60) + 'ms' }"
+                    class="bg-card rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 group hover:-translate-y-1 border border-border/80 hover:border-primary/40 flex flex-col anim-fade-in-up opacity-0 [animation-fill-mode:forwards]"
+                >
+                    <!-- Header Banner -->
+                    <div class="relative h-36 sm:h-40 overflow-hidden">
+                        <img
+                            v-if="pkg.thumbnail"
+                            :src="'/storage/' + pkg.thumbnail"
+                            :alt="pkg.title"
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            loading="lazy"
+                        />
+                        <div
+                            v-else
+                            :class="['w-full h-full flex items-center justify-center bg-gradient-to-br relative overflow-hidden', getColorClass(index)]"
+                        >
+                            <div class="absolute inset-0 opacity-15">
+                                <div class="grid-dots absolute inset-0"></div>
                             </div>
                             <div class="relative z-10 text-center">
-                                <div class="text-5xl md:text-6xl mb-2 opacity-90 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500"><Icon :icon="getIcon(index).icon" :class="['w-12 h-12', getIcon(index).color]" /></div>
+                                <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur border border-white/25 flex items-center justify-center text-white text-3xl mx-auto shadow-sm group-hover:scale-110 transition-transform duration-300">
+                                    <Icon :icon="getIcon(index)" class="w-7 h-7" />
+                                </div>
                             </div>
                         </div>
 
                         <!-- Schedule Status Badge -->
                         <div class="absolute top-3 left-3">
-                            <span v-if="pkg.schedule_status === 'active'" class="bg-green-500 text-white text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
-                                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> Berlangsung
+                            <span
+                                v-if="pkg.schedule_status === 'active'"
+                                class="bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-xs flex items-center gap-1.5"
+                            >
+                                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                Sedang Aktif
                             </span>
-                            <span v-else-if="pkg.schedule_status === 'upcoming'" class="inline-flex items-center gap-1 bg-yellow-400 text-foreground text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg"><Icon icon="mdi:clock-outline" class="w-4 h-4" /> Akan Datang</span>
-                            <span v-else-if="pkg.schedule_status === 'expired'" class="inline-flex items-center gap-1 bg-gray-500 text-white text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg"><Icon icon="mdi:close-octagon" class="w-4 h-4" /> Berakhir</span>
-                            <span v-else class="inline-flex items-center gap-1 bg-primary/80 text-white text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg"><Icon icon="mdi:infinity" class="w-4 h-4" /> Tanpa Batas</span>
+                            <span
+                                v-else-if="pkg.schedule_status === 'upcoming'"
+                                class="bg-amber-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-xs flex items-center gap-1"
+                            >
+                                <Icon icon="mdi:clock-outline" class="w-3.5 h-3.5" />
+                                Akan Datang
+                            </span>
+                            <span
+                                v-else-if="pkg.schedule_status === 'expired'"
+                                class="bg-slate-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-xs flex items-center gap-1"
+                            >
+                                <Icon icon="mdi:close-circle-outline" class="w-3.5 h-3.5" />
+                                Berakhir
+                            </span>
                         </div>
-                        <span v-if="pkg.is_active" class="absolute top-3 right-3 inline-flex items-center gap-1 bg-card/90 backdrop-blur text-green-600 text-[10px] md:text-[11px] font-semibold px-2.5 py-1 rounded-full shadow border border-border"><Icon icon="mdi:check-circle" class="w-4 h-4 text-green-600" /> Aktif</span>
+
+                        <!-- Card Count Pill -->
+                        <div class="absolute top-3 right-3 bg-black/40 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/20">
+                            {{ getTotalCards(pkg) }} Kartu Soal
+                        </div>
                     </div>
 
-                    <div class="p-4 md:p-5 flex flex-col flex-1">
-                        <h3 class="text-base md:text-lg font-bold text-foreground flex-1 line-clamp-1 mb-2">{{ pkg.title }}</h3>
-
+                    <!-- Card Body -->
+                    <div class="p-5 flex flex-col flex-1">
                         <div class="flex flex-wrap gap-1.5 mb-2.5">
-                            <span v-if="pkg.bidang" class="inline-flex items-center text-[10px] md:text-[11px] bg-primary/10 text-primary font-semibold px-2 py-0.5 rounded-full"><Icon icon="mdi:folder-outline" class="w-4 h-4" /> {{ pkg.bidang }}</span>
-                            <span v-if="pkg.level" class="inline-flex items-center text-[10px] md:text-[11px] bg-foreground/10 text-foreground font-semibold px-2 py-0.5 rounded-full"><Icon icon="mdi:target" class="w-4 h-4 text-emerald-500" /> {{ pkg.level }}</span>
-                            <span v-if="pkg.kelas" class="inline-flex items-center text-[10px] md:text-[11px] bg-yellow-400/15 text-yellow-700 font-semibold px-2 py-0.5 rounded-full"><Icon icon="mdi:school-outline" class="w-4 h-4" /> {{ pkg.kelas }}</span>
-                        </div>
-
-                        <p class="text-muted-foreground text-xs md:text-sm line-clamp-2 mb-3 leading-relaxed">{{ pkg.description }}</p>
-
-                        <div v-if="getScheduleLabel(pkg)" class="flex items-center gap-1.5 text-[10px] md:text-[11px] text-muted-foreground mb-2.5 bg-muted/50 px-2 py-1.5 rounded-md">
-                            <Icon icon="mdi:calendar-outline" class="w-4 h-4" />
-                            <span>{{ getScheduleLabel(pkg) }}</span>
-                        </div>
-
-                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] md:text-[11px] text-muted-foreground mb-3">
-                            <span class="inline-flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
-                                {{ getTotalCards(pkg) }} Card
+                            <span v-if="pkg.bidang" class="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-md border border-primary/20">
+                                {{ pkg.bidang }}
                             </span>
-                            <span class="w-px h-3 bg-border"></span>
-                            <span class="inline-flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
-                                {{ getTotalQuestions(pkg) }} Soal
+                            <span v-if="pkg.level" class="text-[10px] font-bold bg-teal-50 text-teal-700 px-2 py-0.5 rounded-md border border-teal-200">
+                                Level {{ pkg.level }}
+                            </span>
+                            <span v-if="pkg.kelas" class="text-[10px] font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded-md border border-amber-200">
+                                Kelas {{ pkg.kelas }}
                             </span>
                         </div>
 
-                        <div class="mt-auto pt-3 border-t border-border">
-                            <span v-if="pkg.schedule_status === 'expired'" class="block w-full text-center bg-muted text-muted-foreground py-2.5 rounded-xl font-semibold text-xs md:text-sm cursor-not-allowed inline-flex items-center justify-center gap-1.5"><Icon icon="mdi:close-octagon" class="w-4 h-4" /> Jadwal Berakhir</span>
-                            <span v-else-if="pkg.schedule_status === 'upcoming'" class="block w-full text-center bg-yellow-100 text-yellow-700 py-2.5 rounded-xl font-semibold text-xs md:text-sm cursor-not-allowed inline-flex items-center justify-center gap-1.5"><Icon icon="mdi:clock-outline" class="w-4 h-4" /> Belum Dimulai</span>
-                            <Link v-else :href="route('user.packages.show', pkg.id)" class="block w-full text-center bg-primary text-white py-2.5 rounded-xl font-semibold hover:bg-primary/90 hover:shadow-lg transition-all duration-300 text-xs md:text-sm inline-flex items-center justify-center gap-1.5"><Icon icon="mdi:book-open-page-variant" class="w-4 h-4" /> Kerjakan Tugas</Link>
+                        <h3 class="text-base font-bold text-foreground line-clamp-1 mb-1.5 group-hover:text-primary transition-colors">
+                            {{ pkg.title }}
+                        </h3>
+
+                        <p class="text-muted-foreground text-xs line-clamp-2 mb-4 leading-relaxed flex-1">
+                            {{ pkg.description || 'Tidak ada deskripsi tambahan.' }}
+                        </p>
+
+                        <div class="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/60 mb-4">
+                            <span class="flex items-center gap-1.5 font-medium">
+                                <Icon icon="mdi:help-circle-outline" class="w-4 h-4 text-primary" />
+                                {{ getTotalQuestions(pkg) }} Butir Soal
+                            </span>
+                            <span v-if="pkg.schedule_label" class="text-[11px] text-muted-foreground/80 truncate max-w-[140px]">
+                                {{ pkg.schedule_label }}
+                            </span>
+                        </div>
+
+                        <!-- CTA Button -->
+                        <div>
+                            <span
+                                v-if="pkg.schedule_status === 'expired'"
+                                class="w-full text-center bg-muted text-muted-foreground py-2.5 rounded-xl font-bold text-xs cursor-not-allowed flex items-center justify-center gap-1.5"
+                            >
+                                <Icon icon="mdi:close-octagon" class="w-4 h-4" />
+                                Jadwal Berakhir
+                            </span>
+                            <span
+                                v-else-if="pkg.schedule_status === 'upcoming'"
+                                class="w-full text-center bg-amber-50 text-amber-700 border border-amber-200 py-2.5 rounded-xl font-bold text-xs cursor-not-allowed flex items-center justify-center gap-1.5"
+                            >
+                                <Icon icon="mdi:clock-outline" class="w-4 h-4" />
+                                Belum Dimulai
+                            </span>
+                            <Link
+                                v-else
+                                :href="route('user.packages.show', pkg.id)"
+                                class="w-full text-center bg-primary text-primary-foreground py-2.5 rounded-xl font-bold hover:bg-primary/90 hover:shadow-md transition-all duration-200 text-xs flex items-center justify-center gap-2 active:scale-98 shadow-xs"
+                            >
+                                <Icon icon="mdi:book-open-page-variant" class="w-4 h-4" />
+                                Buka Paket Tugas
+                            </Link>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Empty State -->
-            <div v-else class="text-center py-16 md:py-20 bg-card rounded-2xl shadow-sm border border-border anim-fade-in-up">
-                <div class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 rounded-full bg-muted/50 flex items-center justify-center">
-                    <Icon icon="mdi:email-outline" class="w-10 h-10 md:w-12 md:h-12 text-muted-foreground/60" />
+            <div v-else class="text-center py-16 bg-card rounded-2xl border border-border/80 anim-fade-in-up">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-muted/60 flex items-center justify-center text-muted-foreground/60">
+                    <Icon icon="mdi:folder-open-outline" class="w-8 h-8" />
                 </div>
-                <h3 class="text-xl md:text-2xl font-bold text-muted-foreground">Belum Ada Tugas</h3>
-                <p class="text-muted-foreground mt-2 text-sm md:text-base max-w-md mx-auto">Tugas akan segera tersedia. Silakan cek kembali nanti.</p>
+                <h3 class="text-base font-bold text-foreground">Tidak Ada Soal Tugas Ditemukan</h3>
+                <p class="text-muted-foreground mt-1 text-xs max-w-sm mx-auto">
+                    Coba ubah kata kunci pencarian atau reset filter untuk melihat semua soal yang tersedia.
+                </p>
+                <Button variant="outline" size="sm" class="mt-4" @click="resetFilters">
+                    Reset Semua Filter
+                </Button>
             </div>
 
             <!-- Pagination -->
