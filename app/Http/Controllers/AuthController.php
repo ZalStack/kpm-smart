@@ -24,9 +24,15 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        $loginInput = trim($request->input('email', ''));
+        $isEmail = filter_var($loginInput, FILTER_VALIDATE_EMAIL);
+
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
+            'email' => 'required',
             'password' => 'required',
+        ], [
+            'email.required' => 'Email atau Username wajib diisi.',
+            'password.required' => 'Kata sandi wajib diisi.',
         ]);
 
         if ($validator->fails()) {
@@ -34,8 +40,7 @@ class AuthController extends Controller
         }
 
         // Keamanan (anti brute-force): maksimal 5 percobaan per menit
-        // per kombinasi email + IP.
-        $throttleKey = Str::transliterate(Str::lower($request->input('email')) . '|' . $request->ip());
+        $throttleKey = Str::transliterate(Str::lower($loginInput) . '|' . $request->ip());
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
@@ -48,20 +53,28 @@ class AuthController extends Controller
         // 1. Coba verifikasi & auto-sync langsung dari Web Induk / Master App
         $parentUrl = rtrim(config('app.parent_app_url', 'http://localhost:8000'), '/');
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(3)->post("{$parentUrl}/api/v1/verify", [
-                'email' => $request->input('email'),
+            $verifyPayload = [
                 'password' => $request->input('password'),
-            ]);
+            ];
+            if ($isEmail) {
+                $verifyPayload['email'] = $loginInput;
+            } else {
+                $verifyPayload['username'] = $loginInput;
+            }
+
+            $response = \Illuminate\Support\Facades\Http::timeout(3)->post("{$parentUrl}/api/v1/verify", $verifyPayload);
 
             if ($response->successful() && ($response->json('valid') ?? false)) {
                 $master = $response->json();
                 $role = in_array($master['role'], ['super_admin', 'administrator', 'guru']) ? 'admin' : 'user';
                 $fotoProfil = $master['foto_profil'] ?? "{$parentUrl}/api/foto/" . urlencode($master['email']);
+                $username = $master['nis'] ?: explode('@', $master['email'])[0];
 
                 $user = User::updateOrCreate(
                     ['email' => $master['email']],
                     [
                         'name' => $master['name'],
+                        'username' => $username,
                         'password' => $request->input('password'),
                         'student_name' => $master['name'],
                         'student_class' => $master['class_name'] ?: 'VII-A',
@@ -70,6 +83,7 @@ class AuthController extends Controller
                 );
 
                 $user->forceFill([
+                    'username' => $username,
                     'role' => $role,
                     'is_active' => true,
                     'is_verified' => true,
@@ -80,42 +94,43 @@ class AuthController extends Controller
                 $request->session()->regenerate();
                 $user->update(['last_login_at' => now()]);
 
+                if ($user->role === 'admin') {
+                    return redirect()->route('admin.dashboard');
+                }
                 return redirect()->intended(route('dashboard'));
             }
         } catch (\Throwable $e) {
             // Jika Web Master offline, lanjutkan ke Auth lokal
         }
 
-        if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
-            $user = Auth::user();
+        // 2. Auth Lokal (Cari via Email atau Username)
+        $localUser = User::where(function ($q) use ($loginInput) {
+            $q->where('email', $loginInput)
+                ->orWhere('username', $loginInput);
+        })->first();
 
-            // Cek apakah akun masih aktif sebelum melanjutkan
-            if ($user->is_active === false) {
-                Auth::logout();
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
+        if ($localUser && Hash::check($request->input('password'), $localUser->password)) {
+            if ($localUser->is_active === false) {
                 RateLimiter::hit($throttleKey);
                 return back()->withErrors([
                     'email' => 'Akun Anda telah dinonaktifkan. Silakan hubungi admin.',
                 ]);
             }
 
-            // Keamanan: reset hitungan percobaan & regenerasi ID session
-            // agar tidak bisa dijadwalkan serangan session fixation.
+            Auth::login($localUser, $request->boolean('remember'));
             RateLimiter::clear($throttleKey);
             $request->session()->regenerate();
-
-            $user->update(['last_login_at' => now()]);
+            $localUser->update(['last_login_at' => now()]);
 
             LoginLog::create([
-                'user_id' => $user->id,
+                'user_id' => $localUser->id,
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
                 'location' => null,
                 'login_at' => now(),
             ]);
 
-            if ($user->role === 'admin') {
+            if ($localUser->role === 'admin') {
                 return redirect()->route('admin.dashboard');
             }
             return redirect()->route('user.dashboard');
@@ -123,7 +138,7 @@ class AuthController extends Controller
 
         RateLimiter::hit($throttleKey);
 
-        return back()->withErrors(['email' => 'Email atau password salah!']);
+        return back()->withErrors(['email' => 'Email/Username atau password salah!'])->withInput();
     }
 
     public function logout(Request $request)
@@ -154,8 +169,6 @@ class AuthController extends Controller
             'phone' => 'required|string',
             'school_name' => 'required|string',
             'address' => 'nullable|string',
-            'gender' => 'nullable|string',
-            'religion' => 'nullable|string',
             'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
@@ -164,7 +177,7 @@ class AuthController extends Controller
         }
 
         $data = $request->only([
-            'name', 'phone', 'school_name', 'address', 'gender', 'religion'
+            'name', 'phone', 'school_name', 'address'
         ]);
 
         if ($request->hasFile('profile_photo')) {
@@ -181,11 +194,23 @@ class AuthController extends Controller
 
     public function showChangePassword()
     {
-        return Inertia::render('Profile/ChangePassword');
+        $user = Auth::user();
+
+        return Inertia::render('Profile/ChangePassword', [
+            'canChangePassword' => $user->role === 'admin',
+        ]);
     }
 
     public function changePassword(Request $request)
     {
+        $user = Auth::user();
+
+        if ($user->role !== 'admin') {
+            return back()->withErrors([
+                'current_password' => 'Kata sandi akun siswa dikelola terpusat dari Web Induk. Perubahan kata sandi hanya dapat dilakukan melalui Web Induk.',
+            ]);
+        }
+
         $validator = Validator::make($request->all(), [
             'current_password' => 'required',
             'password' => 'required|min:8|confirmed',
@@ -194,8 +219,6 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return back()->withErrors($validator);
         }
-
-        $user = Auth::user();
 
         if (!Hash::check($request->current_password, $user->password)) {
             return back()->withErrors(['current_password' => 'Password lama salah!']);

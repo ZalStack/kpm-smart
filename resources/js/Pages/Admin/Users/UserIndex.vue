@@ -88,14 +88,14 @@ function updateLevel(user, newLevel) {
 
 <template>
     <AdminLayout>
-        <Head title="Kelola Pengguna - Admin" />
+        <Head title="Manajemen Siswa - Admin" />
 
         <template #header-title>
             <div class="flex items-center gap-2">
                 <span class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                     <Icon icon="mdi:account-group-outline" class="w-5 h-5" />
                 </span>
-                <span>Kelola Pengguna</span>
+                <span>Manajemen Siswa</span>
             </div>
         </template>
         <template #header-sub>Manajemen data akun dan profil siswa platform</template>
@@ -223,18 +223,19 @@ function updateLevel(user, newLevel) {
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-border/60 bg-muted/30">
-                                <th class="text-left px-6 py-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Siswa</th>
-                                <th class="text-left px-6 py-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Kelas & Bidang</th>
-                                <th class="text-left px-6 py-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Level</th>
-                                <th class="text-left px-6 py-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Sekolah</th>
-                                <th class="text-left px-6 py-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Status</th>
-                                <th class="text-left px-6 py-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Terdaftar</th>
-                                <th class="text-center px-6 py-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Aksi</th>
+                                <th class="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Pengguna</th>
+                                <th class="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Username</th>
+                                <th class="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Kelas</th>
+                                <th class="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Bidang</th>
+                                <th class="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Asal Sekolah</th>
+                                <th class="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Level</th>
+                                <th class="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Status</th>
+                                <th class="text-center px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-border/50">
                             <tr v-if="users.data.length === 0">
-                                <td colspan="7" class="px-6 py-16 text-center text-muted-foreground">
+                                <td colspan="8" class="px-6 py-16 text-center text-muted-foreground">
                                     <div class="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-3">
                                         <Icon icon="mdi:account-search-outline" class="w-8 h-8 text-muted-foreground/40" />
                                     </div>
@@ -245,11 +246,12 @@ function updateLevel(user, newLevel) {
                             <tr v-for="user in users.data" :key="user.id"
                                 class="hover:bg-muted/30 transition-colors cursor-pointer"
                                 @click="router.get(route('admin.users.show', user.id))">
-                                <td class="px-6 py-4">
+                                <td class="px-5 py-3.5">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-2xl overflow-hidden bg-primary/10 flex items-center justify-center shrink-0 border border-border/60">
-                                            <img v-if="user.profile_photo" :src="'/storage/' + user.profile_photo" class="w-full h-full object-cover" />
-                                            <span v-else class="text-xs font-black text-primary">{{ user.name?.charAt(0)?.toUpperCase() }}</span>
+                                        <div class="w-10 h-10 rounded-full overflow-hidden bg-muted/30 flex items-center justify-center shrink-0 border border-border/60">
+                                            <img v-if="user.profile_photo" :src="user.profile_photo.startsWith('http') ? user.profile_photo : '/storage/' + user.profile_photo" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
+                                            <img v-else :src="'http://127.0.0.1:8000/api/foto/' + encodeURIComponent(user.email)" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
+                                            <span class="text-xs font-black text-primary">{{ user.name?.charAt(0)?.toUpperCase() }}</span>
                                         </div>
                                         <div class="min-w-0">
                                             <p class="font-bold text-foreground truncate hover:text-primary transition-colors">{{ user.name }}</p>
@@ -257,38 +259,31 @@ function updateLevel(user, newLevel) {
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted text-foreground font-semibold text-xs">
-                                        <Icon icon="mdi:school-outline" class="w-3.5 h-3.5 text-primary" />
-                                        Kelas {{ user.student_class || '-' }} &bull; {{ user.bidang || '-' }}
+                                <td class="px-5 py-3.5">
+                                    <span class="text-xs font-mono text-muted-foreground">{{ user.username || user.email?.split('@')[0] || '-' }}</span>
+                                </td>
+                                <td class="px-5 py-3.5">
+                                    <span class="text-xs text-foreground font-medium">{{ user.student_class || '-' }}</span>
+                                </td>
+                                <td class="px-5 py-3.5">
+                                    <span class="text-xs text-foreground font-medium">{{ user.bidang || '-' }}</span>
+                                </td>
+                                <td class="px-5 py-3.5 text-xs text-muted-foreground truncate max-w-[180px]" :title="user.school_name || ''">
+                                    {{ user.school_name || '-' }}
+                                </td>
+                                <td class="px-5 py-3.5">
+                                    <span v-if="user.level" class="text-xs text-foreground font-medium">
+                                        {{ user.level }}
                                     </span>
+                                    <span v-else class="text-xs text-muted-foreground">-</span>
                                 </td>
-                                <td class="px-6 py-4" @click.stop>
-                                    <div class="relative inline-flex items-center">
-                                        <select
-                                            :value="user.level || ''"
-                                            @change="updateLevel(user, $event.target.value)"
-                                            :disabled="updatingLevelId === user.id"
-                                            class="cursor-pointer pl-3 pr-8 py-1.5 rounded-xl text-xs font-bold border transition focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                            :class="user.level ? 'bg-primary/10 text-primary border-primary/30' : 'bg-muted/60 text-muted-foreground border-border'"
-                                        >
-                                            <option value="">Pilih Level</option>
-                                            <option v-for="l in levelOptions" :key="l" :value="l">{{ l }}</option>
-                                        </select>
-                                        <Icon v-if="updatingLevelId === user.id" icon="mdi:loading" class="w-3.5 h-3.5 text-primary animate-spin ml-2" />
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-xs font-medium text-muted-foreground truncate max-w-[180px]">{{ user.school_name || '-' }}</td>
-                                <td class="px-6 py-4">
+                                <td class="px-5 py-3.5">
                                     <Badge :variant="user.is_active ? 'success' : 'destructive'" class="gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold">
                                         <span class="w-1.5 h-1.5 rounded-full" :class="user.is_active ? 'bg-emerald-500' : 'bg-red-500'"></span>
                                         {{ user.is_active ? 'Aktif' : 'Nonaktif' }}
                                     </Badge>
                                 </td>
-                                <td class="px-6 py-4 text-xs text-muted-foreground">
-                                    {{ user.created_at ? new Date(user.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-' }}
-                                </td>
-                                <td class="px-6 py-4 text-center">
+                                <td class="px-5 py-3.5 text-center">
                                     <div class="flex items-center justify-center gap-1.5" @click.stop>
                                         <Link :href="route('admin.users.show', user.id)" class="p-2 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition" title="Detail">
                                             <Icon icon="mdi:eye-outline" class="w-4 h-4" />
@@ -322,9 +317,10 @@ function updateLevel(user, newLevel) {
                      @click="router.get(route('admin.users.show', user.id))">
                     <div class="flex items-center justify-between gap-3">
                         <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-11 h-11 rounded-2xl overflow-hidden bg-primary/10 flex items-center justify-center shrink-0 border border-border/60">
-                                <img v-if="user.profile_photo" :src="'/storage/' + user.profile_photo" class="w-full h-full object-cover" />
-                                <span v-else class="text-sm font-black text-primary">{{ user.name?.charAt(0)?.toUpperCase() }}</span>
+                            <div class="w-11 h-11 rounded-full overflow-hidden bg-muted/30 flex items-center justify-center shrink-0 border border-border/60">
+                                <img v-if="user.profile_photo" :src="user.profile_photo.startsWith('http') ? user.profile_photo : '/storage/' + user.profile_photo" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
+                                <img v-else :src="'http://127.0.0.1:8000/api/foto/' + encodeURIComponent(user.email)" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
+                                <span class="text-sm font-black text-primary">{{ user.name?.charAt(0)?.toUpperCase() }}</span>
                             </div>
                             <div class="min-w-0">
                                 <p class="font-bold text-sm text-foreground truncate">{{ user.name }}</p>
@@ -337,18 +333,30 @@ function updateLevel(user, newLevel) {
                         </Badge>
                     </div>
 
-                    <div class="flex items-center justify-between text-xs text-muted-foreground bg-muted/40 rounded-2xl p-3">
-                        <span class="font-semibold text-foreground">
-                            Kelas {{ user.student_class || '-' }} &bull; {{ user.bidang || '-' }}
-                        </span>
-                        <span class="font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
-                            Level {{ user.level || '-' }}
-                        </span>
+                    <div class="grid grid-cols-2 gap-2 text-xs bg-muted/40 rounded-2xl p-3">
+                        <div>
+                            <span class="block text-[10px] text-muted-foreground font-semibold uppercase">Username</span>
+                            <span class="font-mono text-foreground font-medium">{{ user.username || user.email?.split('@')[0] || '-' }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] text-muted-foreground font-semibold uppercase">Kelas</span>
+                            <span class="font-semibold text-foreground">{{ user.student_class || '-' }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] text-muted-foreground font-semibold uppercase">Bidang</span>
+                            <span class="text-foreground">{{ user.bidang || '-' }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] text-muted-foreground font-semibold uppercase">Level</span>
+                            <span class="font-medium text-foreground">{{ user.level || '-' }}</span>
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-between pt-2 border-t border-border/50 text-xs">
                         <span class="text-muted-foreground truncate max-w-[150px]">{{ user.school_name || '-' }}</span>
                         <div class="flex items-center gap-2" @click.stop>
+                            <Link :href="route('admin.users.show', user.id)" class="text-muted-foreground hover:text-foreground font-bold">Detail</Link>
+                            <span class="text-muted-foreground">&bull;</span>
                             <Link :href="route('admin.users.edit', user.id)" class="text-primary hover:underline font-bold">Edit</Link>
                             <span class="text-muted-foreground">&bull;</span>
                             <button @click="toggleActive(user.id)" :class="user.is_active ? 'text-rose-600' : 'text-emerald-600'" class="font-bold">

@@ -22,6 +22,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user() ? [
                     'id' => $request->user()->id,
                     'name' => $request->user()->name,
+                    'username' => $request->user()->username,
                     'email' => $request->user()->email,
                     'role' => $request->user()->role,
                     'phone' => $request->user()->phone,
@@ -30,8 +31,8 @@ class HandleInertiaRequests extends Middleware
                     'level' => $request->user()->level,
                     'school_name' => $request->user()->school_name,
                     'address' => $request->user()->address,
-                    'gender' => $request->user()->gender,
-                    'religion' => $request->user()->religion,
+                    'parent_name' => $request->user()->parent_name,
+                    'parent_phone' => $request->user()->parent_phone,
                     'profile_photo' => $request->user()->profile_photo,
                     'is_active' => $request->user()->is_active,
                 ] : null,

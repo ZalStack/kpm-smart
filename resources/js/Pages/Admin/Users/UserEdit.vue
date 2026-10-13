@@ -126,15 +126,14 @@ function submit() {
                             <p v-if="form.errors.email" class="text-xs text-destructive">{{ form.errors.email }}</p>
                         </div>
 
-                        <div class="space-y-1.5">
-                            <Label class="text-xs font-semibold text-foreground">Password Baru</Label>
-                            <Input v-model="form.password" type="password" placeholder="Kosongkan jika tidak diubah" class="h-11 rounded-xl bg-background" />
-                            <p v-if="form.errors.password" class="text-xs text-destructive">{{ form.errors.password }}</p>
-                        </div>
-
-                        <div class="space-y-1.5">
-                            <Label class="text-xs font-semibold text-foreground">Konfirmasi Password Baru</Label>
-                            <Input v-model="form.password_confirmation" type="password" placeholder="Ulangi password baru" class="h-11 rounded-xl bg-background" />
+                        <div class="space-y-1.5 sm:col-span-2 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300">
+                            <p class="text-xs font-semibold flex items-center gap-1.5">
+                                <Icon icon="mdi:shield-lock-outline" class="w-4 h-4 text-amber-600" />
+                                Kata Sandi & Username Dikelola Terpusat di Web Induk
+                            </p>
+                            <p class="text-[11px] text-muted-foreground mt-0.5">
+                                Perubahan kata sandi atau username siswa hanya dapat dilakukan melalui portal Web Induk untuk menjaga konsistensi login di seluruh sistem.
+                            </p>
                         </div>
                     </div>
                 </div>

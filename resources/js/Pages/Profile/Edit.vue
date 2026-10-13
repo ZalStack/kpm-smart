@@ -6,7 +6,6 @@ import UserLayout from '@/Layouts/UserLayout.vue';
 import Input from '@/Components/ui/input/Input.vue';
 import Label from '@/Components/ui/label/Label.vue';
 import Button from '@/Components/ui/button/Button.vue';
-import Select from '@/Components/ui/select/Select.vue';
 import Textarea from '@/Components/ui/textarea/Textarea.vue';
 
 const route = inject('route');
@@ -16,13 +15,8 @@ const user = computed(() => page.props.auth?.user);
 const form = useForm({
     name: user.value?.name || '',
     phone: user.value?.phone || '',
-    student_class: user.value?.student_class || '',
-    bidang: user.value?.bidang || '',
-    level: user.value?.level || '',
     school_name: user.value?.school_name || '',
     address: user.value?.address || '',
-    gender: user.value?.gender || '',
-    religion: user.value?.religion || '',
     profile_photo: null,
 });
 
@@ -176,6 +170,16 @@ function submit() {
                         </div>
 
                         <div class="space-y-2">
+                            <Label for="email">Surel / Email</Label>
+                            <Input id="email" :value="user?.email || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label for="username">Username</Label>
+                            <Input id="username" :value="user?.username || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
+                        </div>
+
+                        <div class="space-y-2">
                             <Label for="phone">Nomor WhatsApp / Telepon <span class="text-destructive">*</span></Label>
                             <Input id="phone" v-model="form.phone" required placeholder="08xxxxxxxxxx" class="rounded-xl" />
                             <p v-if="form.errors?.phone" class="text-xs text-destructive">{{ form.errors.phone }}</p>
@@ -188,30 +192,28 @@ function submit() {
                         </div>
 
                         <div class="space-y-2">
-                            <Label for="gender">Jenis Kelamin</Label>
-                            <Select id="gender" v-model="form.gender" class="rounded-xl">
-                                <option value="">Pilih Jenis Kelamin</option>
-                                <option value="Laki-laki">Laki-laki</option>
-                                <option value="Perempuan">Perempuan</option>
-                            </Select>
-                        </div>
-
-                        <div class="space-y-2">
-                            <Label for="religion">Agama</Label>
-                            <Select id="religion" v-model="form.religion" class="rounded-xl">
-                                <option value="">Pilih Agama</option>
-                                <option value="Islam">Islam</option>
-                                <option value="Kristen">Kristen</option>
-                                <option value="Katolik">Katolik</option>
-                                <option value="Hindu">Hindu</option>
-                                <option value="Buddha">Buddha</option>
-                                <option value="Konghucu">Konghucu</option>
-                            </Select>
-                        </div>
-
-                        <div class="space-y-2">
                             <Label for="student_class">Kelas (Dikelola Administrator)</Label>
-                            <Input id="student_class" :value="form.student_class || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
+                            <Input id="student_class" :value="user?.student_class || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label for="bidang">Bidang (Dikelola Administrator)</Label>
+                            <Input id="bidang" :value="user?.bidang || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label for="level">Level Berbakat (Dikelola Administrator)</Label>
+                            <Input id="level" :value="user?.level || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label for="parent_name">Nama Orang Tua (Dikelola Administrator)</Label>
+                            <Input id="parent_name" :value="user?.parent_name || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label for="parent_phone">HP Orang Tua (Dikelola Administrator)</Label>
+                            <Input id="parent_phone" :value="user?.parent_phone || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
                         </div>
                     </div>
 

@@ -25,41 +25,46 @@ class DatabaseSeeder extends Seeder
         $this->command?->warn('Menjalankan seeder dengan akun contoh (password123). Jangan pernah di production.');
 
         // Admin User
-        User::create([
-            'name' => 'Admin PKA Litbang',
-            'email' => 'admin@pkalitbang.id',
-            'password' => 'password123',
-            'role' => 'admin',
-            'is_verified' => true,
-            'is_active' => true,
-            'email_verified_at' => now(),
-        ]);
+        User::firstOrCreate(
+            ['email' => 'admin@pkalitbang.id'],
+            [
+                'name' => 'Admin PKA Litbang',
+                'password' => 'password123',
+                'role' => 'admin',
+                'is_verified' => true,
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ]
+        );
 
         // Test User
-        User::create([
-            'name' => 'User Test',
-            'email' => 'user@test.com',
-            'password' => 'password123',
-            'phone' => '08123456789',
-            'student_name' => 'Test Student',
-            'student_class' => 'XII',
-            'bidang' => 'IPA',
-            'level' => 'Menengah',
-            'school_name' => 'SMA Negeri 1 Jakarta',
-            'gender' => 'Laki-laki',
-            'religion' => 'Islam',
-            'address' => 'Jl. Contoh No. 123, Jakarta',
-            'role' => 'user',
-            'is_verified' => true,
-            'is_active' => true,
-            'email_verified_at' => now(),
-        ]);
+        User::firstOrCreate(
+            ['email' => 'user@test.com'],
+            [
+                'name' => 'User Test',
+                'password' => 'password123',
+                'phone' => '08123456789',
+                'student_name' => 'Test Student',
+                'student_class' => 'XII',
+                'bidang' => 'IPA',
+                'level' => 'Menengah',
+                'school_name' => 'SMA Negeri 1 Jakarta',
+                'gender' => 'Laki-laki',
+                'religion' => 'Islam',
+                'address' => 'Jl. Contoh No. 123, Jakarta',
+                'role' => 'user',
+                'is_verified' => true,
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ]
+        );
 
         // Sample Package
-        $package = Package::create([
-            'title' => 'Paket TOEFL Preparation',
-            'description' => 'Persiapan lengkap untuk menghadapi tes TOEFL dengan soal-soal terbaru dan pembahasan mendetail.',
-            'is_active' => true,
+        $package = Package::firstOrCreate(
+            ['title' => 'Paket TOEFL Preparation'],
+            [
+                'description' => 'Persiapan lengkap untuk menghadapi tes TOEFL dengan soal-soal terbaru dan pembahasan mendetail.',
+                'is_active' => true,
             'cards' => [
                 [
                     'id' => 'card-1',

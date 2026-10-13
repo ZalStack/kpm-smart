@@ -72,16 +72,15 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
 
             <form @submit.prevent="submit" class="space-y-5" novalidate :aria-busy="form.processing">
                 <div class="space-y-2">
-                    <Label for="email">Alamat Email</Label>
+                    <Label for="email">Email atau Username</Label>
                     <Input
                         id="email"
                         v-model="form.email"
-                        type="email"
-                        inputmode="email"
-                        placeholder="nama@sekolah.id"
+                        type="text"
+                        placeholder="Email atau Username..."
                         required
                         autofocus
-                        autocomplete="email"
+                        autocomplete="username"
                         :error="form.errors.email"
                         :aria-describedby="form.errors.email ? 'email-error' : undefined"
                     />

@@ -110,7 +110,7 @@ const navItems = [
     {
         label: 'Manajemen Data',
         items: [
-            { href: route('admin.users.index'), label: 'Pengguna', icon: 'mdi:account-group-outline', activeIcon: 'mdi:account-group', route: 'admin.users.*' },
+            { href: route('admin.users.index'), label: 'Manajemen Siswa', icon: 'mdi:account-group-outline', activeIcon: 'mdi:account-group', route: 'admin.users.*' },
             { href: route('admin.users.import-excel'), label: 'Import User', icon: 'mdi:file-excel-outline', activeIcon: 'mdi:file-excel', route: 'admin.users.import-excel' },
             { href: route('admin.practice-statistics.index'), label: 'Statistik Pengerjaan', icon: 'mdi:chart-box-outline', activeIcon: 'mdi:chart-box', route: 'admin.practice-statistics.*' },
             { href: route('admin.leave-requests.index'), label: 'Pengajuan Izin', icon: 'mdi:calendar-clock-outline', activeIcon: 'mdi:calendar-clock', route: 'admin.leave-requests.*' },
@@ -122,7 +122,7 @@ const navItems = [
 
 const mobileNavItems = [
     { href: route('admin.dashboard'), label: 'Beranda', icon: 'mdi:view-dashboard-outline', route: 'admin.dashboard' },
-    { href: route('admin.users.index'), label: 'Pengguna', icon: 'mdi:account-group-outline', route: 'admin.users.*' },
+    { href: route('admin.users.index'), label: 'Manajemen Siswa', icon: 'mdi:account-group-outline', route: 'admin.users.*' },
     { href: route('admin.packages.index'), label: 'Soal', icon: 'mdi:book-open-variant', route: 'admin.packages.*' },
     { href: route('admin.practice-statistics.index'), label: 'Statistik', icon: 'mdi:chart-box-outline', route: 'admin.practice-statistics.*' },
 ];

@@ -120,22 +120,14 @@ class AdminUserController extends Controller
         $user->is_active = true;
         $user->save();
 
+        $photoPath = null;
         if ($request->hasFile('profile_photo')) {
-            $path = $request->file('profile_photo')->store('profile_photos', 'public');
-            $user->update(['profile_photo' => $path]);
+            $photoPath = $request->file('profile_photo')->store('profile_photos', 'public');
+            $user->update(['profile_photo' => $photoPath]);
         }
 
-        // Teruskan user baru ke Web Induk (otomatis menyebar ke Sunnah Daily dan Sudoku)
-        try {
-            $parentUrl = rtrim(config('app.parent_app_url', 'http://localhost:8000'), '/');
-            \Illuminate\Support\Facades\Http::timeout(3)->post("{$parentUrl}/api/v1/profile/update", [
-                'email' => $user->email,
-                'name' => $user->name,
-                'password' => $validated['password'],
-                'class_name' => $user->student_class,
-                'role' => 'peserta',
-            ]);
-        } catch (\Throwable $e) {}
+        // Teruskan user baru secara realtime ke Web Induk (otomatis menyebar ke seluruh satelit)
+        ParentSyncService::syncUserToParent($user, $validated['password'], $photoPath);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User "' . $user->name . '" berhasil ditambahkan. Email: ' . $user->email);
@@ -208,19 +200,8 @@ class AdminUserController extends Controller
 
         $user->update($data);
 
-        // Teruskan perubahan ke Web Induk (otomatis menyebar ke seluruh web)
-        try {
-            $parentUrl = rtrim(config('app.parent_app_url', 'http://localhost:8000'), '/');
-            $payload = [
-                'email' => $user->email,
-                'name' => $user->name,
-                'class_name' => $user->student_class,
-            ];
-            if (!empty($validated['password'])) {
-                $payload['password'] = $validated['password'];
-            }
-            \Illuminate\Support\Facades\Http::timeout(3)->post("{$parentUrl}/api/v1/profile/update", $payload);
-        } catch (\Throwable $e) {}
+        // Teruskan perubahan ke Web Induk (otomatis menyebar ke seluruh web satelit)
+        ParentSyncService::syncUserToParent($user, $validated['password'] ?? null, $user->profile_photo);
 
         return redirect()->route('admin.users.show', $user->id)
             ->with('success', 'Data user "' . $user->name . '" berhasil diperbarui.');
@@ -236,6 +217,9 @@ class AdminUserController extends Controller
         }
 
         $userName = $user->name;
+        // Notifikasi hapus ke Web Induk
+        ParentSyncService::deleteUserFromParent($user);
+
         $user->delete();
 
         return redirect()->route('admin.users.index')
@@ -249,6 +233,8 @@ class AdminUserController extends Controller
     {
         $user->is_active = !$user->is_active;
         $user->save();
+
+        ParentSyncService::syncUserToParent($user);
 
         return back()->with('success', $user->is_active
             ? 'Akun ' . $user->name . ' diaktifkan kembali.'

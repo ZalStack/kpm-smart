@@ -9,6 +9,10 @@ import Button from '@/Components/ui/button/Button.vue';
 
 const route = inject('route');
 
+const props = defineProps({
+    canChangePassword: { type: Boolean, default: false },
+});
+
 const form = useForm({
     current_password: '',
     password: '',
@@ -20,6 +24,7 @@ const showNew = ref(false);
 const showConfirm = ref(false);
 
 function submit() {
+    if (!props.canChangePassword) return;
     form.put(route('user.profile.change-password.update'));
 }
 </script>
@@ -48,8 +53,19 @@ function submit() {
                 Kembali ke Pengaturan Profil
             </Link>
 
+            <!-- Locked Notice for Students -->
+            <div v-if="!canChangePassword" class="p-5 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-900 shadow-sm flex items-start gap-3.5">
+                <Icon icon="mdi:shield-lock-outline" class="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+                <div class="space-y-1">
+                    <h4 class="text-sm font-bold text-amber-950">Kata Sandi & Akun Dikelola Terpusat</h4>
+                    <p class="text-xs text-amber-800 leading-relaxed">
+                        Akun dan kata sandi siswa disinkronkan langsung dari <strong>Web Induk (KPM Student Smart)</strong>. Demi keamanan dan keseragaman data, perubahan kata sandi hanya dapat dilakukan melalui portal Web Induk.
+                    </p>
+                </div>
+            </div>
+
             <!-- Password Card -->
-            <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm space-y-5">
+            <div v-if="canChangePassword" class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm space-y-5">
                 <form @submit.prevent="submit" class="space-y-5">
                     <!-- Current Password -->
                     <div class="space-y-2">
