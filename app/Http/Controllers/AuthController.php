@@ -63,12 +63,23 @@ class AuthController extends Controller
                 $verifyPayload['username'] = $loginInput;
             }
 
-            $response = Http::timeout(5)
+            \Illuminate\Support\Facades\Log::info('kpm-smart: Login verify attempt to Parent', [
+                'loginInput' => $loginInput,
+                'parentUrl' => $parentUrl,
+            ]);
+
+            $response = Http::timeout(6)
                 ->withHeaders([
                     'X-API-Key' => env('PARENT_APP_API_KEY', 'kpm-satellite-secret-key-2026'),
                     'Accept' => 'application/json',
                 ])
                 ->post("{$parentUrl}/api/v1/verify", $verifyPayload);
+
+            \Illuminate\Support\Facades\Log::info('kpm-smart: Parent verify response', [
+                'status' => $response->status(),
+                'successful' => $response->successful(),
+                'body' => $response->json(),
+            ]);
 
             if ($response->successful() && ($response->json('valid') ?? false)) {
                 $master = $response->json();
