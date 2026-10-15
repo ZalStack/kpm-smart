@@ -1,4 +1,4 @@
-DirectoryIndex index.php public/index.php
+DirectoryIndex public/index.php index.php
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
@@ -15,13 +15,14 @@ DirectoryIndex index.php public/index.php
     RewriteRule ^(storage|bootstrap|database|app|routes|tests)/ - [F,L]
     RewriteRule ^(artisan|vite\.config\.js|postcss\.config\.js|tailwind\.config\.js)$ - [F,L]
 
-    # Forward ke public jika file/folder ada di public
-    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f [OR]
-    RewriteCond %{DOCUMENT_ROOT}/public/$1 -d
-    RewriteRule ^(.*)$ public/$1 [L]
+    # 1. Request root langsung arahkan ke public/index.php
+    RewriteRule ^$ public/index.php [L]
 
-    # Handle request lainnya ke index.php
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ index.php [L]
+    # 2. Jika file fisik ada di dalam folder public, sajikan langsung
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f
+    RewriteRule ^(.+)$ public/$1 [L]
+
+    # 3. Semua request route aplikasi lainnya kirim ke public/index.php
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/index.php [L]
 </IfModule>
