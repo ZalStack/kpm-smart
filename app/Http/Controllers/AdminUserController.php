@@ -543,35 +543,68 @@ class AdminUserController extends Controller
             }
 
             $synced = 0;
+            $activeEmails = [];
             foreach ($users as $pu) {
                 if (empty($pu['email'])) {
                     continue;
                 }
 
+                $activeEmails[] = $pu['email'];
                 $role = in_array($pu['role'] ?? '', ['super_admin', 'administrator', 'admin', 'guru']) ? 'admin' : 'user';
                 $username = $pu['nis'] ?? ($pu['username'] ?? explode('@', $pu['email'])[0]);
                 $avatar = ! empty($pu['foto_profil']) ? $pu['foto_profil'] : "{$parentUrl}/api/foto/".urlencode($pu['email']);
 
+                $userData = [
+                    'name' => $pu['name'] ?? 'User',
+                    'username' => $username,
+                    'student_name' => $pu['name'] ?? 'User',
+                    'student_class' => $pu['kelas'] ?? ($pu['class_name'] ?? 'VII-A'),
+                    'bidang' => $pu['bidang'] ?? 'Matematika & IPA',
+                    'level' => $pu['level'] ?? '1',
+                    'school_name' => $pu['asal_sekolah'] ?? 'KPM Academy',
+                    'role' => $role,
+                    'is_active' => true,
+                    'is_verified' => true,
+                    'profile_photo' => $avatar,
+                ];
+
+                if (! empty($pu['password'])) {
+                    $userData['password'] = $pu['password'];
+                }
+
                 User::updateOrCreate(
                     ['email' => $pu['email']],
-                    [
-                        'name' => $pu['name'] ?? 'User',
-                        'username' => $username,
-                        'student_name' => $pu['name'] ?? 'User',
-                        'student_class' => $pu['kelas'] ?? ($pu['class_name'] ?? 'VII-A'),
-                        'bidang' => $pu['bidang'] ?? 'Matematika & IPA',
-                        'level' => $pu['level'] ?? '1',
-                        'school_name' => $pu['asal_sekolah'] ?? 'KPM Academy',
-                        'role' => $role,
-                        'is_active' => true,
-                        'is_verified' => true,
-                        'profile_photo' => $avatar,
-                    ]
+                    $userData
                 );
                 $synced++;
             }
 
-            return back()->with('success', "Berhasil mensinkronkan {$synced} user dari Web Induk.");
+            // Bersihkan akun yang tidak ada di Web Induk agar jumlah data identik
+            $deleted = 0;
+            if (! empty($activeEmails)) {
+                $currentUserEmail = auth()->user()?->email;
+                $orphans = User::whereNotIn('email', $activeEmails)->get();
+                foreach ($orphans as $orphan) {
+                    if ($orphan->email === $currentUserEmail) {
+                        continue;
+                    }
+                    if ($orphan->profile_photo && ! str_starts_with($orphan->profile_photo, 'http')) {
+                        Storage::disk('public')->delete($orphan->profile_photo);
+                    }
+                    $orphan->practiceSessions()->delete();
+                    $orphan->pushSubscriptions()->delete();
+                    $orphan->loginLogs()->delete();
+                    $orphan->delete();
+                    $deleted++;
+                }
+            }
+
+            $msg = "Berhasil mensinkronkan {$synced} user dari Web Induk.";
+            if ($deleted > 0) {
+                $msg .= " Sebanyak {$deleted} user lama yang tidak ada di Web Induk telah dihapus.";
+            }
+
+            return back()->with('success', $msg);
         } catch (\Throwable $e) {
             return back()->with('error', 'Gagal sinkronisasi data dari Web Induk: '.$e->getMessage());
         }
