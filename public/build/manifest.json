@@ -510,7 +510,7 @@
     "src": "node_modules/katex/dist/fonts/KaTeX_Typewriter-Regular.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-Cyg32uf1.css",
+    "file": "assets/app-gyAhbiSN.css",
     "name": "app",
     "names": [
       "app.css"
@@ -820,7 +820,7 @@
     ]
   },
   "resources/js/Pages/Admin/Users/UserIndex.vue": {
-    "file": "assets/UserIndex-DFPwlRpj.js",
+    "file": "assets/UserIndex-CBtUxPfM.js",
     "name": "UserIndex",
     "src": "resources/js/Pages/Admin/Users/UserIndex.vue",
     "isDynamicEntry": true,
@@ -1174,7 +1174,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-DM52hfjh.js",
+    "file": "assets/app-u190sdVD.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -1232,7 +1232,7 @@
       "resources/js/Pages/Profile/Edit.vue"
     ],
     "css": [
-      "assets/app-Cyg32uf1.css"
+      "assets/app-gyAhbiSN.css"
     ]
   }
 }

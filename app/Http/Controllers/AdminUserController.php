@@ -7,8 +7,8 @@ use App\Support\SearchHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -25,9 +25,9 @@ class AdminUserController extends Controller
             $escapedSearch = SearchHelper::escapeLike($search);
             $query->where(function ($q) use ($escapedSearch) {
                 $q->where('name', 'like', "%{$escapedSearch}%")
-                  ->orWhere('email', 'like', "%{$escapedSearch}%")
-                  ->orWhere('student_name', 'like', "%{$escapedSearch}%")
-                  ->orWhere('school_name', 'like', "%{$escapedSearch}%");
+                    ->orWhere('email', 'like', "%{$escapedSearch}%")
+                    ->orWhere('student_name', 'like', "%{$escapedSearch}%")
+                    ->orWhere('school_name', 'like', "%{$escapedSearch}%");
             });
         }
 
@@ -130,7 +130,7 @@ class AdminUserController extends Controller
         ParentSyncService::syncUserToParent($user, $validated['password'], $photoPath);
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'User "' . $user->name . '" berhasil ditambahkan. Email: ' . $user->email);
+            ->with('success', 'User "'.$user->name.'" berhasil ditambahkan. Email: '.$user->email);
     }
 
     /**
@@ -160,7 +160,7 @@ class AdminUserController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
             'password' => 'nullable|min:8|confirmed',
             'phone' => 'nullable|string|max:20',
             'student_class' => 'nullable|string|max:50',
@@ -187,7 +187,7 @@ class AdminUserController extends Controller
             'religion' => $validated['religion'] ?? null,
         ];
 
-        if (!empty($validated['password'])) {
+        if (! empty($validated['password'])) {
             $data['password'] = $validated['password'];
         }
 
@@ -204,7 +204,7 @@ class AdminUserController extends Controller
         ParentSyncService::syncUserToParent($user, $validated['password'] ?? null, $user->profile_photo);
 
         return redirect()->route('admin.users.show', $user->id)
-            ->with('success', 'Data user "' . $user->name . '" berhasil diperbarui.');
+            ->with('success', 'Data user "'.$user->name.'" berhasil diperbarui.');
     }
 
     /**
@@ -223,7 +223,7 @@ class AdminUserController extends Controller
         $user->delete();
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'User "' . $userName . '" berhasil dihapus.');
+            ->with('success', 'User "'.$userName.'" berhasil dihapus.');
     }
 
     /**
@@ -231,14 +231,14 @@ class AdminUserController extends Controller
      */
     public function toggleActive(User $user)
     {
-        $user->is_active = !$user->is_active;
+        $user->is_active = ! $user->is_active;
         $user->save();
 
         ParentSyncService::syncUserToParent($user);
 
         return back()->with('success', $user->is_active
-            ? 'Akun ' . $user->name . ' diaktifkan kembali.'
-            : 'Akun ' . $user->name . ' dinonaktifkan.');
+            ? 'Akun '.$user->name.' diaktifkan kembali.'
+            : 'Akun '.$user->name.' dinonaktifkan.');
     }
 
     /**
@@ -256,7 +256,7 @@ class AdminUserController extends Controller
         return response()->json([
             'success' => true,
             'level' => $user->level,
-            'message' => 'Level "' . ($user->level ?? '-') . '" berhasil diperbarui.',
+            'message' => 'Level "'.($user->level ?? '-').'" berhasil diperbarui.',
         ]);
     }
 
@@ -313,9 +313,9 @@ class AdminUserController extends Controller
                 if (empty($rows)) {
                     $rows = $sheetRows;
                 } else {
-                    $header = array_map(fn($v) => strtolower(trim((string) ($v ?? ''))), $rows[0]);
+                    $header = array_map(fn ($v) => strtolower(trim((string) ($v ?? ''))), $rows[0]);
                     $isSameHeader = true;
-                    $sheetHeader = array_map(fn($v) => strtolower(trim((string) ($v ?? ''))), $sheetRows[0] ?? []);
+                    $sheetHeader = array_map(fn ($v) => strtolower(trim((string) ($v ?? ''))), $sheetRows[0] ?? []);
                     if (count($header) === count($sheetHeader)) {
                         for ($i = 0; $i < count($header); $i++) {
                             if ($header[$i] !== $sheetHeader[$i]) {
@@ -343,16 +343,19 @@ class AdminUserController extends Controller
 
         $now = now()->toDateTimeString();
         $defaultHashed = Hash::make('password');
-        $usedEmails = array_flip(User::pluck('email')->map(fn($e) => strtolower($e))->toArray());
+        $usedEmails = array_flip(User::pluck('email')->map(fn ($e) => strtolower($e))->toArray());
         $toInsert = [];
         $skipped = 0;
 
         foreach ($rows as $index => $row) {
-            if ($index < 1) continue;
+            if ($index < 1) {
+                continue;
+            }
 
             $nama = trim((string) ($row[$colMap['nama']] ?? ''));
             if ($nama === '') {
                 $skipped++;
+
                 continue;
             }
 
@@ -373,10 +376,10 @@ class AdminUserController extends Controller
             $baseEmail = strtolower($lastName);
 
             $counter = 1;
-            $email = $baseEmail . '@gmail.com';
+            $email = $baseEmail.'@gmail.com';
             while (isset($usedEmails[$email])) {
                 $counter++;
-                $email = $baseEmail . $counter . '@gmail.com';
+                $email = $baseEmail.$counter.'@gmail.com';
             }
             $usedEmails[$email] = true;
 
@@ -402,7 +405,7 @@ class AdminUserController extends Controller
         }
 
         $imported = 0;
-        if (!empty($toInsert)) {
+        if (! empty($toInsert)) {
             foreach (array_chunk($toInsert, 100) as $chunk) {
                 DB::table('users')->insert($chunk);
                 $imported += count($chunk);
@@ -419,17 +422,19 @@ class AdminUserController extends Controller
     private function detectColumns(array $rows): array
     {
         $colMap = [];
-        
+
         // Cari header di baris pertama
         if (empty($rows)) {
             return $colMap;
         }
-        
+
         $headerRow = $rows[0];
         foreach ($headerRow as $i => $val) {
             $v = strtolower(trim((string) ($val ?? '')));
-            if ($v === '') continue;
-            
+            if ($v === '') {
+                continue;
+            }
+
             if (str_contains($v, 'nama')) {
                 $colMap['nama'] = $i;
             } elseif (str_contains($v, 'kelas')) {
@@ -444,20 +449,20 @@ class AdminUserController extends Controller
                 $colMap['level'] = $i;
             }
         }
-        
+
         // Fallback: jika header tidak terdeteksi, cari berdasarkan pola data
         if (empty($colMap['nama'])) {
             foreach (array_slice($rows, 0, 5) as $row) {
                 foreach ($row as $i => $val) {
                     $v = trim((string) ($val ?? ''));
-                    if ($v !== '' && strlen($v) > 3 && !is_numeric($v) && !in_array(strtoupper($v), ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'])) {
+                    if ($v !== '' && strlen($v) > 3 && ! is_numeric($v) && ! in_array(strtoupper($v), ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'])) {
                         $colMap['nama'] = $i;
                         break 2;
                     }
                 }
             }
         }
-        
+
         if (empty($colMap['level'])) {
             foreach (array_slice($rows, 1, 20) as $row) {
                 foreach ($row as $i => $val) {
@@ -469,7 +474,7 @@ class AdminUserController extends Controller
                 }
             }
         }
-        
+
         if (empty($colMap['kelas'])) {
             foreach (array_slice($rows, 1, 10) as $row) {
                 foreach ($row as $i => $val) {
@@ -481,7 +486,7 @@ class AdminUserController extends Controller
                 }
             }
         }
-        
+
         if (empty($colMap['bidang'])) {
             foreach (array_slice($rows, 1, 10) as $row) {
                 foreach ($row as $i => $val) {
@@ -493,15 +498,15 @@ class AdminUserController extends Controller
                 }
             }
         }
-        
+
         if (empty($colMap['sekolah'])) {
             foreach (array_slice($rows, 1, 5) as $row) {
                 foreach ($row as $i => $val) {
                     $v = trim((string) ($val ?? ''));
-                    if ($v !== '' && strlen($v) > 5 && !is_numeric($v) 
-                        && $i !== ($colMap['nama'] ?? -1) 
+                    if ($v !== '' && strlen($v) > 5 && ! is_numeric($v)
+                        && $i !== ($colMap['nama'] ?? -1)
                         && $i !== ($colMap['kelas'] ?? -1)
-                        && $i !== ($colMap['bidang'] ?? -1) 
+                        && $i !== ($colMap['bidang'] ?? -1)
                         && $i !== ($colMap['level'] ?? -1)
                         && $i !== ($colMap['password'] ?? -1)) {
                         $colMap['sekolah'] = $i;
@@ -512,5 +517,63 @@ class AdminUserController extends Controller
         }
 
         return $colMap;
+    }
+
+    /**
+     * Sinkronisasi seluruh user dari Web Induk via REST API
+     */
+    public function syncFromParent(Request $request)
+    {
+        $parentUrl = rtrim(config('app.parent_app_url', env('PARENT_APP_URL', 'https://kelas-khusus.kpmacademic.io')), '/');
+        $apiKey = config('services.parent_api_key', env('PARENT_APP_API_KEY', env('API_SECRET_KEY', 'kpm-satellite-secret-key-2026')));
+
+        try {
+            $response = Http::withHeaders([
+                'X-API-Key' => $apiKey,
+                'Accept' => 'application/json',
+            ])->timeout(15)->get("{$parentUrl}/api/v1/users");
+
+            if (! $response->successful()) {
+                return back()->with('error', 'Gagal menghubungi Web Induk: HTTP '.$response->status());
+            }
+
+            $users = $response->json('data') ?? $response->json();
+            if (! is_array($users)) {
+                return back()->with('error', 'Format respons dari Web Induk tidak valid.');
+            }
+
+            $synced = 0;
+            foreach ($users as $pu) {
+                if (empty($pu['email'])) {
+                    continue;
+                }
+
+                $role = in_array($pu['role'] ?? '', ['super_admin', 'administrator', 'admin', 'guru']) ? 'admin' : 'user';
+                $username = $pu['nis'] ?? ($pu['username'] ?? explode('@', $pu['email'])[0]);
+                $avatar = ! empty($pu['foto_profil']) ? $pu['foto_profil'] : "{$parentUrl}/api/foto/".urlencode($pu['email']);
+
+                User::updateOrCreate(
+                    ['email' => $pu['email']],
+                    [
+                        'name' => $pu['name'] ?? 'User',
+                        'username' => $username,
+                        'student_name' => $pu['name'] ?? 'User',
+                        'student_class' => $pu['kelas'] ?? ($pu['class_name'] ?? 'VII-A'),
+                        'bidang' => $pu['bidang'] ?? 'Matematika & IPA',
+                        'level' => $pu['level'] ?? '1',
+                        'school_name' => $pu['asal_sekolah'] ?? 'KPM Academy',
+                        'role' => $role,
+                        'is_active' => true,
+                        'is_verified' => true,
+                        'profile_photo' => $avatar,
+                    ]
+                );
+                $synced++;
+            }
+
+            return back()->with('success', "Berhasil mensinkronkan {$synced} user dari Web Induk.");
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Gagal sinkronisasi data dari Web Induk: '.$e->getMessage());
+        }
     }
 }

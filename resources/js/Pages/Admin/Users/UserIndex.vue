@@ -84,6 +84,18 @@ function updateLevel(user, newLevel) {
         updatingLevelId.value = null;
     });
 }
+
+const syncing = ref(false);
+function syncFromParent() {
+    if (confirm('Sinkronkan seluruh data user dari Web Induk sekarang?')) {
+        syncing.value = true;
+        router.post(route('admin.users.sync-parent'), {}, {
+            onFinish: () => {
+                syncing.value = false;
+            },
+        });
+    }
+}
 </script>
 
 <template>
@@ -201,7 +213,12 @@ function updateLevel(user, newLevel) {
                             </Select>
                         </div>
 
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <Button type="button" variant="outline" :disabled="syncing" @click="syncFromParent"
+                                    class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-sky-500/30 bg-sky-500/10 text-sky-700 hover:bg-sky-500/20 text-xs sm:text-sm font-semibold transition">
+                                <Icon :icon="syncing ? 'mdi:loading' : 'mdi:sync'" :class="['w-4 h-4 text-sky-600', syncing ? 'animate-spin' : '']" />
+                                <span>{{ syncing ? 'Menyinkronkan...' : 'Sinkron Web Induk' }}</span>
+                            </Button>
                             <Link :href="route('admin.users.import-excel')"
                                   class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 text-xs sm:text-sm font-semibold transition">
                                 <Icon icon="mdi:file-excel-box" class="w-4 h-4 text-amber-600" />

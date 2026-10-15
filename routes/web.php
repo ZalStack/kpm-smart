@@ -66,6 +66,7 @@ Route::prefix('admin')
 
         // Users Management (Full CRUD)
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::post('/users/sync-parent', [AdminUserController::class, 'syncFromParent'])->name('users.sync-parent');
         Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
         Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
         Route::get('/users/import-excel', [AdminUserController::class, 'showImportExcel'])->name('users.import-excel');
