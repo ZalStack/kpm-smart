@@ -222,12 +222,8 @@
       "_utils-xn_YJHkT.js"
     ]
   },
-  "_UserLayout-BlCHP_YS.css": {
-    "file": "assets/UserLayout-BlCHP_YS.css",
-    "src": "_UserLayout-BlCHP_YS.css"
-  },
-  "_UserLayout-zoffFjhp.js": {
-    "file": "assets/UserLayout-zoffFjhp.js",
+  "_UserLayout-Bh_SQfhP.js": {
+    "file": "assets/UserLayout-Bh_SQfhP.js",
     "name": "UserLayout",
     "imports": [
       "_dist-Bx2-cc3D.js",
@@ -236,8 +232,12 @@
       "__plugin-vue_export-helper-BDNMzG2s.js"
     ],
     "css": [
-      "assets/UserLayout-BlCHP_YS.css"
+      "assets/UserLayout-DqI6ckCT.css"
     ]
+  },
+  "_UserLayout-DqI6ckCT.css": {
+    "file": "assets/UserLayout-DqI6ckCT.css",
+    "src": "_UserLayout-DqI6ckCT.css"
   },
   "__plugin-vue_export-helper-BDNMzG2s.js": {
     "file": "assets/_plugin-vue_export-helper-BDNMzG2s.js",
@@ -510,7 +510,7 @@
     "src": "node_modules/katex/dist/fonts/KaTeX_Typewriter-Regular.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DQH0R2Nh.css",
+    "file": "assets/app-BxSzwUHJ.css",
     "name": "app",
     "names": [
       "app.css"
@@ -849,7 +849,7 @@
     ]
   },
   "resources/js/Pages/Announcements/AnnouncementShow.vue": {
-    "file": "assets/AnnouncementShow-B7rVUwgA.js",
+    "file": "assets/AnnouncementShow-BAqPLL4L.js",
     "name": "AnnouncementShow",
     "src": "resources/js/Pages/Announcements/AnnouncementShow.vue",
     "isDynamicEntry": true,
@@ -857,7 +857,7 @@
       "_dist-Bx2-cc3D.js",
       "_offline-B4pQi2QP.js",
       "_Button-sDaILUDv.js",
-      "_UserLayout-zoffFjhp.js"
+      "_UserLayout-Bh_SQfhP.js"
     ]
   },
   "resources/js/Pages/Auth/ForgotPassword.vue": {
@@ -925,31 +925,31 @@
     ]
   },
   "resources/js/Pages/Dashboard/UserDashboard.vue": {
-    "file": "assets/UserDashboard-BdYCX443.js",
+    "file": "assets/UserDashboard-MGjspuIR.js",
     "name": "UserDashboard",
     "src": "resources/js/Pages/Dashboard/UserDashboard.vue",
     "isDynamicEntry": true,
     "imports": [
       "_dist-Bx2-cc3D.js",
       "_offline-B4pQi2QP.js",
-      "_UserLayout-zoffFjhp.js",
+      "_UserLayout-Bh_SQfhP.js",
       "_StatCard-DSWlWOup.js"
     ]
   },
   "resources/js/Pages/Gamification/Analytics.vue": {
-    "file": "assets/Analytics-Bzv45TBy.js",
+    "file": "assets/Analytics-BnUmPw_T.js",
     "name": "Analytics",
     "src": "resources/js/Pages/Gamification/Analytics.vue",
     "isDynamicEntry": true,
     "imports": [
       "_dist-Bx2-cc3D.js",
       "_offline-B4pQi2QP.js",
-      "_UserLayout-zoffFjhp.js",
+      "_UserLayout-Bh_SQfhP.js",
       "_StatCard-DSWlWOup.js"
     ]
   },
   "resources/js/Pages/Gamification/Leaderboard.vue": {
-    "file": "assets/Leaderboard-gDoA7zDT.js",
+    "file": "assets/Leaderboard-CgEQCqLZ.js",
     "name": "Leaderboard",
     "src": "resources/js/Pages/Gamification/Leaderboard.vue",
     "isDynamicEntry": true,
@@ -957,11 +957,11 @@
       "_dist-Bx2-cc3D.js",
       "_offline-B4pQi2QP.js",
       "_Input--wVhL1-2.js",
-      "_UserLayout-zoffFjhp.js"
+      "_UserLayout-Bh_SQfhP.js"
     ]
   },
   "resources/js/Pages/Notifications/NotificationIndex.vue": {
-    "file": "assets/NotificationIndex-Cn7E-nan.js",
+    "file": "assets/NotificationIndex-B7kxPTqi.js",
     "name": "NotificationIndex",
     "src": "resources/js/Pages/Notifications/NotificationIndex.vue",
     "isDynamicEntry": true,
@@ -971,11 +971,11 @@
       "_Pagination-fHdHT35I.js",
       "_utils-xn_YJHkT.js",
       "_Button-sDaILUDv.js",
-      "_UserLayout-zoffFjhp.js"
+      "_UserLayout-Bh_SQfhP.js"
     ]
   },
   "resources/js/Pages/Packages/PackageDetail.vue": {
-    "file": "assets/PackageDetail-Bv5Vrh5v.js",
+    "file": "assets/PackageDetail-CjvrA7J9.js",
     "name": "PackageDetail",
     "src": "resources/js/Pages/Packages/PackageDetail.vue",
     "isDynamicEntry": true,
@@ -984,11 +984,11 @@
       "_offline-B4pQi2QP.js",
       "_Button-sDaILUDv.js",
       "_Badge-Ck9x78GV.js",
-      "_UserLayout-zoffFjhp.js"
+      "_UserLayout-Bh_SQfhP.js"
     ]
   },
   "resources/js/Pages/Packages/PackageList.vue": {
-    "file": "assets/PackageList-CmuxuUgw.js",
+    "file": "assets/PackageList-DkMiUQwv.js",
     "name": "PackageList",
     "src": "resources/js/Pages/Packages/PackageList.vue",
     "isDynamicEntry": true,
@@ -999,7 +999,7 @@
       "_Button-sDaILUDv.js",
       "_Input--wVhL1-2.js",
       "_Select-Dyiqu2zQ.js",
-      "_UserLayout-zoffFjhp.js"
+      "_UserLayout-Bh_SQfhP.js"
     ]
   },
   "resources/js/Pages/Pages/Faq.vue": {
@@ -1040,7 +1040,7 @@
     ]
   },
   "resources/js/Pages/Practice/LeaveRequestForm.vue": {
-    "file": "assets/LeaveRequestForm-D7ZrcO5n.js",
+    "file": "assets/LeaveRequestForm-BpxGoOh-.js",
     "name": "LeaveRequestForm",
     "src": "resources/js/Pages/Practice/LeaveRequestForm.vue",
     "isDynamicEntry": true,
@@ -1050,11 +1050,11 @@
       "_Button-sDaILUDv.js",
       "_Label-XBRBpF3z.js",
       "_Textarea-Ps1jA78R.js",
-      "_UserLayout-zoffFjhp.js"
+      "_UserLayout-Bh_SQfhP.js"
     ]
   },
   "resources/js/Pages/Practice/LeaveRequestIndex.vue": {
-    "file": "assets/LeaveRequestIndex-BUKUOdUd.js",
+    "file": "assets/LeaveRequestIndex-CSAAl5aC.js",
     "name": "LeaveRequestIndex",
     "src": "resources/js/Pages/Practice/LeaveRequestIndex.vue",
     "isDynamicEntry": true,
@@ -1064,11 +1064,11 @@
       "_Pagination-fHdHT35I.js",
       "_utils-xn_YJHkT.js",
       "_Button-sDaILUDv.js",
-      "_UserLayout-zoffFjhp.js"
+      "_UserLayout-Bh_SQfhP.js"
     ]
   },
   "resources/js/Pages/Practice/PracticeHistory.vue": {
-    "file": "assets/PracticeHistory-BGt-WpO6.js",
+    "file": "assets/PracticeHistory-NfI24-gi.js",
     "name": "PracticeHistory",
     "src": "resources/js/Pages/Practice/PracticeHistory.vue",
     "isDynamicEntry": true,
@@ -1079,27 +1079,27 @@
       "_utils-xn_YJHkT.js",
       "_Input--wVhL1-2.js",
       "_Select-Dyiqu2zQ.js",
-      "_UserLayout-zoffFjhp.js"
+      "_UserLayout-Bh_SQfhP.js"
     ],
     "css": [
       "assets/PracticeHistory-pb2s-fWT.css"
     ]
   },
   "resources/js/Pages/Practice/PracticeResult.vue": {
-    "file": "assets/PracticeResult-DD0fIB4G.js",
+    "file": "assets/PracticeResult-DuF-MeY2.js",
     "name": "PracticeResult",
     "src": "resources/js/Pages/Practice/PracticeResult.vue",
     "isDynamicEntry": true,
     "imports": [
       "_dist-Bx2-cc3D.js",
       "_offline-B4pQi2QP.js",
-      "_UserLayout-zoffFjhp.js",
+      "_UserLayout-Bh_SQfhP.js",
       "_confetti.module-Uxh4CK4s.js",
       "_MathRenderer-eRYrDTwO.js"
     ]
   },
   "resources/js/Pages/Practice/PracticeShow.vue": {
-    "file": "assets/PracticeShow-BcMAJqoL.js",
+    "file": "assets/PracticeShow-C0bBc0vT.js",
     "name": "PracticeShow",
     "src": "resources/js/Pages/Practice/PracticeShow.vue",
     "isDynamicEntry": true,
@@ -1107,13 +1107,13 @@
       "_dist-Bx2-cc3D.js",
       "_offline-B4pQi2QP.js",
       "_Badge-Ck9x78GV.js",
-      "_UserLayout-zoffFjhp.js",
+      "_UserLayout-Bh_SQfhP.js",
       "_confetti.module-Uxh4CK4s.js",
       "_MathRenderer-eRYrDTwO.js"
     ]
   },
   "resources/js/Pages/Practice/PracticeStart.vue": {
-    "file": "assets/PracticeStart-B-u5uf6i.js",
+    "file": "assets/PracticeStart-CPvm7y27.js",
     "name": "PracticeStart",
     "src": "resources/js/Pages/Practice/PracticeStart.vue",
     "isDynamicEntry": true,
@@ -1122,7 +1122,7 @@
       "_offline-B4pQi2QP.js",
       "__plugin-vue_export-helper-BDNMzG2s.js",
       "_Button-sDaILUDv.js",
-      "_UserLayout-zoffFjhp.js",
+      "_UserLayout-Bh_SQfhP.js",
       "_MathRenderer-eRYrDTwO.js"
     ],
     "css": [
@@ -1130,7 +1130,7 @@
     ]
   },
   "resources/js/Pages/Practice/PracticeStatistics.vue": {
-    "file": "assets/PracticeStatistics-C1mDprfF.js",
+    "file": "assets/PracticeStatistics-CrjeTRNZ.js",
     "name": "PracticeStatistics",
     "src": "resources/js/Pages/Practice/PracticeStatistics.vue",
     "isDynamicEntry": true,
@@ -1138,14 +1138,14 @@
       "_dist-Bx2-cc3D.js",
       "_offline-B4pQi2QP.js",
       "__plugin-vue_export-helper-BDNMzG2s.js",
-      "_UserLayout-zoffFjhp.js"
+      "_UserLayout-Bh_SQfhP.js"
     ],
     "css": [
       "assets/PracticeStatistics-DDm6LWqS.css"
     ]
   },
   "resources/js/Pages/Profile/ChangePassword.vue": {
-    "file": "assets/ChangePassword-C7Eib9A9.js",
+    "file": "assets/ChangePassword-CHIZ-Fks.js",
     "name": "ChangePassword",
     "src": "resources/js/Pages/Profile/ChangePassword.vue",
     "isDynamicEntry": true,
@@ -1155,11 +1155,11 @@
       "_Button-sDaILUDv.js",
       "_Input--wVhL1-2.js",
       "_Label-XBRBpF3z.js",
-      "_UserLayout-zoffFjhp.js"
+      "_UserLayout-Bh_SQfhP.js"
     ]
   },
   "resources/js/Pages/Profile/Edit.vue": {
-    "file": "assets/Edit-DE2k-5OF.js",
+    "file": "assets/Edit-DF21rWMT.js",
     "name": "Edit",
     "src": "resources/js/Pages/Profile/Edit.vue",
     "isDynamicEntry": true,
@@ -1170,11 +1170,11 @@
       "_Input--wVhL1-2.js",
       "_Label-XBRBpF3z.js",
       "_Textarea-Ps1jA78R.js",
-      "_UserLayout-zoffFjhp.js"
+      "_UserLayout-Bh_SQfhP.js"
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-CHnMKYO2.js",
+    "file": "assets/app-BaRme6FM.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -1232,7 +1232,7 @@
       "resources/js/Pages/Profile/Edit.vue"
     ],
     "css": [
-      "assets/app-DQH0R2Nh.css"
+      "assets/app-BxSzwUHJ.css"
     ]
   }
 }
