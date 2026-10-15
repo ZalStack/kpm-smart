@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -63,7 +64,7 @@ class AuthController extends Controller
                 $verifyPayload['username'] = $loginInput;
             }
 
-            \Illuminate\Support\Facades\Log::info('kpm-smart: Login verify attempt to Parent', [
+            Log::info('kpm-smart: Login verify attempt to Parent', [
                 'loginInput' => $loginInput,
                 'parentUrl' => $parentUrl,
             ]);
@@ -75,7 +76,7 @@ class AuthController extends Controller
                 ])
                 ->post("{$parentUrl}/api/v1/verify", $verifyPayload);
 
-            \Illuminate\Support\Facades\Log::info('kpm-smart: Parent verify response', [
+            Log::info('kpm-smart: Parent verify response', [
                 'status' => $response->status(),
                 'successful' => $response->successful(),
                 'body' => $response->json(),
@@ -83,7 +84,7 @@ class AuthController extends Controller
 
             if ($response->successful() && ($response->json('valid') ?? false)) {
                 $master = $response->json();
-                $role = in_array($master['role'], ['super_admin', 'administrator', 'guru']) ? 'admin' : 'user';
+                $role = in_array($master['role'], ['super_admin', 'administrator', 'admin', 'guru']) ? 'admin' : 'user';
                 $fotoProfil = $master['foto_profil'] ?? "{$parentUrl}/api/foto/".urlencode($master['email']);
                 $username = $master['nis'] ?: explode('@', $master['email'])[0];
 

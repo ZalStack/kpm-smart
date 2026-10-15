@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Package;
 use App\Models\PracticeSession;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -12,6 +12,10 @@ class DashboardController extends Controller
 {
     public function userDashboard()
     {
+        if (Auth::check() && Auth::user()->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
         $packages = Package::where('is_active', true)->take(6)->get();
         $sessions = PracticeSession::where('status', 'completed')
             ->selectRaw('COUNT(*) as total, MAX(total_score) as best, AVG(total_score) as avg_score')
@@ -43,9 +47,10 @@ class DashboardController extends Controller
 
         $packageStats = Package::withCount('practiceSessions')
             ->get()
-            ->map(function($package) {
+            ->map(function ($package) {
                 $completed = $package->practiceSessions()->where('status', 'completed')->count();
                 $avgScore = $package->practiceSessions()->where('status', 'completed')->avg('total_score') ?? 0;
+
                 return [
                     'name' => $package->title,
                     'sessions_count' => $package->practice_sessions_count ?? 0,
@@ -61,7 +66,7 @@ class DashboardController extends Controller
                     'sessions_count' => 0,
                     'completed_count' => 0,
                     'avg_score' => 0,
-                ]
+                ],
             ]);
         }
 

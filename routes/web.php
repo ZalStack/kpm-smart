@@ -1,22 +1,30 @@
 <?php
 
+use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\PackageController;
-use App\Http\Controllers\PracticeController;
-use App\Http\Controllers\AdminUserController;
-use App\Http\Controllers\PracticeStatisticsController;
+use App\Http\Controllers\GamificationController;
+use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\LoginLogController;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\LeaveRequestController;
-use App\Http\Controllers\GamificationController;
-use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\PackageController;
+use App\Http\Controllers\PracticeController;
+use App\Http\Controllers\PracticeStatisticsController;
 use App\Http\Controllers\PushNotificationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-// Redirect ke Login
-Route::get('/', fn () => redirect()->route('login'));
+// Redirect ke Dashboard jika login, atau Login jika belum
+Route::get('/', function () {
+    if (auth()->check()) {
+        return auth()->user()->role === 'admin'
+            ? redirect()->route('admin.dashboard')
+            : redirect()->route('user.dashboard');
+    }
+
+    return redirect()->route('login');
+});
 
 // Halaman Informasi Publik (Fitur, Panduan, FAQ)
 Route::get('/fitur', fn () => Inertia::render('Pages/Features'))->name('pages.features');
@@ -214,4 +222,3 @@ Route::name('user.')->group(function () {
     // Announcements (User) - Detail pengumuman dari notifikasi
     Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
 });
-
