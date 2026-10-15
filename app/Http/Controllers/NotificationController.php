@@ -35,8 +35,16 @@ class NotificationController extends Controller
 
     public function dropdown(Request $request): JsonResponse
     {
-        $notifications = NotificationService::getLatest(auth()->id(), 5);
-        $unreadCount = NotificationService::getUnreadCount(auth()->id());
+        $userId = auth()->id();
+        if (!$userId) {
+            return response()->json([
+                'notifications' => [],
+                'unread_count' => 0,
+            ]);
+        }
+
+        $notifications = NotificationService::getLatest($userId, 5);
+        $unreadCount = NotificationService::getUnreadCount($userId);
 
         $data = $notifications->map(function ($notif) {
             return [
@@ -58,17 +66,23 @@ class NotificationController extends Controller
 
     public function markAsRead(int $id): JsonResponse
     {
-        NotificationService::markAsRead($id, auth()->id());
+        $userId = auth()->id();
+        if ($userId) {
+            NotificationService::markAsRead($id, $userId);
+        }
 
         return response()->json([
             'success' => true,
-            'unread_count' => NotificationService::getUnreadCount(auth()->id()),
+            'unread_count' => $userId ? NotificationService::getUnreadCount($userId) : 0,
         ]);
     }
 
     public function markAllAsRead(): JsonResponse
     {
-        NotificationService::markAllAsRead(auth()->id());
+        $userId = auth()->id();
+        if ($userId) {
+            NotificationService::markAllAsRead($userId);
+        }
 
         return response()->json([
             'success' => true,

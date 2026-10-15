@@ -53,21 +53,33 @@ class NotificationService
             ->update(['read_at' => now()]);
     }
 
-    public static function getUnreadCount(int $userId): int
+    public static function getUnreadCount(?int $userId): int
     {
+        if (!$userId) {
+            return 0;
+        }
+
         return Notification::forUser($userId)->unread()->count();
     }
 
-    public static function getLatest(int $userId, int $limit = 5): Collection
+    public static function getLatest(?int $userId, int $limit = 5): Collection
     {
+        if (!$userId) {
+            return collect();
+        }
+
         return Notification::forUser($userId)
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
     }
 
-    public static function getAll(int $userId, int $perPage = 20)
+    public static function getAll(?int $userId, int $perPage = 20)
     {
+        if (!$userId) {
+            return collect();
+        }
+
         return Notification::forUser($userId)
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
