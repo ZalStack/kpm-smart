@@ -1,3 +1,5 @@
+DirectoryIndex index.php public/index.php
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
@@ -13,6 +15,13 @@
     RewriteRule ^(storage|bootstrap|database|app|routes|tests)/ - [F,L]
     RewriteRule ^(artisan|vite\.config\.js|postcss\.config\.js|tailwind\.config\.js)$ - [F,L]
 
-    # Redirect semua request ke public/
+    # Forward ke public jika file/folder ada di public
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -d
     RewriteRule ^(.*)$ public/$1 [L]
+
+    # Handle request lainnya ke index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
 </IfModule>
