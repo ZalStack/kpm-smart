@@ -51,6 +51,14 @@ Route::prefix('satellite')->name('api.satellite.')->middleware('api.key')->group
     // Sync weekly report from satellite
     Route::post('/weekly-report/sync', [SatelliteApiController::class, 'syncWeeklyReport'])
         ->name('weekly-report.sync');
+
+    // Realtime User sync from Web Induk
+    Route::post('/users/sync', [SatelliteApiController::class, 'syncUser'])
+        ->name('users.sync');
+    Route::post('/users/delete', [SatelliteApiController::class, 'deleteUser'])
+        ->name('users.delete');
+    Route::post('/users/clean-orphans', [SatelliteApiController::class, 'cleanOrphans'])
+        ->name('users.clean-orphans');
 });
 
 // ==========================================

@@ -189,4 +189,105 @@ class SatelliteApiController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Menerima sinkronisasi user realtime dari Web Induk via HTTP POST
+     */
+    public function syncUser(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'name' => 'required|string',
+            'role' => 'nullable|string',
+            'username' => 'nullable|string',
+            'password' => 'nullable|string',
+            'kelas' => 'nullable|string',
+            'bidang' => 'nullable|string',
+            'asal_sekolah' => 'nullable|string',
+            'level' => 'nullable|string',
+            'foto_profil' => 'nullable|string',
+            'is_active' => 'nullable',
+        ]);
+
+        $role = in_array($validated['role'] ?? '', ['super_admin', 'administrator', 'admin', 'guru']) ? 'admin' : 'user';
+        $username = $validated['username'] ?? explode('@', $validated['email'])[0];
+        $avatar = $validated['foto_profil'] ?? null;
+
+        $existing = User::where('email', $validated['email'])->first();
+        $data = [
+            'name' => $validated['name'],
+            'username' => $username,
+            'student_name' => $validated['name'],
+            'student_class' => $validated['kelas'] ?? 'VII-A',
+            'bidang' => $validated['bidang'] ?? 'Matematika & IPA',
+            'level' => $validated['level'] ?? '1',
+            'school_name' => $validated['asal_sekolah'] ?? 'KPM Academy',
+            'role' => $role,
+            'is_active' => filter_var($validated['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'is_verified' => true,
+        ];
+        if ($avatar) {
+            $data['profile_photo'] = $avatar;
+        }
+        if (! empty($validated['password'])) {
+            $data['password'] = $validated['password'];
+        } elseif (! $existing) {
+            $data['password'] = 'kpm12345';
+        }
+
+        $user = User::updateOrCreate(['email' => $validated['email']], $data);
+
+        return response()->json([
+            'success' => true,
+            'message' => "User {$user->name} berhasil disinkronkan di KPM Smart",
+            'user' => $user,
+        ]);
+    }
+
+    /**
+     * Menerima penghapusan user realtime dari Web Induk via HTTP POST
+     */
+    public function deleteUser(Request $request): JsonResponse
+    {
+        $email = $request->input('email');
+        $user = User::where('email', $email)->first();
+
+        if ($user) {
+            $user->practiceSessions()->delete();
+            $user->pushSubscriptions()->delete();
+            $user->loginLogs()->delete();
+            $user->delete();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "User {$email} berhasil dihapus dari KPM Smart",
+        ]);
+    }
+
+    /**
+     * Membersihkan siswa orphan di KPM Smart yang tidak ada di Web Induk
+     */
+    public function cleanOrphans(Request $request): JsonResponse
+    {
+        $activeEmails = $request->input('active_emails', []);
+        $deletedCount = 0;
+
+        if (! empty($activeEmails) && is_array($activeEmails)) {
+            $orphanUsers = User::where('role', 'user')->whereNotIn('email', $activeEmails)->get();
+            $deletedCount = $orphanUsers->count();
+            foreach ($orphanUsers as $user) {
+                $user->practiceSessions()->delete();
+                $user->pushSubscriptions()->delete();
+                $user->loginLogs()->delete();
+                $user->delete();
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$deletedCount} orphan user berhasil dibersihkan",
+            'deleted_count' => $deletedCount,
+        ]);
+    }
 }
