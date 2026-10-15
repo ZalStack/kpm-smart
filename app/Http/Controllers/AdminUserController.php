@@ -554,6 +554,7 @@ class AdminUserController extends Controller
                 $username = $pu['nis'] ?? ($pu['username'] ?? explode('@', $pu['email'])[0]);
                 $avatar = ! empty($pu['foto_profil']) ? $pu['foto_profil'] : "{$parentUrl}/api/foto/".urlencode($pu['email']);
 
+                $existingUser = User::where('email', $pu['email'])->first();
                 $userData = [
                     'name' => $pu['name'] ?? 'User',
                     'username' => $username,
@@ -570,6 +571,8 @@ class AdminUserController extends Controller
 
                 if (! empty($pu['password'])) {
                     $userData['password'] = $pu['password'];
+                } elseif (! $existingUser) {
+                    $userData['password'] = 'kpm12345';
                 }
 
                 User::updateOrCreate(
