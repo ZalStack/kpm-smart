@@ -250,7 +250,7 @@ function updateLevel(user, newLevel) {
                                     <div class="flex items-center gap-3">
                                         <div class="w-10 h-10 rounded-full overflow-hidden bg-muted/30 flex items-center justify-center shrink-0 border border-border/60">
                                             <img v-if="user.profile_photo" :src="user.profile_photo.startsWith('http') ? user.profile_photo : '/storage/' + user.profile_photo" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
-                                            <img v-else :src="'http://127.0.0.1:8000/api/foto/' + encodeURIComponent(user.email)" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
+                                            <img v-else :src="'https://kelas-khusus.kpmacademic.io/api/foto/' + encodeURIComponent(user.email)" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
                                             <span class="text-xs font-black text-primary">{{ user.name?.charAt(0)?.toUpperCase() }}</span>
                                         </div>
                                         <div class="min-w-0">
@@ -319,7 +319,7 @@ function updateLevel(user, newLevel) {
                         <div class="flex items-center gap-3 min-w-0">
                             <div class="w-11 h-11 rounded-full overflow-hidden bg-muted/30 flex items-center justify-center shrink-0 border border-border/60">
                                 <img v-if="user.profile_photo" :src="user.profile_photo.startsWith('http') ? user.profile_photo : '/storage/' + user.profile_photo" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
-                                <img v-else :src="'http://127.0.0.1:8000/api/foto/' + encodeURIComponent(user.email)" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
+                                <img v-else :src="'https://kelas-khusus.kpmacademic.io/api/foto/' + encodeURIComponent(user.email)" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
                                 <span class="text-sm font-black text-primary">{{ user.name?.charAt(0)?.toUpperCase() }}</span>
                             </div>
                             <div class="min-w-0">

@@ -11,10 +11,10 @@ class ParentWeeklyReportService
     /**
      * Kirim progres hasil belajar mingguan PR / Latihan Soal ke Web Induk (kpm-student-smart)
      *
-     * @param string $email Email siswa
-     * @param int $score Nilai latihan/PR (0-100)
-     * @param bool $completed Status selesai
-     * @param string|null $notes Catatan
+     * @param  string  $email  Email siswa
+     * @param  int  $score  Nilai latihan/PR (0-100)
+     * @param  bool  $completed  Status selesai
+     * @param  string|null  $notes  Catatan
      */
     public static function report(string $email, int $score, bool $completed = true, ?string $notes = null): bool
     {
@@ -22,17 +22,22 @@ class ParentWeeklyReportService
         $year = (string) date('Y');
 
         // 1. Coba via API HTTP jika parent app hidup
-        $baseUrl = rtrim(config('app.parent_app_url', 'http://localhost:8000'), '/');
+        $baseUrl = rtrim(config('app.parent_app_url', 'https://kelas-khusus.kpmacademic.io'), '/');
         try {
-            $response = Http::timeout(3)->post("{$baseUrl}/api/v1/weekly-reports/update-progress", [
-                'email' => $email,
-                'source' => 'pr',
-                'score' => $score,
-                'completed' => $completed,
-                'week_number' => $weekNumber,
-                'year' => $year,
-                'notes' => $notes,
-            ]);
+            $response = Http::timeout(5)
+                ->withHeaders([
+                    'X-API-Key' => env('PARENT_APP_API_KEY', 'kpm-satellite-secret-key-2026'),
+                    'Accept' => 'application/json',
+                ])
+                ->post("{$baseUrl}/api/v1/weekly-reports/update-progress", [
+                    'email' => $email,
+                    'source' => 'pr',
+                    'score' => $score,
+                    'completed' => $completed,
+                    'week_number' => $weekNumber,
+                    'year' => $year,
+                    'notes' => $notes,
+                ]);
 
             if ($response->successful()) {
                 return true;
@@ -43,7 +48,7 @@ class ParentWeeklyReportService
 
         // 2. Fallback: gunakan database path dari config
         $dbPath = config('database.connections.sqlite.database', database_path('database.sqlite'));
-        if (!file_exists($dbPath)) {
+        if (! file_exists($dbPath)) {
             return false;
         }
 
@@ -52,16 +57,16 @@ class ParentWeeklyReportService
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
             // Cari student_id dari email user
-            $stmt = $pdo->prepare("
+            $stmt = $pdo->prepare('
                 SELECT s.id FROM students s
                 JOIN users u ON u.id = s.user_id
                 WHERE u.email = :email
                 LIMIT 1
-            ");
+            ');
             $stmt->execute([':email' => $email]);
             $studentId = $stmt->fetchColumn();
 
-            if (!$studentId) {
+            if (! $studentId) {
                 return false;
             }
 
@@ -89,7 +94,8 @@ class ParentWeeklyReportService
 
             return true;
         } catch (\Throwable $e) {
-            Log::error('ParentWeeklyReportService PR fallback error: ' . $e->getMessage());
+            Log::error('ParentWeeklyReportService PR fallback error: '.$e->getMessage());
+
             return false;
         }
     }

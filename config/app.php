@@ -52,7 +52,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'https://kpm-smart.kpmacademic.io'),
 
     /*
     |--------------------------------------------------------------------------
@@ -63,7 +63,7 @@ return [
     |
     */
 
-    'parent_app_url' => env('PARENT_APP_URL', 'http://localhost:8000'),
+    'parent_app_url' => env('PARENT_APP_URL', 'https://kelas-khusus.kpmacademic.io'),
 
     /*
     |--------------------------------------------------------------------------

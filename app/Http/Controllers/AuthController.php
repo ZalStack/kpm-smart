@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\LoginLog;
+use App\Models\User;
 use App\Support\Mailer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -40,7 +41,7 @@ class AuthController extends Controller
         }
 
         // Keamanan (anti brute-force): maksimal 5 percobaan per menit
-        $throttleKey = Str::transliterate(Str::lower($loginInput) . '|' . $request->ip());
+        $throttleKey = Str::transliterate(Str::lower($loginInput).'|'.$request->ip());
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
@@ -51,7 +52,7 @@ class AuthController extends Controller
         }
 
         // 1. Coba verifikasi & auto-sync langsung dari Web Induk / Master App
-        $parentUrl = rtrim(config('app.parent_app_url', 'http://localhost:8000'), '/');
+        $parentUrl = rtrim(config('app.parent_app_url', 'https://kelas-khusus.kpmacademic.io'), '/');
         try {
             $verifyPayload = [
                 'password' => $request->input('password'),
@@ -62,12 +63,17 @@ class AuthController extends Controller
                 $verifyPayload['username'] = $loginInput;
             }
 
-            $response = \Illuminate\Support\Facades\Http::timeout(3)->post("{$parentUrl}/api/v1/verify", $verifyPayload);
+            $response = Http::timeout(5)
+                ->withHeaders([
+                    'X-API-Key' => env('PARENT_APP_API_KEY', 'kpm-satellite-secret-key-2026'),
+                    'Accept' => 'application/json',
+                ])
+                ->post("{$parentUrl}/api/v1/verify", $verifyPayload);
 
             if ($response->successful() && ($response->json('valid') ?? false)) {
                 $master = $response->json();
                 $role = in_array($master['role'], ['super_admin', 'administrator', 'guru']) ? 'admin' : 'user';
-                $fotoProfil = $master['foto_profil'] ?? "{$parentUrl}/api/foto/" . urlencode($master['email']);
+                $fotoProfil = $master['foto_profil'] ?? "{$parentUrl}/api/foto/".urlencode($master['email']);
                 $username = $master['nis'] ?: explode('@', $master['email'])[0];
 
                 $user = User::updateOrCreate(
@@ -97,6 +103,7 @@ class AuthController extends Controller
                 if ($user->role === 'admin') {
                     return redirect()->route('admin.dashboard');
                 }
+
                 return redirect()->intended(route('dashboard'));
             }
         } catch (\Throwable $e) {
@@ -112,6 +119,7 @@ class AuthController extends Controller
         if ($localUser && Hash::check($request->input('password'), $localUser->password)) {
             if ($localUser->is_active === false) {
                 RateLimiter::hit($throttleKey);
+
                 return back()->withErrors([
                     'email' => 'Akun Anda telah dinonaktifkan. Silakan hubungi admin.',
                 ]);
@@ -133,6 +141,7 @@ class AuthController extends Controller
             if ($localUser->role === 'admin') {
                 return redirect()->route('admin.dashboard');
             }
+
             return redirect()->route('user.dashboard');
         }
 
@@ -177,11 +186,11 @@ class AuthController extends Controller
         }
 
         $data = $request->only([
-            'name', 'phone', 'school_name', 'address'
+            'name', 'phone', 'school_name', 'address',
         ]);
 
         if ($request->hasFile('profile_photo')) {
-            if ($user->profile_photo && !str_starts_with($user->profile_photo, 'http')) {
+            if ($user->profile_photo && ! str_starts_with($user->profile_photo, 'http')) {
                 Storage::disk('public')->delete($user->profile_photo);
             }
             $data['profile_photo'] = $request->file('profile_photo')->store('profile_photos', 'public');
@@ -220,7 +229,7 @@ class AuthController extends Controller
             return back()->withErrors($validator);
         }
 
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             return back()->withErrors(['current_password' => 'Password lama salah!']);
         }
 
@@ -265,7 +274,7 @@ class AuthController extends Controller
         $data = $request->only(['name', 'email', 'phone']);
 
         if ($request->hasFile('profile_photo')) {
-            if ($user->profile_photo && !str_starts_with($user->profile_photo, 'http')) {
+            if ($user->profile_photo && ! str_starts_with($user->profile_photo, 'http')) {
                 Storage::disk('public')->delete($user->profile_photo);
             }
             $data['profile_photo'] = $request->file('profile_photo')->store('profile_photos', 'public');
@@ -294,7 +303,7 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             return back()->withErrors(['current_password' => 'Password lama salah!']);
         }
 
@@ -347,7 +356,7 @@ class AuthController extends Controller
 
         // Keamanan: batasi permintaan reset per email + IP agar alur ini
         // tidak bisa dijadikan sarana spam email / brute-force.
-        $throttleKey = Str::transliterate('pwreset|' . Str::lower($request->input('email')) . '|' . $request->ip());
+        $throttleKey = Str::transliterate('pwreset|'.Str::lower($request->input('email')).'|'.$request->ip());
 
         if (RateLimiter::tooManyAttempts($throttleKey, self::RESET_REQUEST_MAX_ATTEMPTS)) {
             $minutes = (int) ceil(RateLimiter::availableIn($throttleKey) / 60);
@@ -375,7 +384,7 @@ class AuthController extends Controller
     // Halaman konfirmasi "tautan telah dikirim" (GET, aman dari refresh/re-submit).
     public function showResetLinkSent(Request $request)
     {
-        if (!session('reset_email_sent')) {
+        if (! session('reset_email_sent')) {
             return redirect()->route('password.request');
         }
 
@@ -406,7 +415,7 @@ class AuthController extends Controller
 
         app(Mailer::class)->sendHtml(
             $user->email,
-            'Reset Kata Sandi - ' . config('app.name'),
+            'Reset Kata Sandi - '.config('app.name'),
             'emails.password-reset',
             [
                 'resetUrl' => $resetUrl,
@@ -419,7 +428,7 @@ class AuthController extends Controller
     // STEP 2 - Form password baru via token dari email
     public function showResetPassword(Request $request, string $token)
     {
-        if (!$this->validResetToken($token)) {
+        if (! $this->validResetToken($token)) {
             return redirect()->route('password.request')
                 ->withErrors(['email' => 'Tautan reset tidak valid atau sudah kedaluwarsa. Silakan minta tautan baru.']);
         }
@@ -442,14 +451,14 @@ class AuthController extends Controller
 
         $record = $this->validResetToken($request->token);
 
-        if (!$record) {
+        if (! $record) {
             return redirect()->route('password.request')
                 ->withErrors(['email' => 'Tautan reset tidak valid atau sudah kedaluwarsa. Silakan minta tautan baru.']);
         }
 
         $user = User::where('email', $record->email)->first();
 
-        if (!$user) {
+        if (! $user) {
             DB::table('password_reset_tokens')->where('email', $record->email)->delete();
 
             return redirect()->route('password.request')
@@ -478,7 +487,7 @@ class AuthController extends Controller
      */
     private function validResetToken(?string $token): ?object
     {
-        if (!$token || strlen($token) !== 64 || !ctype_xdigit($token)) {
+        if (! $token || strlen($token) !== 64 || ! ctype_xdigit($token)) {
             return null;
         }
 
@@ -486,11 +495,10 @@ class AuthController extends Controller
             ->where('token_hash', hash('sha256', $token))
             ->first();
 
-        if (!$record || now()->gt($record->expires_at)) {
+        if (! $record || now()->gt($record->expires_at)) {
             return null;
         }
 
         return $record;
     }
 }
-

@@ -20,7 +20,7 @@ class ParentSyncService
         }
 
         try {
-            $parentUrl = rtrim(config('app.parent_app_url', env('PARENT_APP_URL', 'http://127.0.0.1:8000')), '/');
+            $parentUrl = rtrim(config('app.parent_app_url', env('PARENT_APP_URL', 'https://kelas-khusus.kpmacademic.io')), '/');
             $apiKey = config('services.parent_api_key', env('PARENT_APP_API_KEY', env('API_SECRET_KEY', 'kpm-satellite-secret-key-2026')));
 
             $payload = [
@@ -54,7 +54,8 @@ class ParentSyncService
 
             return $response->successful();
         } catch (\Throwable $e) {
-            Log::error('Gagal sync user kpm-smart ke Web Induk: ' . $e->getMessage());
+            Log::error('Gagal sync user kpm-smart ke Web Induk: '.$e->getMessage());
+
             return false;
         }
     }
@@ -69,7 +70,7 @@ class ParentSyncService
         }
 
         try {
-            $parentUrl = rtrim(config('app.parent_app_url', env('PARENT_APP_URL', 'http://127.0.0.1:8000')), '/');
+            $parentUrl = rtrim(config('app.parent_app_url', env('PARENT_APP_URL', 'https://kelas-khusus.kpmacademic.io')), '/');
             $apiKey = config('services.parent_api_key', env('PARENT_APP_API_KEY', env('API_SECRET_KEY', 'kpm-satellite-secret-key-2026')));
 
             $response = Http::withHeaders([
@@ -82,7 +83,8 @@ class ParentSyncService
 
             return $response->successful();
         } catch (\Throwable $e) {
-            Log::error('Gagal delete user kpm-smart ke Web Induk: ' . $e->getMessage());
+            Log::error('Gagal delete user kpm-smart ke Web Induk: '.$e->getMessage());
+
             return false;
         }
     }
