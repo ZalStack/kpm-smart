@@ -57,7 +57,7 @@ function deleteUser() {
                     <div class="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-5">
                         <div class="flex flex-col sm:flex-row items-center sm:items-end gap-4 text-center sm:text-left">
                             <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl border-4 border-card overflow-hidden bg-primary/10 text-primary flex items-center justify-center shadow-xl shrink-0 font-black text-3xl">
-                                <img v-if="user.profile_photo" :src="'/storage/' + user.profile_photo" class="w-full h-full object-cover" />
+                                <img v-if="user.profile_photo" :src="user.profile_photo.startsWith('http') ? user.profile_photo : '/storage/' + user.profile_photo" class="w-full h-full object-cover" />
                                 <span v-else>{{ user.name?.charAt(0)?.toUpperCase() }}</span>
                             </div>
 

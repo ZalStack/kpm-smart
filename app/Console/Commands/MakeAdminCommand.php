@@ -56,7 +56,7 @@ class MakeAdminCommand extends Command
         User::create([
             'name' => $name,
             'email' => $email,
-            'password' => Hash::make($password),
+            'password' => $password,
             'role' => 'admin',
             'is_verified' => true,
             'is_active' => true,

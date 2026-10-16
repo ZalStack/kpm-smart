@@ -149,7 +149,7 @@ function formatDateTime(d) {
                             <td class="px-5 py-4">
                                 <div class="flex items-center gap-3">
                                     <div class="w-9 h-9 rounded-xl overflow-hidden bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center flex-shrink-0 ring-2 ring-background shadow-sm">
-                                        <img v-if="log.user?.profile_photo" :src="'/storage/' + log.user.profile_photo" class="w-full h-full object-cover" />
+                                        <img v-if="log.user?.profile_photo" :src="log.user.profile_photo.startsWith('http') ? log.user.profile_photo : '/storage/' + log.user.profile_photo" class="w-full h-full object-cover" />
                                         <span v-else class="text-xs font-bold text-primary">{{ log.user?.name?.charAt(0) || '?' }}</span>
                                     </div>
                                     <div class="min-w-0">
@@ -187,7 +187,7 @@ function formatDateTime(d) {
                 :style="{ animationDelay: `${index * 40}ms` }">
                 <div class="flex items-center gap-3 mb-3">
                     <div class="w-11 h-11 rounded-xl overflow-hidden bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center flex-shrink-0 ring-2 ring-background shadow-sm">
-                        <img v-if="log.user?.profile_photo" :src="'/storage/' + log.user.profile_photo" class="w-full h-full object-cover" />
+                        <img v-if="log.user?.profile_photo" :src="log.user.profile_photo.startsWith('http') ? log.user.profile_photo : '/storage/' + log.user.profile_photo" class="w-full h-full object-cover" />
                         <span v-else class="text-sm font-bold text-primary">{{ log.user?.name?.charAt(0) || '?' }}</span>
                     </div>
                     <div class="min-w-0 flex-1">

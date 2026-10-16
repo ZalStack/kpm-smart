@@ -26,8 +26,11 @@ const userInitial = computed(() => (user?.name || 'A').charAt(0).toUpperCase());
 
 const profilePhotoUrl = computed(() => {
     if (photoPreview.value) return photoPreview.value;
-    if (user?.profile_photo) return '/storage/' + user.profile_photo;
-    return null;
+    if (!user?.profile_photo) return null;
+    if (user.profile_photo.startsWith('http://') || user.profile_photo.startsWith('https://') || user.profile_photo.startsWith('//')) {
+        return user.profile_photo;
+    }
+    return '/storage/' + user.profile_photo;
 });
 
 function handlePhotoSelect(e) {

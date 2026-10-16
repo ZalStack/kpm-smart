@@ -30,7 +30,13 @@ const form = useForm({
     profile_photo: null,
 });
 
-const photoPreview = ref(props.user.profile_photo ? '/storage/' + props.user.profile_photo : null);
+const photoPreview = ref(
+    props.user.profile_photo
+        ? ((props.user.profile_photo.startsWith('http://') || props.user.profile_photo.startsWith('https://') || props.user.profile_photo.startsWith('//'))
+            ? props.user.profile_photo
+            : '/storage/' + props.user.profile_photo)
+        : null
+);
 const dragOver = ref(false);
 
 function handlePhoto(e) {

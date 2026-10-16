@@ -28,8 +28,11 @@ const userInitial = computed(() => (user.value?.name || 'U').charAt(0).toUpperCa
 
 const profilePhotoUrl = computed(() => {
     if (photoPreview.value) return photoPreview.value;
-    if (user.value?.profile_photo) return '/storage/' + user.value.profile_photo + '?v=' + encodeURIComponent(user.value.profile_photo);
-    return null;
+    if (!user.value?.profile_photo) return null;
+    if (user.value.profile_photo.startsWith('http://') || user.value.profile_photo.startsWith('https://') || user.value.profile_photo.startsWith('//')) {
+        return user.value.profile_photo;
+    }
+    return '/storage/' + user.value.profile_photo + '?v=' + encodeURIComponent(user.value.profile_photo);
 });
 
 function handlePhotoSelect(e) {
