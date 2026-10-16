@@ -10,14 +10,40 @@ import Textarea from '@/Components/ui/textarea/Textarea.vue';
 
 const route = inject('route');
 const page = usePage();
-const user = computed(() => page.props.auth?.user);
+const props = defineProps({
+    user: Object,
+});
+const user = computed(() => props.user || page.props.auth?.user);
+
+const profesiOrtuOptions = ['Petani', 'Pedagang', 'Karyawan Swasta', 'ASN/PNS', 'Wiraswasta', 'Nelayan', 'Buruh', 'Tidak Bekerja', 'Lainnya'];
+const pendidikanOrtuOptions = ['Tidak Sekolah', 'SD', 'SMP', 'SMA/SMK', 'D1-D3', 'S1', 'S2', 'S3'];
+
+const formatTanggal = (value) => {
+    if (!value) return '';
+    const parsed = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(parsed.getTime())) return value;
+    return parsed.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+};
 
 const form = useForm({
     name: user.value?.name || '',
     phone: user.value?.phone || '',
     school_name: user.value?.school_name || '',
     address: user.value?.address || '',
+    parent_name: user.value?.parent_name || '',
+    parent_phone: user.value?.parent_phone || '',
+    place_of_birth: user.value?.place_of_birth || '',
+    date_of_birth: user.value?.date_of_birth || '',
+    parent_profession: user.value?.parent_profession || '',
+    parent_education: user.value?.parent_education || '',
     profile_photo: null,
+});
+
+const birthLabel = computed(() => {
+    const parts = [];
+    if (form.place_of_birth) parts.push(form.place_of_birth);
+    if (form.date_of_birth) parts.push(formatTanggal(form.date_of_birth));
+    return parts.join(', ') || '-';
 });
 
 const photoPreview = ref(null);
@@ -89,23 +115,19 @@ function submit() {
             </div>
         </template>
         <template #header-sub>
-            Kelola data diri, kontak, foto profil, dan keamanan akun belajarmu
+            Kelola data diri, akademik, kontak orang tua, dan foto profil akun belajarmu
         </template>
 
-        <div class="max-w-4xl mx-auto space-y-6">
+        <div class="max-w-6xl mx-auto space-y-6">
 
             <!-- Profile Overview & Photo Card -->
             <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm">
                 <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
                     <!-- Photo Avatar -->
                     <div class="relative group shrink-0">
-                        <div v-if="profilePhotoUrl"
-                             class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden ring-4 ring-primary/10 border-2 border-border/50 shadow-md">
-                            <img :src="profilePhotoUrl" alt="Foto Profil" class="w-full h-full object-cover" />
-                        </div>
-                        <div v-else
-                             class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center ring-4 ring-primary/10 shadow-md">
-                            <span class="text-3xl sm:text-4xl font-black text-primary">{{ userInitial }}</span>
+                        <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center ring-4 ring-primary/10 shadow-md overflow-hidden">
+                            <span class="text-3xl sm:text-4xl font-black text-primary select-none">{{ userInitial }}</span>
+                            <img v-if="profilePhotoUrl" :src="profilePhotoUrl" alt="Foto Profil" class="absolute inset-0 w-full h-full object-cover" @error="$event.target.style.display='none'" />
                         </div>
 
                         <button v-if="photoPreview"
@@ -154,75 +176,158 @@ function submit() {
                 </div>
             </div>
 
-            <!-- Profile Form -->
-            <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm">
-                <div class="flex items-center justify-between pb-4 border-b border-border/50 mb-6">
-                    <div class="flex items-center gap-2">
-                        <Icon icon="mdi:card-account-details-outline" class="w-5 h-5 text-primary" />
-                        <h3 class="font-bold text-base text-foreground">Informasi Data Pribadi</h3>
-                    </div>
-                    <span class="text-xs text-muted-foreground">Tanda (<span class="text-destructive">*</span>) wajib diisi</span>
-                </div>
+            <!-- Two-Column Main Layout: Form (Left) & Sidebar Ringkasan (Right) -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                <form @submit.prevent="submit" class="space-y-5">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div class="space-y-2">
-                            <Label for="name">Nama Lengkap <span class="text-destructive">*</span></Label>
-                            <Input id="name" v-model="form.name" required placeholder="Masukkan nama lengkap" class="rounded-xl" />
-                            <p v-if="form.errors?.name" class="text-xs text-destructive">{{ form.errors.name }}</p>
+                <!-- Left Column: Edit Form -->
+                <div class="lg:col-span-2 space-y-6">
+
+                    <!-- Section 1: Informasi Akun -->
+                    <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm">
+                        <div class="flex items-center justify-between pb-4 border-b border-border/50 mb-5">
+                            <div class="flex items-center gap-2">
+                                <Icon icon="mdi:card-account-details-outline" class="w-5 h-5 text-primary" />
+                                <h3 class="font-bold text-base text-foreground">Informasi Akun</h3>
+                            </div>
+                            <span class="text-xs text-muted-foreground">Tanda (<span class="text-destructive">*</span>) wajib</span>
                         </div>
 
-                        <div class="space-y-2">
-                            <Label for="email">Surel / Email</Label>
-                            <Input id="email" :value="user?.email || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
-                        </div>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="space-y-2">
+                                    <Label for="name">Nama Lengkap <span class="text-destructive">*</span></Label>
+                                    <Input id="name" v-model="form.name" required placeholder="Masukkan nama lengkap" class="rounded-xl" />
+                                    <p v-if="form.errors?.name" class="text-xs text-destructive">{{ form.errors.name }}</p>
+                                </div>
 
-                        <div class="space-y-2">
-                            <Label for="username">Username</Label>
-                            <Input id="username" :value="user?.username || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
-                        </div>
+                                <div class="space-y-2">
+                                    <Label for="email">Surel / Email <span class="text-destructive">*</span></Label>
+                                    <Input id="email" :value="user?.email || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
+                                </div>
+                            </div>
 
-                        <div class="space-y-2">
-                            <Label for="phone">Nomor WhatsApp / Telepon <span class="text-destructive">*</span></Label>
-                            <Input id="phone" v-model="form.phone" required placeholder="08xxxxxxxxxx" class="rounded-xl" />
-                            <p v-if="form.errors?.phone" class="text-xs text-destructive">{{ form.errors.phone }}</p>
-                        </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="space-y-2">
+                                    <Label for="username">Username</Label>
+                                    <Input id="username" :value="user?.username || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
+                                </div>
 
-                        <div class="space-y-2">
-                            <Label for="school_name">Nama Asal Sekolah <span class="text-destructive">*</span></Label>
-                            <Input id="school_name" v-model="form.school_name" required placeholder="Contoh: SMP Negeri 1..." class="rounded-xl" />
-                            <p v-if="form.errors?.school_name" class="text-xs text-destructive">{{ form.errors.school_name }}</p>
-                        </div>
+                                <div class="space-y-2">
+                                    <Label for="phone">Telepon / WhatsApp</Label>
+                                    <Input id="phone" v-model="form.phone" placeholder="0812..." class="rounded-xl" />
+                                    <p v-if="form.errors?.phone" class="text-xs text-destructive">{{ form.errors.phone }}</p>
+                                </div>
+                            </div>
 
-                        <div class="space-y-2">
-                            <Label for="student_class">Kelas (Dikelola Administrator)</Label>
-                            <Input id="student_class" :value="user?.student_class || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
-                        </div>
-
-                        <div class="space-y-2">
-                            <Label for="bidang">Bidang (Dikelola Administrator)</Label>
-                            <Input id="bidang" :value="user?.bidang || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
-                        </div>
-
-                        <div class="space-y-2">
-                            <Label for="level">Level Berbakat (Dikelola Administrator)</Label>
-                            <Input id="level" :value="user?.level || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
-                        </div>
-
-                        <div class="space-y-2">
-                            <Label for="parent_name">Nama Orang Tua (Dikelola Administrator)</Label>
-                            <Input id="parent_name" :value="user?.parent_name || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
-                        </div>
-
-                        <div class="space-y-2">
-                            <Label for="parent_phone">HP Orang Tua (Dikelola Administrator)</Label>
-                            <Input id="parent_phone" :value="user?.parent_phone || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
+                            <div class="space-y-2">
+                                <Label for="address">Alamat</Label>
+                                <Textarea id="address" v-model="form.address" rows="2" placeholder="Tuliskan alamat lengkap..." class="rounded-xl resize-none text-sm" />
+                                <p v-if="form.errors?.address" class="text-xs text-destructive">{{ form.errors.address }}</p>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="space-y-2">
-                        <Label for="address">Alamat Tempat Tinggal</Label>
-                        <Textarea id="address" v-model="form.address" rows="3" placeholder="Tuliskan alamat lengkap..." class="rounded-xl resize-none text-sm" />
+                    <!-- Section 2: Data Akademik (Filter Manajemen) -->
+                    <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm">
+                        <div class="flex items-center justify-between pb-4 border-b border-border/50 mb-4">
+                            <div class="flex items-center gap-2">
+                                <Icon icon="mdi:school-outline" class="w-5 h-5 text-primary" />
+                                <h3 class="font-bold text-base text-foreground">Data Akademik (Filter Manajemen)</h3>
+                            </div>
+                        </div>
+                        <p class="text-xs text-muted-foreground mb-5">Kelas, Bidang, Level hanya dapat diubah oleh SuperAdmin / Administrator.</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <Label for="student_class" class="flex items-center gap-1">
+                                    Kelas
+                                    <Icon icon="mdi:lock" class="w-3 h-3 text-muted-foreground" />
+                                </Label>
+                                <Input id="student_class" :value="user?.student_class || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="bidang" class="flex items-center gap-1">
+                                    Bidang
+                                    <Icon icon="mdi:lock" class="w-3 h-3 text-muted-foreground" />
+                                </Label>
+                                <Input id="bidang" :value="user?.bidang || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="school_name">Asal Sekolah</Label>
+                                <Input id="school_name" v-model="form.school_name" placeholder="Contoh: SMP Negeri 1..." class="rounded-xl" />
+                                <p v-if="form.errors?.school_name" class="text-xs text-destructive">{{ form.errors.school_name }}</p>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="level" class="flex items-center gap-1">
+                                    Level Berbakat
+                                    <Icon icon="mdi:lock" class="w-3 h-3 text-muted-foreground" />
+                                </Label>
+                                <Input id="level" :value="user?.level || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
+                                <p class="text-[10px] text-muted-foreground">Hanya dapat diubah oleh SuperAdmin / Administrator.</p>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="kelas_student">Kelas (Student)</Label>
+                                <Input id="kelas_student" :value="user?.student_class || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="parent_name">Nama Orang Tua</Label>
+                                <Input id="parent_name" v-model="form.parent_name" placeholder="Nama ayah / ibu..." class="rounded-xl" />
+                                <p v-if="form.errors?.parent_name" class="text-xs text-destructive">{{ form.errors.parent_name }}</p>
+                            </div>
+
+                            <div class="space-y-2 sm:col-span-2">
+                                <Label for="parent_phone">HP Orang Tua</Label>
+                                <Input id="parent_phone" v-model="form.parent_phone" placeholder="0812..." class="rounded-xl" />
+                                <p v-if="form.errors?.parent_phone" class="text-xs text-destructive">{{ form.errors.parent_phone }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Data Pribadi & Orang Tua -->
+                    <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm">
+                        <div class="flex items-center justify-between pb-4 border-b border-border/50 mb-5">
+                            <div class="flex items-center gap-2">
+                                <Icon icon="mdi:account-group-outline" class="w-5 h-5 text-primary" />
+                                <h3 class="font-bold text-base text-foreground">Data Pribadi &amp; Orang Tua</h3>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <Label for="place_of_birth">Tempat Lahir</Label>
+                                <Input id="place_of_birth" v-model="form.place_of_birth" placeholder="contoh: Jakarta" class="rounded-xl" />
+                                <p v-if="form.errors?.place_of_birth" class="text-xs text-destructive">{{ form.errors.place_of_birth }}</p>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="date_of_birth">Tanggal Lahir</Label>
+                                <Input id="date_of_birth" type="date" v-model="form.date_of_birth" class="rounded-xl" />
+                                <p v-if="form.errors?.date_of_birth" class="text-xs text-destructive">{{ form.errors.date_of_birth }}</p>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="parent_profession">Profesi Orang Tua</Label>
+                                <select id="parent_profession" v-model="form.parent_profession" class="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                                    <option value="">— Pilih Profesi —</option>
+                                    <option v-for="profesi in profesiOrtuOptions" :key="profesi" :value="profesi">{{ profesi }}</option>
+                                </select>
+                                <p v-if="form.errors?.parent_profession" class="text-xs text-destructive">{{ form.errors.parent_profession }}</p>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="parent_education">Latar Pendidikan Orang Tua</Label>
+                                <select id="parent_education" v-model="form.parent_education" class="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                                    <option value="">— Pilih Pendidikan —</option>
+                                    <option v-for="pendidikan in pendidikanOrtuOptions" :key="pendidikan" :value="pendidikan">{{ pendidikan }}</option>
+                                </select>
+                                <p v-if="form.errors?.parent_education" class="text-xs text-destructive">{{ form.errors.parent_education }}</p>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Flash Message -->
@@ -232,35 +337,66 @@ function submit() {
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="flex items-center justify-end pt-3">
-                        <Button type="submit" :loading="form.processing" class="w-full sm:w-auto gap-2 font-semibold shadow-sm min-h-11">
+                    <div class="flex items-center justify-end pt-2">
+                        <Button type="button" @click="submit" :loading="form.processing" class="w-full sm:w-auto gap-2 font-bold px-8 py-3 rounded-xl shadow-md min-h-12 bg-primary hover:bg-primary/90 text-primary-foreground">
                             <Icon v-if="!form.processing" icon="mdi:content-save-outline" class="w-4 h-4" />
-                            {{ form.processing ? 'Menyimpan Perubahan...' : 'Simpan Pembaruan Data' }}
+                            {{ form.processing ? 'Menyimpan Perubahan...' : 'Simpan Perubahan' }}
                         </Button>
                     </div>
-                </form>
-            </div>
 
-            <!-- Security & Password Card -->
-            <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm">
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center gap-4 text-center sm:text-left">
-                        <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                            <Icon icon="mdi:shield-lock-outline" class="w-6 h-6" />
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-base text-foreground">Keamanan Kata Sandi</h4>
-                            <p class="text-xs text-muted-foreground mt-0.5">Perbarui kata sandi secara berkala untuk menjaga keamanan akun Anda</p>
-                        </div>
-                    </div>
-
-                    <Link :href="route('user.profile.change-password')" class="w-full sm:w-auto">
-                        <Button variant="outline" class="w-full sm:w-auto gap-2 font-semibold shadow-sm min-h-10">
-                            <Icon icon="mdi:key-outline" class="w-4 h-4 text-amber-500" />
-                            Ubah Kata Sandi
-                        </Button>
-                    </Link>
                 </div>
+
+                <!-- Right Column: Sidebar Ringkasan & Keamanan Akun -->
+                <div class="space-y-6">
+
+                    <!-- Ringkasan Card -->
+                    <div class="bg-card rounded-3xl border border-border/60 p-6 shadow-sm">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-muted-foreground pb-3 border-b border-border/40">Ringkasan</h3>
+                        <div class="mt-4 space-y-3 text-xs">
+                            <div class="flex justify-between items-center py-1 border-b border-border/20">
+                                <span class="text-muted-foreground">Kelas</span>
+                                <span class="font-bold text-foreground">{{ user?.student_class || '-' }}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1 border-b border-border/20">
+                                <span class="text-muted-foreground">Bidang</span>
+                                <span class="font-bold text-foreground">{{ user?.bidang || '-' }}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1 border-b border-border/20">
+                                <span class="text-muted-foreground">Level Berbakat</span>
+                                <span class="font-bold text-foreground">{{ user?.level || '-' }}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1 border-b border-border/20">
+                                <span class="text-muted-foreground">Tempat, Tgl Lahir</span>
+                                <span class="font-bold text-foreground text-right">{{ birthLabel }}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1 border-b border-border/20">
+                                <span class="text-muted-foreground">Profesi Orang Tua</span>
+                                <span class="font-bold text-foreground text-right">{{ form.parent_profession || '-' }}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1">
+                                <span class="text-muted-foreground">Pendidikan Orang Tua</span>
+                                <span class="font-bold text-foreground text-right">{{ form.parent_education || '-' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Keamanan Akun Card -->
+                    <div class="bg-card rounded-3xl border border-border/60 p-6 shadow-sm">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3">
+                            <Icon icon="mdi:shield-lock-outline" class="w-5 h-5" />
+                        </div>
+                        <h3 class="text-sm font-bold text-foreground">Keamanan Akun</h3>
+                        <p class="text-xs text-muted-foreground mt-1 leading-relaxed">Ubah password secara berkala.</p>
+
+                        <Link :href="route('user.profile.change-password')" class="block mt-4">
+                            <Button variant="outline" class="w-full gap-2 font-bold rounded-xl text-amber-700 bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100 border-amber-200 dark:border-amber-800">
+                                Ubah Password
+                            </Button>
+                        </Link>
+                    </div>
+
+                </div>
+
             </div>
 
         </div>

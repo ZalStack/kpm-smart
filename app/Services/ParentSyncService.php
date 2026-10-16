@@ -32,6 +32,14 @@ class ParentSyncService
                 'bidang' => $user->bidang,
                 'asal_sekolah' => $user->school_name,
                 'school_name' => $user->school_name,
+                'phone' => $user->phone,
+                'address' => $user->address,
+                'parent_name' => $user->parent_name,
+                'parent_phone' => $user->parent_phone,
+                'place_of_birth' => $user->place_of_birth,
+                'date_of_birth' => $user->date_of_birth,
+                'parent_profession' => $user->parent_profession,
+                'parent_education' => $user->parent_education,
                 'level' => (string) $user->level,
                 'is_active' => (bool) $user->is_active,
                 'source_satellite' => 'kpm_smart',
@@ -50,7 +58,14 @@ class ParentSyncService
             $response = Http::withHeaders([
                 'X-API-Key' => $apiKey,
                 'Accept' => 'application/json',
-            ])->timeout(5)->post("{$parentUrl}/api/v1/profile/update", $payload);
+            ])->timeout(10)->post("{$parentUrl}/api/v1/profile/update", $payload);
+
+            Log::info("ParentSyncService: Syncing {$user->email} to Web Induk", [
+                'parentUrl' => $parentUrl,
+                'status' => $response->status(),
+                'success' => $response->successful(),
+                'response' => $response->json(),
+            ]);
 
             return $response->successful();
         } catch (\Throwable $e) {

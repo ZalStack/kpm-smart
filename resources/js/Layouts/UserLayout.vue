@@ -1,3 +1,4 @@
+Agent pid 3728307
 <script setup>
 import { ref, inject, computed, onMounted, onUnmounted } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
@@ -436,9 +437,9 @@ onUnmounted(() => {
             <!-- Sidebar User Card Footer -->
             <div class="relative px-4 py-4 border-t border-white/10 flex-shrink-0 bg-black/10">
                 <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-white/20 border border-white/20 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden shadow-xs">
-                        <img v-if="profilePhotoUrl" :src="profilePhotoUrl" class="w-full h-full object-cover" />
-                        <span v-else>{{ (user?.name || 'A').charAt(0).toUpperCase() }}</span>
+                    <div class="relative w-9 h-9 rounded-xl bg-white/20 border border-white/20 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden shadow-xs">
+                        <span class="select-none">{{ (user?.name || 'A').charAt(0).toUpperCase() }}</span>
+                        <img v-if="profilePhotoUrl" :src="profilePhotoUrl" class="absolute inset-0 w-full h-full object-cover" @error="$event.target.style.display='none'" />
                     </div>
                     <div class="min-w-0 flex-1">
                         <p class="text-xs font-bold text-white truncate leading-tight">{{ user?.name || 'Pengguna' }}</p>

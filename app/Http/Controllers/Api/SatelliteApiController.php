@@ -7,7 +7,6 @@ use App\Models\Notification;
 use App\Models\Package;
 use App\Models\PracticeSession;
 use App\Models\User;
-use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -138,16 +137,16 @@ class SatelliteApiController extends Controller
         $matchedUserId = null;
 
         // If teacher provided a note, create notification in KPM Smart
-        if (!empty($notes)) {
+        if (! empty($notes)) {
             $user = null;
 
             // 1. Try matching student by email in KPM Smart
-            if (!empty($studentEmail)) {
+            if (! empty($studentEmail)) {
                 $user = User::whereRaw('LOWER(TRIM(email)) = ?', [strtolower($studentEmail)])->first();
             }
 
             // 2. Try matching student by name in KPM Smart
-            if (!$user && !empty($studentName)) {
+            if (! $user && ! empty($studentName)) {
                 $user = User::whereRaw('LOWER(TRIM(name)) = ?', [strtolower($studentName)])->first();
             }
 
@@ -176,7 +175,7 @@ class SatelliteApiController extends Controller
 
             // Also create notification for Admin PKA Litbang (user_id = 1)
             $adminUser = User::where('role', 'admin')->first() ?? User::find(1);
-            if ($adminUser && (!$user || $adminUser->id !== $user->id)) {
+            if ($adminUser && (! $user || $adminUser->id !== $user->id)) {
                 Notification::create([
                     'user_id' => $adminUser->id,
                     'type' => 'weekly_report_note',
@@ -228,6 +227,14 @@ class SatelliteApiController extends Controller
             'bidang' => 'nullable|string',
             'asal_sekolah' => 'nullable|string',
             'level' => 'nullable|string',
+            'phone' => 'nullable|string',
+            'address' => 'nullable|string',
+            'parent_name' => 'nullable|string',
+            'parent_phone' => 'nullable|string',
+            'place_of_birth' => 'nullable|string',
+            'date_of_birth' => 'nullable|string',
+            'parent_profession' => 'nullable|string',
+            'parent_education' => 'nullable|string',
             'foto_profil' => 'nullable|string',
             'is_active' => 'nullable',
         ]);
@@ -241,14 +248,20 @@ class SatelliteApiController extends Controller
             'name' => $validated['name'],
             'username' => $username,
             'student_name' => $validated['name'],
-            'student_class' => $validated['kelas'] ?? 'VII-A',
-            'bidang' => $validated['bidang'] ?? 'Matematika & IPA',
-            'level' => $validated['level'] ?? '1',
-            'school_name' => $validated['asal_sekolah'] ?? 'KPM Academy',
+            'student_class' => $validated['kelas'] ?? ($existing?->student_class ?? 'VII-A'),
+            'bidang' => $validated['bidang'] ?? ($existing?->bidang ?? 'Matematika & IPA'),
+            'level' => $validated['level'] ?? ($existing?->level ?? '1'),
+            'school_name' => $validated['asal_sekolah'] ?? ($existing?->school_name ?? 'KPM Academy'),
             'role' => $role,
             'is_active' => filter_var($validated['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
             'is_verified' => true,
         ];
+
+        foreach (['phone', 'address', 'parent_name', 'parent_phone', 'place_of_birth', 'date_of_birth', 'parent_profession', 'parent_education'] as $f) {
+            if (array_key_exists($f, $validated)) {
+                $data[$f] = $validated[$f];
+            }
+        }
         if ($avatar) {
             $data['profile_photo'] = $avatar;
         }

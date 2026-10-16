@@ -1,3 +1,4 @@
+Agent pid 3729262
 <script setup>
 import { inject, ref, computed } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
@@ -268,7 +269,7 @@ function syncFromParent() {
                                         <div class="relative w-10 h-10 rounded-full overflow-hidden bg-muted/40 flex items-center justify-center shrink-0 border border-border/60">
                                             <span class="text-xs font-black text-primary select-none">{{ user.name?.charAt(0)?.toUpperCase() }}</span>
                                             <img v-if="user.profile_photo" :src="user.profile_photo.startsWith('http') ? user.profile_photo : '/storage/' + user.profile_photo" class="absolute inset-0 w-full h-full object-cover" @error="$event.target.style.display='none'" />
-                                            <img v-else :src="'https://kelas-khusus.kpmacademic.io/api/foto/' + encodeURIComponent(user.email)" class="absolute inset-0 w-full h-full object-cover" @error="$event.target.style.display='none'" />
+                                            
                                         </div>
                                         <div class="min-w-0">
                                             <p class="font-bold text-foreground truncate hover:text-primary transition-colors">{{ user.name }}</p>
@@ -337,7 +338,7 @@ function syncFromParent() {
                             <div class="relative w-11 h-11 rounded-full overflow-hidden bg-muted/40 flex items-center justify-center shrink-0 border border-border/60">
                                 <span class="text-sm font-black text-primary select-none">{{ user.name?.charAt(0)?.toUpperCase() }}</span>
                                 <img v-if="user.profile_photo" :src="user.profile_photo.startsWith('http') ? user.profile_photo : '/storage/' + user.profile_photo" class="absolute inset-0 w-full h-full object-cover" @error="$event.target.style.display='none'" />
-                                <img v-else :src="'https://kelas-khusus.kpmacademic.io/api/foto/' + encodeURIComponent(user.email)" class="absolute inset-0 w-full h-full object-cover" @error="$event.target.style.display='none'" />
+                                
                             </div>
                             <div class="min-w-0">
                                 <p class="font-bold text-sm text-foreground truncate">{{ user.name }}</p>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LoginLog;
 use App\Models\User;
+use App\Services\ParentSyncService;
 use App\Support\Mailer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -88,16 +89,26 @@ class AuthController extends Controller
                 $fotoProfil = $master['foto_profil'] ?? "{$parentUrl}/api/foto/".urlencode($master['email']);
                 $username = $master['nis'] ?: explode('@', $master['email'])[0];
 
+                $userUpdateData = [
+                    'name' => $master['name'],
+                    'username' => $username,
+                    'password' => $request->input('password'),
+                    'student_name' => $master['name'],
+                    'student_class' => $master['class_name'] ?: ($master['kelas'] ?: 'VII-A'),
+                    'profile_photo' => $fotoProfil,
+                    'school_name' => $master['asal_sekolah'] ?? 'KPM Academy',
+                    'bidang' => $master['bidang'] ?? 'Matematika & IPA',
+                    'level' => $master['level'] ?? '1',
+                ];
+                foreach (['phone', 'address', 'place_of_birth', 'date_of_birth', 'parent_name', 'parent_phone', 'parent_profession', 'parent_education'] as $f) {
+                    if (isset($master[$f]) && $master[$f] !== null && $master[$f] !== '') {
+                        $userUpdateData[$f] = $master[$f];
+                    }
+                }
+
                 $user = User::updateOrCreate(
                     ['email' => $master['email']],
-                    [
-                        'name' => $master['name'],
-                        'username' => $username,
-                        'password' => $request->input('password'),
-                        'student_name' => $master['name'],
-                        'student_class' => $master['class_name'] ?: 'VII-A',
-                        'profile_photo' => $fotoProfil,
-                    ]
+                    $userUpdateData
                 );
 
                 $user->forceFill([
@@ -177,7 +188,7 @@ class AuthController extends Controller
     public function showProfile()
     {
         return Inertia::render('Profile/Edit', [
-            'user' => null,
+            'user' => Auth::user(),
         ]);
     }
 
@@ -187,9 +198,15 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'phone' => 'required|string',
-            'school_name' => 'required|string',
+            'phone' => 'nullable|string',
+            'school_name' => 'nullable|string',
             'address' => 'nullable|string',
+            'parent_name' => 'nullable|string',
+            'parent_phone' => 'nullable|string',
+            'place_of_birth' => 'nullable|string',
+            'date_of_birth' => 'nullable|string',
+            'parent_profession' => 'nullable|string',
+            'parent_education' => 'nullable|string',
             'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
@@ -198,17 +215,27 @@ class AuthController extends Controller
         }
 
         $data = $request->only([
-            'name', 'phone', 'school_name', 'address',
+            'name', 'phone', 'school_name', 'address', 'parent_name', 'parent_phone',
+            'place_of_birth', 'date_of_birth', 'parent_profession', 'parent_education',
         ]);
 
+        $uploadedPhoto = null;
         if ($request->hasFile('profile_photo')) {
             if ($user->profile_photo && ! str_starts_with($user->profile_photo, 'http')) {
                 Storage::disk('public')->delete($user->profile_photo);
             }
-            $data['profile_photo'] = $request->file('profile_photo')->store('profile_photos', 'public');
+            $uploadedPhoto = $request->file('profile_photo')->store('profile_photos', 'public');
+            $data['profile_photo'] = $uploadedPhoto;
         }
 
         $user->update($data);
+
+        // Sync perubahan profil ke Web Induk
+        try {
+            ParentSyncService::syncUserToParent($user, null, $uploadedPhoto);
+        } catch (\Throwable $e) {
+            \Log::error('Gagal sync profil update ke Web Induk: '.$e->getMessage());
+        }
 
         return back()->with('success', 'Profil berhasil diperbarui!');
     }
