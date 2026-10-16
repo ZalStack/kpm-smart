@@ -820,7 +820,7 @@
     ]
   },
   "resources/js/Pages/Admin/Users/UserIndex.vue": {
-    "file": "assets/UserIndex-2Rwj46eo.js",
+    "file": "assets/UserIndex-drxBdZko.js",
     "name": "UserIndex",
     "src": "resources/js/Pages/Admin/Users/UserIndex.vue",
     "isDynamicEntry": true,
@@ -1174,7 +1174,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-Df0L6-x6.js",
+    "file": "assets/app-bDsMhNKC.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
