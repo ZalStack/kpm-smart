@@ -70,9 +70,9 @@ class SecurityHeadersMiddleware
                 'script-src' => ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com', 'https://cdn.plyr.io', 'https://cdn.tailwindcss.com'],
                 'style-src' => ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com', 'https://cdn.plyr.io', 'https://cdn.tailwindcss.com'],
                 'font-src' => ["'self'", 'https://fonts.gstatic.com', 'https://fonts.bunny.net'],
-                'img-src' => ["'self'", 'data:', 'blob:', 'https://ui-avatars.com', 'https://drive.google.com'],
+                'img-src' => ["'self'", 'data:', 'blob:', 'https://ui-avatars.com', 'https://drive.google.com', 'https://*.kpmacademic.io', 'https://kelas-khusus.kpmacademic.io', 'https://*.read1kpmseikhlasnya.com'],
                 'frame-src' => ['https://drive.google.com'],
-                'connect-src' => ["'self'"],
+                'connect-src' => ["'self'", 'https://*.kpmacademic.io', 'https://kelas-khusus.kpmacademic.io', 'https://*.read1kpmseikhlasnya.com'],
                 'frame-ancestors' => ["'self'"],
             ];
 
