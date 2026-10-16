@@ -12,8 +12,12 @@ DirectoryIndex public/index.php index.php
     RewriteRule ^composer\.(json|lock) - [F,L]
     RewriteRule ^package(-lock)?\.json$ - [F,L]
     RewriteRule ^(phpunit\.xml|\.php-ini) - [F,L]
-    RewriteRule ^(storage|bootstrap|database|app|routes|tests)/ - [F,L]
     RewriteRule ^(artisan|vite\.config\.js|postcss\.config\.js|tailwind\.config\.js)$ - [F,L]
+    RewriteRule ^(bootstrap|database|app|routes|tests)/ - [F,L]
+    RewriteRule ^storage/(app|framework|logs)/ - [F,L]
+
+    # Akses /storage/... diarahkan ke public/index.php agar dilayani route storage
+    RewriteRule ^storage/(.*)$ public/index.php [L]
 
     # 1. Request root langsung arahkan ke public/index.php
     RewriteRule ^$ public/index.php [L]

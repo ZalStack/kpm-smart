@@ -59,15 +59,43 @@ class ParentSyncService
                 $payload['password'] = $plainPassword;
             }
 
-            if ($uploadedPhotoPath || $user->profile_photo) {
-                $payload['profile_photo'] = $uploadedPhotoPath ?: $user->profile_photo;
-                $payload['avatar'] = $uploadedPhotoPath ?: $user->profile_photo;
+            $photoRel = $uploadedPhotoPath ?: $user->profile_photo;
+            $photoFile = null;
+            if ($photoRel && ! str_starts_with($photoRel, 'http://') && ! str_starts_with($photoRel, 'https://')) {
+                $possiblePaths = [
+                    storage_path('app/public/'.ltrim($photoRel, '/')),
+                    public_path('storage/'.ltrim($photoRel, '/')),
+                    public_path(ltrim($photoRel, '/')),
+                ];
+                foreach ($possiblePaths as $p) {
+                    if (file_exists($p) && is_file($p)) {
+                        $photoFile = $p;
+                        break;
+                    }
+                }
             }
 
-            $response = Http::withHeaders([
+            $http = Http::withHeaders([
                 'X-API-Key' => $apiKey,
                 'Accept' => 'application/json',
-            ])->timeout(10)->post("{$parentUrl}/api/v1/profile/update", $payload);
+            ])->timeout(20);
+
+            if ($photoFile) {
+                $payload['profile_photo'] = $photoRel;
+                $payload['avatar'] = $photoRel;
+                $http = $http->attach('profile_photo', file_get_contents($photoFile), basename($photoFile));
+            } elseif ($photoRel) {
+                if (str_starts_with($photoRel, 'http://') || str_starts_with($photoRel, 'https://')) {
+                    $payload['profile_photo'] = $photoRel;
+                    $payload['avatar'] = $photoRel;
+                } else {
+                    $fullUrl = url('storage/'.ltrim($photoRel, '/'));
+                    $payload['profile_photo'] = $fullUrl;
+                    $payload['avatar'] = $fullUrl;
+                }
+            }
+
+            $response = $http->post("{$parentUrl}/api/v1/profile/update", $payload);
 
             Log::info("ParentSyncService: Syncing {$user->email} to Web Induk", [
                 'parentUrl' => $parentUrl,

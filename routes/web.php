@@ -13,6 +13,7 @@ use App\Http\Controllers\PracticeController;
 use App\Http\Controllers\PracticeStatisticsController;
 use App\Http\Controllers\PushNotificationController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 // Redirect ke Dashboard jika login, atau Login jika belum
@@ -223,3 +224,11 @@ Route::name('user.')->group(function () {
     // Announcements (User) - Detail pengumuman dari notifikasi
     Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
 });
+
+// Storage route fallback untuk hosting dimana symlink public/storage dibatasi atau dinonaktifkan
+Route::get('/storage/{path}', function (string $path) {
+    if (Storage::disk('public')->exists($path)) {
+        return Storage::disk('public')->response($path);
+    }
+    abort(404);
+})->where('path', '.*');
