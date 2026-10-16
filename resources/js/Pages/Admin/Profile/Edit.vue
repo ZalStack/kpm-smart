@@ -68,7 +68,10 @@ function removePhoto() {
 }
 
 function submit() {
-    form.put(route('admin.profile.update'), {
+    form.transform((data) => ({
+        ...data,
+        _method: 'PUT',
+    })).post(route('admin.profile.update'), {
         forceFormData: true,
     });
 }

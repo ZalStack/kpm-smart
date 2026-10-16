@@ -92,7 +92,7 @@ class AdminUserController extends Controller
             'phone' => 'nullable|string|max:20',
             'student_class' => 'nullable|string|max:50',
             'bidang' => 'nullable|string|max:100',
-            'level' => 'nullable|string|in:A1,A2,B1,B2,C1,C2',
+            'level' => 'nullable|string|max:50',
             'school_name' => 'nullable|string|max:255',
             'address' => 'nullable|string',
             'parent_name' => 'nullable|string|max:255',
@@ -101,7 +101,7 @@ class AdminUserController extends Controller
             'date_of_birth' => 'nullable|string|max:50',
             'parent_profession' => 'nullable|string|max:100',
             'parent_education' => 'nullable|string|max:100',
-            'gender' => 'nullable|string|in:Laki-laki,Perempuan',
+            'gender' => 'nullable|string|max:50',
             'religion' => 'nullable|string|max:50',
             'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);

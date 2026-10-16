@@ -10,6 +10,9 @@ import Textarea from '@/Components/ui/textarea/Textarea.vue';
 import Select from '@/Components/ui/select/Select.vue';
 const route = inject('route');
 
+const profesiOrtuOptions = ['Petani', 'Pedagang', 'Karyawan Swasta', 'ASN/PNS', 'Wiraswasta', 'Nelayan', 'Buruh', 'Tidak Bekerja', 'Lainnya'];
+const pendidikanOrtuOptions = ['Tidak Sekolah', 'SD', 'SMP', 'SMA/SMK', 'D1-D3', 'S1', 'S2', 'S3'];
+
 const form = useForm({
     name: '',
     email: '',
@@ -23,6 +26,12 @@ const form = useForm({
     gender: '',
     religion: '',
     address: '',
+    parent_name: '',
+    parent_phone: '',
+    place_of_birth: '',
+    date_of_birth: '',
+    parent_profession: '',
+    parent_education: '',
     profile_photo: null,
 });
 
@@ -145,32 +154,17 @@ function submit() {
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div class="space-y-1.5">
                             <Label class="text-xs font-semibold text-foreground">Tingkat Kelas</Label>
-                            <Select v-model="form.student_class" class="h-11 rounded-xl bg-background">
-                                <option value="">Pilih Kelas</option>
-                                <option v-for="k in 12" :key="k" :value="String(k)">Kelas {{ k }}</option>
-                            </Select>
+                            <Input v-model="form.student_class" placeholder="Contoh: VII-B atau 7" class="h-11 rounded-xl bg-background" />
                         </div>
 
                         <div class="space-y-1.5">
                             <Label class="text-xs font-semibold text-foreground">Bidang Studi</Label>
-                            <Select v-model="form.bidang" class="h-11 rounded-xl bg-background">
-                                <option value="">Pilih Bidang</option>
-                                <option value="MATEMATIKA">MATEMATIKA</option>
-                                <option value="IPA">IPA</option>
-                            </Select>
+                            <Input v-model="form.bidang" placeholder="Contoh: MATEMATIKA atau IPA" class="h-11 rounded-xl bg-background" />
                         </div>
 
                         <div class="space-y-1.5">
-                            <Label class="text-xs font-semibold text-foreground">Level Kemampuan</Label>
-                            <Select v-model="form.level" class="h-11 rounded-xl bg-background">
-                                <option value="">Pilih Level</option>
-                                <option value="A1">A1</option>
-                                <option value="A2">A2</option>
-                                <option value="B1">B1</option>
-                                <option value="B2">B2</option>
-                                <option value="C1">C1</option>
-                                <option value="C2">C2</option>
-                            </Select>
+                            <Label class="text-xs font-semibold text-foreground">Level Kemampuan / Berbakat</Label>
+                            <Input v-model="form.level" placeholder="Contoh: 1, 2, A1..." class="h-11 rounded-xl bg-background" />
                         </div>
 
                         <div class="space-y-1.5">
@@ -218,6 +212,52 @@ function submit() {
                         <div class="space-y-1.5 sm:col-span-2">
                             <Label class="text-xs font-semibold text-foreground">Alamat Domisili</Label>
                             <Textarea v-model="form.address" rows="3" placeholder="Alamat lengkap tempat tinggal siswa..." class="rounded-2xl bg-background p-4 border-border/60" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Parent & Birth Details -->
+                <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm space-y-5">
+                    <div class="flex items-center gap-2 pb-4 border-b border-border/50">
+                        <Icon icon="mdi:account-child-circle" class="w-5 h-5 text-primary" />
+                        <h3 class="font-bold text-base tracking-tight text-foreground">Data Pribadi & Orang Tua</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-semibold text-foreground">Tempat Lahir</Label>
+                            <Input v-model="form.place_of_birth" placeholder="Contoh: Jakarta" class="h-11 rounded-xl bg-background" />
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-semibold text-foreground">Tanggal Lahir</Label>
+                            <Input v-model="form.date_of_birth" type="date" class="h-11 rounded-xl bg-background" />
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-semibold text-foreground">Nama Orang Tua / Wali</Label>
+                            <Input v-model="form.parent_name" placeholder="Nama ayah/ibu" class="h-11 rounded-xl bg-background" />
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-semibold text-foreground">HP Orang Tua / WhatsApp</Label>
+                            <Input v-model="form.parent_phone" placeholder="0812..." class="h-11 rounded-xl bg-background" />
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-semibold text-foreground">Profesi Orang Tua</Label>
+                            <Select v-model="form.parent_profession" class="h-11 rounded-xl bg-background">
+                                <option value="">— Pilih Profesi —</option>
+                                <option v-for="opt in profesiOrtuOptions" :key="opt" :value="opt">{{ opt }}</option>
+                            </Select>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-semibold text-foreground">Latar Pendidikan Orang Tua</Label>
+                            <Select v-model="form.parent_education" class="h-11 rounded-xl bg-background">
+                                <option value="">— Pilih Pendidikan —</option>
+                                <option v-for="opt in pendidikanOrtuOptions" :key="opt" :value="opt">{{ opt }}</option>
+                            </Select>
                         </div>
                     </div>
                 </div>

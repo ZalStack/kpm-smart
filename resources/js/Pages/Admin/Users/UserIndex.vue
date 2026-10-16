@@ -1,4 +1,3 @@
-Agent pid 3729262
 <script setup>
 import { inject, ref, computed } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';

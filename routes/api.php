@@ -1,27 +1,25 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\Admin\AnnouncementApiController as AdminAnnouncementController;
 use App\Http\Controllers\Api\Admin\DashboardApiController as AdminDashboardController;
-use App\Http\Controllers\Api\Admin\UserApiController as AdminUserController;
+use App\Http\Controllers\Api\Admin\LeaveRequestApiController as AdminLeaveRequestController;
+use App\Http\Controllers\Api\Admin\LoginLogApiController as AdminLoginLogController;
+use App\Http\Controllers\Api\Admin\NotificationApiController as AdminNotificationController;
 use App\Http\Controllers\Api\Admin\PackageApiController as AdminPackageController;
 use App\Http\Controllers\Api\Admin\PracticeStatisticsApiController as AdminPracticeStatsController;
-use App\Http\Controllers\Api\Admin\LoginLogApiController as AdminLoginLogController;
-use App\Http\Controllers\Api\Admin\LeaveRequestApiController as AdminLeaveRequestController;
-use App\Http\Controllers\Api\Admin\NotificationApiController as AdminNotificationController;
-use App\Http\Controllers\Api\Admin\AnnouncementApiController as AdminAnnouncementController;
 use App\Http\Controllers\Api\Admin\ProfileApiController as AdminProfileController;
-
+use App\Http\Controllers\Api\Admin\UserApiController as AdminUserController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\SatelliteApiController;
+use App\Http\Controllers\Api\User\AnnouncementApiController as UserAnnouncementController;
 use App\Http\Controllers\Api\User\DashboardApiController as UserDashboardController;
-use App\Http\Controllers\Api\User\ProfileApiController as UserProfileController;
-use App\Http\Controllers\Api\User\PackageApiController as UserPackageController;
-use App\Http\Controllers\Api\User\PracticeApiController as UserPracticeController;
 use App\Http\Controllers\Api\User\GamificationApiController as UserGamificationController;
 use App\Http\Controllers\Api\User\LeaveRequestApiController as UserLeaveRequestController;
 use App\Http\Controllers\Api\User\NotificationApiController as UserNotificationController;
-use App\Http\Controllers\Api\User\AnnouncementApiController as UserAnnouncementController;
-
-use App\Http\Controllers\Api\SatelliteApiController;
+use App\Http\Controllers\Api\User\PackageApiController as UserPackageController;
+use App\Http\Controllers\Api\User\PracticeApiController as UserPracticeController;
+use App\Http\Controllers\Api\User\ProfileApiController as UserProfileController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,7 +49,7 @@ Route::prefix('satellite')->name('api.satellite.')->middleware('api.key')->group
     // Get users list for satellite sync
     Route::get('/users', [SatelliteApiController::class, 'users'])
         ->name('users');
-    
+
     // Sync weekly report from satellite
     Route::post('/weekly-report/sync', [SatelliteApiController::class, 'syncWeeklyReport'])
         ->name('weekly-report.sync');
@@ -139,10 +137,10 @@ Route::prefix('user/v1')->name('api.user.')->group(function () {
     Route::get('/practice/{session}', [UserPracticeController::class, 'show'])->name('practice.show');
 
     // 5. Leaderboard
-    Route::get('/leaderboard', [UserGamificationApiController::class, 'leaderboard'])->name('leaderboard');
+    Route::get('/leaderboard', [UserGamificationController::class, 'leaderboard'])->name('leaderboard');
 
     // 6. Analytics
-    Route::get('/analytics', [UserGamificationApiController::class, 'analytics'])->name('analytics');
+    Route::get('/analytics', [UserGamificationController::class, 'analytics'])->name('analytics');
 
     // 7. Leave Requests (Pengajuan Izin)
     Route::get('/leave-requests', [UserLeaveRequestController::class, 'index'])->name('leave-requests.index');
