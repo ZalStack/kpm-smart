@@ -43,7 +43,11 @@ Route::prefix('satellite')->name('api.satellite.')->middleware('api.key')->group
     // Get practice statistics for satellite sync
     Route::get('/practice-statistics', [SatelliteApiController::class, 'practiceStatistics'])
         ->name('practice-statistics');
-    
+
+    // Get active packages list for weekly PR count detection
+    Route::get('/packages', [SatelliteApiController::class, 'packages'])
+        ->name('packages');
+
     // Get users list for satellite sync
     Route::get('/users', [SatelliteApiController::class, 'users'])
         ->name('users');

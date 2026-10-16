@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
+use App\Models\Package;
 use App\Models\PracticeSession;
 use App\Models\User;
 use App\Services\NotificationService;
@@ -19,7 +20,7 @@ class SatelliteApiController extends Controller
      */
     public function practiceStatistics(Request $request): JsonResponse
     {
-        $query = PracticeSession::with(['user:id,name,email,student_class,bidang,level,school_name', 'package:id,title'])
+        $query = PracticeSession::with(['user:id,name,email,student_class,bidang,level,school_name', 'package:id,title,kelas,bidang,level,start_date,end_date,created_at'])
             ->where('status', 'completed');
 
         // Filter by package_id if provided
@@ -39,10 +40,32 @@ class SatelliteApiController extends Controller
         $sessions = $query->orderBy('finished_at', 'desc')
             ->paginate($request->input('per_page', 200));
 
+        $packages = Package::where('is_active', true)
+            ->select('id', 'title', 'kelas', 'bidang', 'level', 'start_date', 'end_date', 'is_active', 'created_at')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return response()->json([
             'success' => true,
             'message' => 'Practice statistics retrieved successfully',
             'data' => $sessions,
+            'packages' => $packages,
+        ]);
+    }
+
+    /**
+     * Get active packages list for weekly PR count detection
+     */
+    public function packages(): JsonResponse
+    {
+        $packages = Package::where('is_active', true)
+            ->select('id', 'title', 'kelas', 'bidang', 'level', 'start_date', 'end_date', 'is_active', 'created_at')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $packages,
         ]);
     }
 
