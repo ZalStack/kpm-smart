@@ -19,4 +19,6 @@ return [
         'private_key' => env('VAPID_PRIVATE_KEY'),
     ],
 
+    'parent_api_key' => env('PARENT_APP_API_KEY', env('API_SECRET_KEY', 'kpm-satellite-secret-key-2026')),
+
 ];

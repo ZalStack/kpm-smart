@@ -219,6 +219,17 @@ class AuthController extends Controller
             'place_of_birth', 'date_of_birth', 'parent_profession', 'parent_education',
         ]);
 
+        foreach ($data as $k => $v) {
+            if (is_string($v) && trim($v) === '') {
+                $data[$k] = null;
+            }
+        }
+        if (! empty($data['date_of_birth']) && strtotime($data['date_of_birth'])) {
+            $data['date_of_birth'] = date('Y-m-d', strtotime($data['date_of_birth']));
+        } else {
+            $data['date_of_birth'] = null;
+        }
+
         $uploadedPhoto = null;
         if ($request->hasFile('profile_photo')) {
             if ($user->profile_photo && ! str_starts_with($user->profile_photo, 'http')) {
@@ -320,6 +331,13 @@ class AuthController extends Controller
         }
 
         $user->update($data);
+
+        // Sync perubahan profil admin ke Web Induk
+        try {
+            ParentSyncService::syncUserToParent($user, null, $data['profile_photo'] ?? null);
+        } catch (\Throwable $e) {
+            \Log::error('Gagal sync admin profil update ke Web Induk: '.$e->getMessage());
+        }
 
         return back()->with('success', 'Profil admin berhasil diperbarui!');
     }

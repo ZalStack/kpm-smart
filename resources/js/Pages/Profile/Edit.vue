@@ -18,10 +18,17 @@ const user = computed(() => props.user || page.props.auth?.user);
 const profesiOrtuOptions = ['Petani', 'Pedagang', 'Karyawan Swasta', 'ASN/PNS', 'Wiraswasta', 'Nelayan', 'Buruh', 'Tidak Bekerja', 'Lainnya'];
 const pendidikanOrtuOptions = ['Tidak Sekolah', 'SD', 'SMP', 'SMA/SMK', 'D1-D3', 'S1', 'S2', 'S3'];
 
+const normalizeDate = (val) => {
+    if (!val) return '';
+    const s = String(val).trim();
+    return s.includes('T') ? s.split('T')[0] : (s.includes(' ') ? s.split(' ')[0] : s);
+};
+
 const formatTanggal = (value) => {
     if (!value) return '';
-    const parsed = new Date(`${value}T00:00:00`);
-    if (Number.isNaN(parsed.getTime())) return value;
+    const clean = normalizeDate(value);
+    const parsed = new Date(`${clean}T00:00:00`);
+    if (Number.isNaN(parsed.getTime())) return clean;
     return parsed.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 };
 
@@ -33,7 +40,7 @@ const form = useForm({
     parent_name: user.value?.parent_name || '',
     parent_phone: user.value?.parent_phone || '',
     place_of_birth: user.value?.place_of_birth || '',
-    date_of_birth: user.value?.date_of_birth || '',
+    date_of_birth: normalizeDate(user.value?.date_of_birth),
     parent_profession: user.value?.parent_profession || '',
     parent_education: user.value?.parent_education || '',
     profile_photo: null,

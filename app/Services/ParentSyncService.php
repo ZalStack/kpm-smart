@@ -23,6 +23,15 @@ class ParentSyncService
             $parentUrl = rtrim(config('app.parent_app_url', env('PARENT_APP_URL', 'https://kelas-khusus.kpmacademic.io')), '/');
             $apiKey = config('services.parent_api_key', env('PARENT_APP_API_KEY', env('API_SECRET_KEY', 'kpm-satellite-secret-key-2026')));
 
+            $clean = function (?string $val): ?string {
+                $t = trim((string) $val);
+
+                return $t === '' ? null : $t;
+            };
+
+            $rawDob = trim((string) $user->date_of_birth);
+            $dob = (! empty($rawDob) && strtotime($rawDob)) ? date('Y-m-d', strtotime($rawDob)) : null;
+
             $payload = [
                 'email' => $user->email,
                 'name' => $user->name,
@@ -32,18 +41,18 @@ class ParentSyncService
                 'bidang' => $user->bidang,
                 'asal_sekolah' => $user->school_name,
                 'school_name' => $user->school_name,
-                'phone' => $user->phone,
-                'address' => $user->address,
-                'parent_name' => $user->parent_name,
-                'parent_phone' => $user->parent_phone,
-                'place_of_birth' => $user->place_of_birth,
-                'date_of_birth' => $user->date_of_birth,
-                'parent_profession' => $user->parent_profession,
-                'parent_education' => $user->parent_education,
+                'phone' => $clean($user->phone),
+                'address' => $clean($user->address),
+                'parent_name' => $clean($user->parent_name),
+                'parent_phone' => $clean($user->parent_phone),
+                'place_of_birth' => $clean($user->place_of_birth),
+                'date_of_birth' => $dob,
+                'parent_profession' => $clean($user->parent_profession),
+                'parent_education' => $clean($user->parent_education),
                 'level' => (string) $user->level,
                 'is_active' => (bool) $user->is_active,
                 'source_satellite' => 'kpm_smart',
-                'role' => 'peserta',
+                'role' => $user->role === 'admin' ? 'administrator' : 'peserta',
             ];
 
             if ($plainPassword) {

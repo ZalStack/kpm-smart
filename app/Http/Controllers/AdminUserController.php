@@ -177,7 +177,7 @@ class AdminUserController extends Controller
             'phone' => 'nullable|string|max:20',
             'student_class' => 'nullable|string|max:50',
             'bidang' => 'nullable|string|max:100',
-            'level' => 'nullable|string|in:A1,A2,B1,B2,C1,C2',
+            'level' => 'nullable|string|max:50',
             'school_name' => 'nullable|string|max:255',
             'address' => 'nullable|string',
             'parent_name' => 'nullable|string|max:255',
@@ -186,29 +186,38 @@ class AdminUserController extends Controller
             'date_of_birth' => 'nullable|string|max:50',
             'parent_profession' => 'nullable|string|max:100',
             'parent_education' => 'nullable|string|max:100',
-            'gender' => 'nullable|string|in:Laki-laki,Perempuan',
+            'gender' => 'nullable|string|max:50',
             'religion' => 'nullable|string|max:50',
             'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
+        $rawDob = trim((string) ($validated['date_of_birth'] ?? ''));
+        $dob = (! empty($rawDob) && strtotime($rawDob)) ? date('Y-m-d', strtotime($rawDob)) : null;
+
+        $clean = function (?string $val): ?string {
+            $t = trim((string) $val);
+
+            return $t === '' ? null : $t;
+        };
+
         $data = [
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
+            'phone' => $clean($validated['phone'] ?? null),
             'student_name' => $validated['name'],
-            'student_class' => $validated['student_class'] ?? null,
-            'bidang' => $validated['bidang'] ?? null,
-            'level' => $validated['level'] ?? null,
-            'school_name' => $validated['school_name'] ?? null,
-            'address' => $validated['address'] ?? null,
-            'parent_name' => $validated['parent_name'] ?? null,
-            'parent_phone' => $validated['parent_phone'] ?? null,
-            'place_of_birth' => $validated['place_of_birth'] ?? null,
-            'date_of_birth' => $validated['date_of_birth'] ?? null,
-            'parent_profession' => $validated['parent_profession'] ?? null,
-            'parent_education' => $validated['parent_education'] ?? null,
-            'gender' => $validated['gender'] ?? null,
-            'religion' => $validated['religion'] ?? null,
+            'student_class' => $clean($validated['student_class'] ?? null),
+            'bidang' => $clean($validated['bidang'] ?? null),
+            'level' => $clean($validated['level'] ?? null),
+            'school_name' => $clean($validated['school_name'] ?? null),
+            'address' => $clean($validated['address'] ?? null),
+            'parent_name' => $clean($validated['parent_name'] ?? null),
+            'parent_phone' => $clean($validated['parent_phone'] ?? null),
+            'place_of_birth' => $clean($validated['place_of_birth'] ?? null),
+            'date_of_birth' => $dob,
+            'parent_profession' => $clean($validated['parent_profession'] ?? null),
+            'parent_education' => $clean($validated['parent_education'] ?? null),
+            'gender' => $clean($validated['gender'] ?? null),
+            'religion' => $clean($validated['religion'] ?? null),
         ];
 
         if (! empty($validated['password'])) {
