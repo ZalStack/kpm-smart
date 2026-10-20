@@ -165,10 +165,13 @@ class Package extends Model
      */
     public function questionsForAttempt(?string $cardId = null): array
     {
-        $questions = collect($this->questions ?? [])
-            ->when($cardId !== null, fn ($c) => $c->where('card_id', $cardId))
-            ->values()
-            ->all();
+        $all = collect($this->questions ?? []);
+
+        if ($cardId !== null && $all->contains('card_id', $cardId)) {
+            $questions = $all->where('card_id', $cardId)->values()->all();
+        } else {
+            $questions = $all->values()->all();
+        }
 
         return array_map(function (array $question): array {
             unset($question['correct_answer'], $question['explanation']);

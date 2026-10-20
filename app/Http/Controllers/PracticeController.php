@@ -42,8 +42,13 @@ class PracticeController extends Controller
         $cardId = $request->card_id;
 
         // If card_id is not provided, pick first card if available
-        if (!$cardId && !empty($package->cards)) {
+        if (! $cardId && ! empty($package->cards)) {
             $cardId = $package->cards[0]['id'] ?? null;
+        }
+
+        if (! $cardId) {
+            $firstQ = collect($package->questions ?? [])->first();
+            $cardId = $firstQ['card_id'] ?? 'card-1';
         }
 
         // Tanpa kunci jawaban: siswa tidak boleh bisa membaca kunci jawaban dari payload.
@@ -57,13 +62,17 @@ class PracticeController extends Controller
         // Check if there is an in-progress session for this card
         $inProgress = PracticeSession::where('user_id', Auth::id())
             ->where('package_id', $package->id)
-            ->where('card_id', $cardId)
+            ->where(function ($q) use ($cardId) {
+                $q->where('card_id', $cardId)
+                    ->orWhereNull('card_id')
+                    ->orWhere('card_id', 'default');
+            })
             ->where('status', 'in_progress')
             ->first();
 
         if ($inProgress) {
             $savedAnswers = [];
-            if (!empty($inProgress->answers)) {
+            if (! empty($inProgress->answers)) {
                 foreach ($inProgress->answers as $idx => $item) {
                     $savedAnswers[$idx] = $item['user_answer'] ?? null;
                 }
@@ -83,7 +92,11 @@ class PracticeController extends Controller
         // Blokir jika sudah mengerjakan (1-attempt restriction - tidak bisa retry)
         $existingSession = PracticeSession::where('user_id', Auth::id())
             ->where('package_id', $package->id)
-            ->where('card_id', $cardId)
+            ->where(function ($q) use ($cardId) {
+                $q->where('card_id', $cardId)
+                    ->orWhereNull('card_id')
+                    ->orWhere('card_id', 'default');
+            })
             ->where('status', 'completed')
             ->latest()
             ->first();
@@ -96,7 +109,7 @@ class PracticeController extends Controller
         $session = PracticeSession::create([
             'user_id' => Auth::id(),
             'package_id' => $package->id,
-            'card_id' => $cardId,
+            'card_id' => $cardId ?: 'card-1',
             'total_question' => count($questions),
             'started_at' => now(),
             'status' => 'in_progress',
@@ -119,10 +132,12 @@ class PracticeController extends Controller
 
         $answers = $request->answers ?? [];
         $package = $session->package;
-        $questions = collect($package->questions ?? [])
-            ->where('card_id', $session->card_id)
-            ->values()
-            ->all();
+        $allQuestions = collect($package->questions ?? []);
+        if ($session->card_id && $allQuestions->contains('card_id', $session->card_id)) {
+            $questions = $allQuestions->where('card_id', $session->card_id)->values()->all();
+        } else {
+            $questions = $allQuestions->values()->all();
+        }
 
         $correct = 0;
         $wrong = 0;
@@ -269,10 +284,12 @@ class PracticeController extends Controller
         $answers = $request->answers ?? [];
 
         $package = $session->package;
-        $questions = collect($package->questions ?? [])
-            ->where('card_id', $session->card_id)
-            ->values()
-            ->all();
+        $allQuestions = collect($package->questions ?? []);
+        if ($session->card_id && $allQuestions->contains('card_id', $session->card_id)) {
+            $questions = $allQuestions->where('card_id', $session->card_id)->values()->all();
+        } else {
+            $questions = $allQuestions->values()->all();
+        }
 
         $results = [];
         $correct = 0;
