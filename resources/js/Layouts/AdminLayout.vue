@@ -51,6 +51,7 @@ function toggleNotifDropdown() {
 }
 
 async function loadNotifications() {
+    if (typeof document !== 'undefined' && document.hidden) return;
     try {
         const response = await fetch(route('admin.notifications.dropdown'), {
             method: 'POST',
@@ -136,7 +137,7 @@ let resizeHandler;
 
 onMounted(() => {
     loadNotifications();
-    pollInterval = setInterval(loadNotifications, 15000);
+    pollInterval = setInterval(loadNotifications, 5000);
 
     clickHandler = (e) => {
         if (!e.target.closest('#profileDropdownWrap')) profileDropdownOpen.value = false;

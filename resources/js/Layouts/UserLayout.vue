@@ -272,6 +272,7 @@ function toggleNotifDropdown() {
 }
 
 async function loadNotifications() {
+    if (typeof document !== 'undefined' && document.hidden) return;
     try {
         const notifUrl = isAdmin.value ? safeRoute('admin.notifications.dropdown') : safeRoute('user.notifications.dropdown');
         const response = await fetch(notifUrl, {
@@ -341,7 +342,7 @@ let resizeHandler;
 onMounted(() => {
     if (user.value) {
         loadNotifications();
-        pollInterval = setInterval(loadNotifications, 15000);
+        pollInterval = setInterval(loadNotifications, 5000);
     }
 
     clickHandler = (e) => {
