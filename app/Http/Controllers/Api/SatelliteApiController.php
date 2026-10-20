@@ -172,29 +172,6 @@ class SatelliteApiController extends Controller
                 ]);
                 $notificationCreated = true;
             }
-
-            // Also create notification for Admin PKA Litbang (user_id = 1)
-            $adminUser = User::where('role', 'admin')->first() ?? User::find(1);
-            if ($adminUser && (! $user || $adminUser->id !== $user->id)) {
-                Notification::create([
-                    'user_id' => $adminUser->id,
-                    'type' => 'weekly_report_note',
-                    'title' => "Catatan Guru untuk {$displayName} (Pekan {$weekNumber})",
-                    'message' => "Catatan evaluasi: {$notes}",
-                    'data' => [
-                        'week_number' => $weekNumber,
-                        'year' => $year,
-                        'teacher_name' => $teacherName,
-                        'student_name' => $displayName,
-                        'student_email' => $studentEmail,
-                        'notes' => $notes,
-                        'pr_score' => $validated['pr_score'] ?? null,
-                        'source' => 'kpm_student_smart',
-                    ],
-                    'read_at' => null,
-                ]);
-                $notificationCreated = true;
-            }
         }
 
         return response()->json([
