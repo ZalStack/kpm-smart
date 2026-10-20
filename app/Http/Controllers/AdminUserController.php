@@ -320,8 +320,12 @@ class AdminUserController extends Controller
      */
     public function importExcel(Request $request)
     {
+        @set_time_limit(0);
+        @ini_set('max_execution_time', '0');
+        @ini_set('memory_limit', '512M');
+
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:20480',
         ]);
 
         $file = $request->file('file');
@@ -376,7 +380,8 @@ class AdminUserController extends Controller
 
         $now = now()->toDateTimeString();
         $defaultHashed = Hash::make('password');
-        $usedEmails = array_flip(User::pluck('email')->map(fn ($e) => strtolower($e))->toArray());
+        $hashCache = ['password' => $defaultHashed, 'default' => $defaultHashed];
+        $usedEmails = array_flip(User::pluck('email')->filter()->map(fn ($e) => strtolower(trim($e)))->toArray());
         $toInsert = [];
         $skipped = 0;
 
@@ -386,7 +391,7 @@ class AdminUserController extends Controller
             }
 
             $nama = trim((string) ($row[$colMap['nama']] ?? ''));
-            if ($nama === '') {
+            if ($nama === '' || strtolower($nama) === 'nama' || strtolower($nama) === 'nama siswa') {
                 $skipped++;
 
                 continue;
@@ -399,7 +404,7 @@ class AdminUserController extends Controller
 
             $excelPassword = isset($colMap['password']) ? trim((string) ($row[$colMap['password']] ?? '')) : '';
             if ($excelPassword !== '' && strtolower($excelPassword) !== 'password') {
-                $rowHash = Hash::make($excelPassword);
+                $rowHash = $hashCache[$excelPassword] ??= Hash::make($excelPassword);
             } else {
                 $rowHash = $defaultHashed;
             }
