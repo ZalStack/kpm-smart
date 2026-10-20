@@ -30,7 +30,9 @@ class User extends Authenticatable
 
     public function setPasswordAttribute(string $value): void
     {
-        $this->attributes['password'] = Hash::make($value);
+        $this->attributes['password'] = (str_starts_with($value, '$2y$') || str_starts_with($value, '$2a$'))
+            ? $value
+            : Hash::make($value);
     }
 
     public function getProfilePhotoUrlAttribute(): string

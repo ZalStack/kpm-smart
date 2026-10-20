@@ -9,6 +9,7 @@ use App\Models\PracticeSession;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class SatelliteApiController extends Controller
@@ -254,6 +255,79 @@ class SatelliteApiController extends Controller
             'success' => true,
             'message' => "User {$user->name} berhasil disinkronkan di KPM Smart",
             'user' => $user,
+        ]);
+    }
+
+    /**
+     * Menerima sinkronisasi batch banyak user sekaligus dari Web Induk
+     */
+    public function syncBatch(Request $request): JsonResponse
+    {
+        $users = $request->input('users', []);
+        if (! is_array($users)) {
+            return response()->json(['success' => false, 'message' => 'Format users tidak valid'], 422);
+        }
+
+        $synced = 0;
+        DB::beginTransaction();
+        try {
+            foreach ($users as $item) {
+                if (empty($item['email']) || empty($item['name'])) {
+                    continue;
+                }
+                $role = in_array($item['role'] ?? '', ['super_admin', 'administrator', 'admin', 'guru']) ? 'admin' : 'user';
+                $username = $item['username'] ?? explode('@', $item['email'])[0];
+                $existing = DB::table('users')->where('email', $item['email'])->first();
+
+                $data = [
+                    'name' => $item['name'],
+                    'username' => $username,
+                    'student_name' => $item['name'],
+                    'student_class' => $item['kelas'] ?? ($existing->student_class ?? 'VII-A'),
+                    'bidang' => $item['bidang'] ?? ($existing->bidang ?? 'Matematika & IPA'),
+                    'level' => $item['level'] ?? ($existing->level ?? '1'),
+                    'school_name' => $item['asal_sekolah'] ?? ($existing->school_name ?? 'KPM Academy'),
+                    'role' => $role,
+                    'is_active' => filter_var($item['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN) ? 1 : 0,
+                    'is_verified' => 1,
+                    'updated_at' => now(),
+                ];
+
+                foreach (['phone', 'address', 'parent_name', 'parent_phone', 'place_of_birth', 'date_of_birth', 'parent_profession', 'parent_education'] as $f) {
+                    if (array_key_exists($f, $item)) {
+                        $data[$f] = $item[$f];
+                    }
+                }
+                if (! empty($item['foto_profil'])) {
+                    $data['profile_photo'] = $item['foto_profil'];
+                }
+                if (! empty($item['password'])) {
+                    $pw = $item['password'];
+                    $data['password'] = (str_starts_with($pw, '$2y$') || str_starts_with($pw, '$2a$')) ? $pw : bcrypt($pw);
+                } elseif (! $existing) {
+                    $data['password'] = bcrypt('kpm12345');
+                }
+
+                if ($existing) {
+                    DB::table('users')->where('id', $existing->id)->update($data);
+                } else {
+                    $data['email'] = $item['email'];
+                    $data['created_at'] = now();
+                    DB::table('users')->insert($data);
+                }
+                $synced++;
+            }
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$synced} user berhasil disinkronkan di KPM Smart",
+            'synced_count' => $synced,
         ]);
     }
 

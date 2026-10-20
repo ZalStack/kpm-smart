@@ -57,6 +57,8 @@ Route::prefix('satellite')->name('api.satellite.')->middleware('api.key')->group
     // Realtime User sync from Web Induk
     Route::post('/users/sync', [SatelliteApiController::class, 'syncUser'])
         ->name('users.sync');
+    Route::post('/users/sync-batch', [SatelliteApiController::class, 'syncBatch'])
+        ->name('users.sync-batch');
     Route::post('/users/delete', [SatelliteApiController::class, 'deleteUser'])
         ->name('users.delete');
     Route::post('/users/clean-orphans', [SatelliteApiController::class, 'cleanOrphans'])
