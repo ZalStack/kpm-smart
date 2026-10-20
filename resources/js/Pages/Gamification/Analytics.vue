@@ -139,6 +139,7 @@ const hasData = computed(() => props.scoreOverTime.length > 0);
                         <table class="w-full text-sm">
                             <thead class="bg-muted/30 text-xs text-muted-foreground">
                                 <tr>
+                                    <th class="text-center px-4 py-3 font-medium w-12">No</th>
                                     <th class="text-left px-5 py-3 font-medium">Soal</th>
                                     <th class="text-center px-4 py-3 font-medium">Percobaan</th>
                                     <th class="text-center px-4 py-3 font-medium">Rata-rata</th>
@@ -146,7 +147,8 @@ const hasData = computed(() => props.scoreOverTime.length > 0);
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border/50">
-                                <tr v-for="pkg in packageStats" :key="pkg.name" class="hover:bg-muted/20">
+                                <tr v-for="(pkg, index) in packageStats" :key="pkg.name" class="hover:bg-muted/20">
+                                    <td class="text-center px-4 py-3 text-muted-foreground font-semibold">{{ index + 1 }}</td>
                                     <td class="px-5 py-3 font-medium truncate max-w-[200px]">{{ pkg.name }}</td>
                                     <td class="text-center px-4 py-3">{{ pkg.attempts }}</td>
                                     <td class="text-center px-4 py-3">

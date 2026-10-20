@@ -108,6 +108,7 @@ function syncFromParent() {
                     <Icon icon="mdi:account-group-outline" class="w-5 h-5" />
                 </span>
                 <span>Manajemen Siswa</span>
+                <Badge variant="secondary" class="ml-1 px-2.5 py-0.5 rounded-full text-xs font-bold">{{ totalUsers }} Siswa</Badge>
             </div>
         </template>
         <template #header-sub>Manajemen data akun dan profil siswa platform</template>
@@ -240,6 +241,7 @@ function syncFromParent() {
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-border/60 bg-muted/30">
+                                <th class="text-center px-4 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider w-12">No</th>
                                 <th class="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Pengguna</th>
                                 <th class="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Username</th>
                                 <th class="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Kelas</th>
@@ -252,7 +254,7 @@ function syncFromParent() {
                         </thead>
                         <tbody class="divide-y divide-border/50">
                             <tr v-if="users.data.length === 0">
-                                <td colspan="8" class="px-6 py-16 text-center text-muted-foreground">
+                                <td colspan="9" class="px-6 py-16 text-center text-muted-foreground">
                                     <div class="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-3">
                                         <Icon icon="mdi:account-search-outline" class="w-8 h-8 text-muted-foreground/40" />
                                     </div>
@@ -260,9 +262,12 @@ function syncFromParent() {
                                     <p class="text-xs text-muted-foreground mt-1">Coba ubah filter pencarian Anda atau tambah pengguna baru</p>
                                 </td>
                             </tr>
-                            <tr v-for="user in users.data" :key="user.id"
+                            <tr v-for="(user, index) in users.data" :key="user.id"
                                 class="hover:bg-muted/30 transition-colors cursor-pointer"
                                 @click="router.get(route('admin.users.show', user.id))">
+                                <td class="px-4 py-3.5 text-center text-xs font-semibold text-muted-foreground">
+                                    {{ (users.from || 1) + index }}
+                                </td>
                                 <td class="px-5 py-3.5">
                                     <div class="flex items-center gap-3">
                                         <div class="relative w-10 h-10 rounded-full overflow-hidden bg-muted/40 flex items-center justify-center shrink-0 border border-border/60">

@@ -121,6 +121,7 @@ function formatDateTime(d) {
                 <table class="admin-table w-full text-sm">
                     <thead>
                         <tr class="border-b border-border/60 bg-gradient-to-r from-muted/40 to-muted/20">
+                            <th class="text-center px-4 py-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider w-12">No</th>
                             <th class="text-left px-5 py-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">User</th>
                             <th class="text-left px-5 py-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Waktu Login</th>
                             <th class="text-left px-5 py-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">IP Address</th>
@@ -131,7 +132,7 @@ function formatDateTime(d) {
                     </thead>
                     <tbody>
                         <tr v-if="logs.data.length === 0">
-                            <td colspan="6" class="px-6 py-20 text-center">
+                            <td colspan="7" class="px-6 py-20 text-center">
                                 <div class="flex flex-col items-center gap-4">
                                     <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
                                         <svg class="w-10 h-10 text-muted-foreground/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" /></svg>
@@ -146,6 +147,7 @@ function formatDateTime(d) {
                         <tr v-for="(log, index) in logs.data" :key="log.id"
                             class="border-b border-border/40 last:border-b-0 hover:bg-muted/50 transition-all duration-200 cursor-pointer"
                             :style="{ animationDelay: `${index * 30}ms` }">
+                            <td class="px-4 py-4 text-center text-xs font-semibold text-muted-foreground">{{ (logs.from || 1) + index }}</td>
                             <td class="px-5 py-4">
                                 <div class="flex items-center gap-3">
                                     <div class="w-9 h-9 rounded-xl overflow-hidden bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center flex-shrink-0 ring-2 ring-background shadow-sm">

@@ -571,7 +571,7 @@
     ]
   },
   "resources/js/Pages/Admin/LoginLogs/LoginLogIndex.vue": {
-    "file": "assets/LoginLogIndex-BX-UHrAU.js",
+    "file": "assets/LoginLogIndex-B7YjtMKc.js",
     "name": "LoginLogIndex",
     "src": "resources/js/Pages/Admin/LoginLogs/LoginLogIndex.vue",
     "isDynamicEntry": true,
@@ -820,7 +820,7 @@
     ]
   },
   "resources/js/Pages/Admin/Users/UserIndex.vue": {
-    "file": "assets/UserIndex-CFC4DKY3.js",
+    "file": "assets/UserIndex-B15A4wtg.js",
     "name": "UserIndex",
     "src": "resources/js/Pages/Admin/Users/UserIndex.vue",
     "isDynamicEntry": true,
@@ -940,7 +940,7 @@
     ]
   },
   "resources/js/Pages/Gamification/Analytics.vue": {
-    "file": "assets/Analytics-Bap0AZQD.js",
+    "file": "assets/Analytics-BebT1_Ob.js",
     "name": "Analytics",
     "src": "resources/js/Pages/Gamification/Analytics.vue",
     "isDynamicEntry": true,
@@ -1177,7 +1177,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-bqzzxCDx.js",
+    "file": "assets/app-DaZkf_qT.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,

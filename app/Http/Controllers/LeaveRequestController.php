@@ -7,7 +7,9 @@ use App\Models\User;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class LeaveRequestController extends Controller
@@ -53,7 +55,7 @@ class LeaveRequestController extends Controller
                 $adminId,
                 'leave',
                 'Pengajuan Izin Baru',
-                Auth::user()->name . ' mengajukan izin: "' . \Illuminate\Support\Str::limit($validated['reason'], 80) . '"',
+                Auth::user()->name.' mengajukan izin: "'.Str::limit($validated['reason'], 80).'"',
                 ['leave_request_id' => $leaveRequest->id, 'action_url' => route('admin.leave-requests.index')],
                 true
             );
@@ -94,7 +96,7 @@ class LeaveRequestController extends Controller
 
     public function adminUpdateStatus(Request $request, $id)
     {
-        $leaveRequest = LeaveRequest::findOrFail($id);
+        $leaveRequest = LeaveRequest::with('user')->findOrFail($id);
 
         $validated = $request->validate([
             'status' => 'required|in:approved,rejected',
@@ -106,14 +108,38 @@ class LeaveRequestController extends Controller
             'admin_note' => $validated['admin_note'] ?? null,
         ]);
 
+        $statusLabel = $validated['status'] === 'approved' ? 'Disetujui' : 'Ditolak';
+
         NotificationService::create(
             $leaveRequest->user_id,
             'leave',
-            'Pengajuan Izin ' . ($validated['status'] === 'approved' ? 'Disetujui' : 'Ditolak'),
-            'Pengajuan izin anda telah ' . ($validated['status'] === 'approved' ? 'disetujui' : 'ditolak') . ' oleh admin.',
+            'Pengajuan Izin '.$statusLabel,
+            'Pengajuan izin anda telah '.strtolower($statusLabel).' oleh admin.',
             ['leave_request_id' => $leaveRequest->id, 'action_url' => route('user.leave-requests.index')],
             true
         );
+
+        if ($leaveRequest->user) {
+            try {
+                $parentUrl = rtrim(config('services.parent_api.url', env('PARENT_API_URL', config('app.parent_app_url', 'https://kelas-khusus.kpmacademic.io'))), '/').'/api/v1/notifications/receive';
+                $apiKey = config('services.parent_api.key', env('PARENT_API_KEY', config('services.parent_api_key', 'kpm-secret-api-key-2026')));
+                $noteText = trim((string) ($validated['admin_note'] ?? ''));
+                Http::timeout(3)->withHeaders([
+                    'X-API-KEY' => $apiKey,
+                    'Accept' => 'application/json',
+                ])->post($parentUrl, [
+                    'source_app' => 'pr',
+                    'student_email' => $leaveRequest->user->email,
+                    'student_name' => $leaveRequest->user->name,
+                    'title' => "Pengajuan Izin PR {$statusLabel}",
+                    'message' => $noteText !== ''
+                        ? "Pengajuan izin {$statusLabel}. Catatan Admin: {$noteText}"
+                        : "Pengajuan izin telah {$statusLabel} oleh admin.",
+                    'notes' => $noteText !== '' ? $noteText : null,
+                ]);
+            } catch (\Throwable $e) {
+            }
+        }
 
         return redirect()->back()->with('success', 'Status pengajuan izin berhasil diperbarui.');
     }
