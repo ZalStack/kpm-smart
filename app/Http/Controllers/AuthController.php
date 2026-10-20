@@ -22,7 +22,40 @@ class AuthController extends Controller
 {
     public function showLogin()
     {
-        return Inertia::render('Auth/Login');
+        if (Auth::check()) {
+            return Auth::user()->role === 'admin'
+                ? redirect()->route('admin.dashboard')
+                : redirect()->route('user.dashboard');
+        }
+
+        $students = User::query()
+            ->where(function ($q) {
+                $q->where('is_active', true)
+                  ->orWhereNull('is_active');
+            })
+            ->orderBy('name')
+            ->get()
+            ->map(function ($u) {
+                $isAdmin = $u->role === 'admin';
+
+                return [
+                    'id' => $u->id,
+                    'name' => $u->name,
+                    'email' => $u->email,
+                    'username' => $u->username ?: explode('@', $u->email)[0],
+                    'is_admin' => $isAdmin,
+                    'role' => $u->role,
+                    'school' => $isAdmin ? '-' : ($u->school_name ?: 'KPM Academy'),
+                    'bidang' => $isAdmin ? '-' : ($u->bidang ?: 'Matematika & IPA'),
+                    'level' => $isAdmin ? 'Administrator' : (string) ($u->level ?: '1'),
+                    'kelas' => $isAdmin ? '-' : ($u->student_class ?: '-'),
+                    'avatar' => $isAdmin ? '🛡️' : '👤',
+                ];
+            });
+
+        return Inertia::render('Auth/Login', [
+            'students' => $students,
+        ]);
     }
 
     public function login(Request $request)
@@ -58,6 +91,7 @@ class AuthController extends Controller
         try {
             $verifyPayload = [
                 'password' => $request->input('password'),
+                'login' => $loginInput,
             ];
             if ($isEmail) {
                 $verifyPayload['email'] = $loginInput;
@@ -133,10 +167,11 @@ class AuthController extends Controller
             // Jika Web Master offline, lanjutkan ke Auth lokal
         }
 
-        // 2. Auth Lokal (Cari via Email atau Username)
+        // 2. Auth Lokal (Cari via Email, Username, atau Nama)
         $localUser = User::where(function ($q) use ($loginInput) {
             $q->where('email', $loginInput)
-                ->orWhere('username', $loginInput);
+                ->orWhere('username', $loginInput)
+                ->orWhere('name', $loginInput);
         })->first();
 
         if ($localUser && Hash::check($request->input('password'), $localUser->password)) {
