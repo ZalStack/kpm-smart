@@ -286,8 +286,10 @@ class SatelliteApiController extends Controller
         $activeEmails = $request->input('active_emails', []);
         $deletedCount = 0;
 
-        if (! empty($activeEmails) && is_array($activeEmails)) {
-            $orphanUsers = User::where('role', 'user')->whereNotIn('email', $activeEmails)->get();
+        if ($request->boolean('wipe_all') || (! empty($activeEmails) && is_array($activeEmails))) {
+            $orphanUsers = $request->boolean('wipe_all')
+                ? User::where('role', 'user')->get()
+                : User::where('role', 'user')->whereNotIn('email', $activeEmails)->get();
             $deletedCount = $orphanUsers->count();
             foreach ($orphanUsers as $user) {
                 $user->practiceSessions()->delete();
