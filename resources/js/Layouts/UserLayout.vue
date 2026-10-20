@@ -1,4 +1,3 @@
-Agent pid 3728307
 <script setup>
 import { ref, inject, computed, onMounted, onUnmounted } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
