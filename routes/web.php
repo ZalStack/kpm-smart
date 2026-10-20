@@ -32,6 +32,11 @@ Route::get('/fitur', fn () => Inertia::render('Pages/Features'))->name('pages.fe
 Route::get('/panduan', fn () => Inertia::render('Pages/Guide'))->name('pages.guide');
 Route::get('/faq', fn () => Inertia::render('Pages/Faq'))->name('pages.faq');
 
+// Alias PR routes ke /packages
+Route::redirect('/pr', '/packages')->name('pr.index');
+Route::redirect('/siswa/pr', '/packages');
+Route::redirect('/admin/pr', '/admin/packages');
+
 // Auth Routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

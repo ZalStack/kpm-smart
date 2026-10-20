@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\ParentSyncService;
 use App\Support\SearchHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
