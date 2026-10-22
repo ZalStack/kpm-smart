@@ -62,9 +62,9 @@ const accuracyOffset = computed(() => circumference - (numAccuracy.value / 100) 
                 <svg class="w-12 h-12 text-muted-foreground/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
             </div>
             <h3 class="text-xl font-bold text-foreground mb-2">Belum Ada Statistik</h3>
-            <p class="text-sm text-muted-foreground mb-6 text-center max-w-xs leading-relaxed">Kerjakan tugas terlebih dahulu untuk melihat statistikmu!</p>
+            <p class="text-sm text-muted-foreground mb-6 text-center max-w-xs leading-relaxed">Kerjakan PR Pekanan terlebih dahulu untuk melihat statistikmu!</p>
             <Link :href="route('user.packages.index')" class="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-7 py-3 rounded-xl text-sm font-semibold hover:from-primary/90 hover:to-primary/70 transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5">
-                <Icon icon="mdi:package-variant" class="w-4 h-4" /> Lihat Soal Tugas
+                <Icon icon="mdi:package-variant" class="w-4 h-4" /> Lihat PR Pekanan
             </Link>
         </div>
 

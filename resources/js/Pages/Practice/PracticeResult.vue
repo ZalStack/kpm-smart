@@ -345,7 +345,7 @@ onMounted(() => {
                 <a
                     v-if="session.status === 'completed'"
                     :href="route('user.practice.certificate', session.id)"
-                    class="sm:col-span-2 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-5 rounded-xl text-xs sm:text-sm font-bold shadow-sm transition active:scale-98"
+                    class="sm:col-span-2 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground py-3 px-5 rounded-xl text-xs sm:text-sm font-bold shadow-sm transition active:scale-98"
                 >
                     <Icon icon="mdi:certificate-outline" class="w-4 h-4" />
                     Unduh Sertifikat PDF

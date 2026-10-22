@@ -19,7 +19,7 @@ const mobileMenuOpen = ref(false);
                         :href="user?.role === 'admin' ? route('admin.dashboard') : (user ? route('user.dashboard') : '/')"
                         class="flex items-center gap-3 text-lg font-bold text-foreground hover:text-primary transition-all duration-200 group"
                     >
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-white text-base font-extrabold shadow-sm shadow-emerald-600/25 group-hover:scale-105 transition-transform duration-200">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white text-base font-extrabold shadow-sm shadow-blue-600/25 group-hover:scale-105 transition-transform duration-200">
                             K
                         </div>
                         <div class="leading-tight">
@@ -115,13 +115,13 @@ const mobileMenuOpen = ref(false);
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
                     <div class="sm:col-span-2 lg:col-span-5 space-y-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-white text-sm font-extrabold shadow-xs">
+                            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white text-sm font-extrabold shadow-xs">
                                 K
                             </div>
                             <span class="text-base font-extrabold tracking-tight">KPM SMART</span>
                         </div>
                         <p class="text-muted-foreground text-xs leading-relaxed max-w-sm">
-                            Platform pembelajaran dan bank soal digital terpadu untuk latihan mandiri dan evaluasi terarah.
+                            Platform pembelajaran dan PR Pekanan digital terpadu untuk latihan mandiri dan evaluasi terarah.
                         </p>
                     </div>
 
@@ -129,7 +129,7 @@ const mobileMenuOpen = ref(false);
                         <p class="text-xs font-bold uppercase tracking-wider text-foreground">Menu Utama</p>
                         <ul class="space-y-2 text-xs text-muted-foreground">
                             <li><Link :href="route('pages.features')" class="hover:text-primary transition">Fitur Unggulan</Link></li>
-                            <li><Link :href="user ? route('user.packages.index') : route('login')" class="hover:text-primary transition">Soal Tugas</Link></li>
+                            <li><Link :href="user ? route('user.packages.index') : route('login')" class="hover:text-primary transition">PR Pekanan</Link></li>
                             <li><Link :href="route('pages.guide')" class="hover:text-primary transition">Panduan Sistem</Link></li>
                         </ul>
                     </div>

@@ -72,11 +72,11 @@ const props = defineProps({
 
                     <Link :href="route('admin.packages.index')"
                           class="group rounded-2xl border border-border/60 bg-card p-5 shadow-sm hover:shadow-xl hover:border-primary/40 transition-all duration-300 hover:-translate-y-1">
-                        <div class="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                            <Icon icon="mdi:package-variant-closed" class="w-6 h-6" />
+                        <div class="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                            <Icon icon="mdi:book-open-variant" class="w-6 h-6" />
                         </div>
-                        <h4 class="font-bold text-sm sm:text-base text-foreground mb-1 group-hover:text-primary transition-colors">Bank Soal Tugas</h4>
-                        <p class="text-xs text-muted-foreground">Buat paket soal baru, atur waktu, dan susun kunci jawaban.</p>
+                        <h4 class="font-bold text-sm sm:text-base text-foreground mb-1 group-hover:text-primary transition-colors">PR Pekanan</h4>
+                        <p class="text-xs text-muted-foreground">Kelola paket PR Pekanan, atur jadwal aktif, dan susun butir soal.</p>
                     </Link>
 
                     <Link :href="route('admin.practice-statistics.index')"

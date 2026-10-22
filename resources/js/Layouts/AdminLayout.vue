@@ -107,7 +107,7 @@ const navItems = [
         label: 'Menu Utama',
         items: [
             { href: route('admin.dashboard'), label: 'Dasbor', icon: 'mdi:view-dashboard-outline', activeIcon: 'mdi:view-dashboard', route: 'admin.dashboard' },
-            { href: route('admin.packages.index'), label: 'Soal Tugas', icon: 'mdi:book-open-variant', activeIcon: 'mdi:book-open-page-variant', route: 'admin.packages.*' },
+            { href: route('admin.packages.index'), label: 'PR Pekanan', icon: 'mdi:book-open-variant', activeIcon: 'mdi:book-open-page-variant', route: 'admin.packages.*' },
             { href: route('admin.announcements.index'), label: 'Pengumuman', icon: 'mdi:bullhorn-outline', activeIcon: 'mdi:bullhorn', route: 'admin.announcements.*' },
         ],
     },
@@ -127,7 +127,7 @@ const navItems = [
 const mobileNavItems = [
     { href: route('admin.dashboard'), label: 'Beranda', icon: 'mdi:view-dashboard-outline', route: 'admin.dashboard' },
     { href: route('admin.users.index'), label: 'Manajemen Siswa', icon: 'mdi:account-group-outline', route: 'admin.users.*' },
-    { href: route('admin.packages.index'), label: 'Soal', icon: 'mdi:book-open-variant', route: 'admin.packages.*' },
+    { href: route('admin.packages.index'), label: 'PR Pekanan', icon: 'mdi:book-open-variant', route: 'admin.packages.*' },
     { href: route('admin.practice-statistics.index'), label: 'Statistik', icon: 'mdi:chart-box-outline', route: 'admin.practice-statistics.*' },
 ];
 
@@ -206,7 +206,7 @@ onUnmounted(() => {
                         <div
                             :class="[
                                 'w-8 h-8 rounded-lg flex items-center justify-center text-lg flex-shrink-0 transition-all duration-200',
-                                route().current(item.route) ? 'bg-white text-emerald-800 shadow-xs scale-105' : 'bg-white/10 text-white group-hover:bg-white/20'
+                                route().current(item.route) ? 'bg-white text-blue-700 shadow-xs scale-105' : 'bg-white/10 text-white group-hover:bg-white/20'
                             ]"
                         >
                             <Icon :icon="route().current(item.route) ? item.activeIcon : item.icon" class="w-4 h-4" />

@@ -91,7 +91,7 @@ Route::prefix('admin/v1')->name('api.admin.')->group(function () {
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
     Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
 
-    // 3. Packages Management (Soal Tugas)
+    // 3. Packages Management (PR Pekanan)
     Route::get('/packages', [AdminPackageController::class, 'index'])->name('packages.index');
     Route::get('/packages/{package}', [AdminPackageController::class, 'show'])->name('packages.show');
 

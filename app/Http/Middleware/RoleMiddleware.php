@@ -23,11 +23,11 @@ class RoleMiddleware
      * @param  string    $role   Role yang dibutuhkan oleh route yang diakses.
      * @return mixed
      */
-    public function handle(Request $request, Closure $next, string $role)
+    public function handle(Request $request, Closure $next, ...$roles)
     {
         $isApi = $request->is('api/*') || $request->expectsJson();
 
-        // 1. Belum login → tolak akses atau redirect.
+        // 1. Belum login → tolak akses atau redirect ke login
         if (!Auth::check()) {
             if ($isApi) {
                 return response()->json([
@@ -41,7 +41,7 @@ class RoleMiddleware
 
         $user = Auth::user();
 
-        // 2. Akun dinonaktifkan → tolak akses dengan pesan yang jelas.
+        // 2. Akun dinonaktifkan → logout dan tolak akses
         if ($user->is_active === false) {
             Auth::logout();
 
@@ -61,16 +61,34 @@ class RoleMiddleware
                 ->with('error', 'Akun Anda telah dinonaktifkan. Silakan hubungi admin.');
         }
 
-        // 3. Role tidak sesuai → tolak akses API atau redirect ke dashboard role sendiri.
-        if ($user->role !== $role) {
+        // 3. Normalisasi allowed roles
+        $allowedRoles = [];
+        foreach ($roles as $r) {
+            $parts = explode(',', (string) $r);
+            foreach ($parts as $p) {
+                $trimmed = trim($p);
+                if ($trimmed !== '') {
+                    $allowedRoles[] = $trimmed;
+                }
+            }
+        }
+
+        $userRole = (string) $user->role;
+        $isAdminRole = in_array($userRole, ['admin', 'super_admin', 'administrator', 'guru'], true);
+
+        // Jika rute membutuhkan role 'admin', user dengan role admin/super_admin/administrator/guru diizinkan
+        $hasAccess = in_array($userRole, $allowedRoles, true)
+            || (in_array('admin', $allowedRoles, true) && $isAdminRole);
+
+        if (!$hasAccess) {
             if ($isApi) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Akses ditolak! Anda tidak memiliki akses ke endpoint ini.',
+                    'message' => 'Akses ditolak! Anda tidak memiliki izin untuk mengakses resource ini.',
                 ], 403);
             }
 
-            if ($user->role === 'admin') {
+            if ($isAdminRole) {
                 return redirect()->route('admin.dashboard')
                     ->with('error', 'Anda tidak memiliki akses ke halaman tersebut.');
             }

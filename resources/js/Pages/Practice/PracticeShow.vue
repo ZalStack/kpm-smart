@@ -188,7 +188,7 @@ function formatDate(dateStr) {
                 <div v-if="session.status === 'completed'" class="flex justify-center pt-2">
                     <a
                         :href="route('user.practice.certificate', session.id)"
-                        class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3.5 rounded-2xl text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all duration-200 active:scale-95"
+                        class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3.5 rounded-2xl text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all duration-200 active:scale-95"
                     >
                         <Icon icon="mdi:certificate-outline" class="w-5 h-5" />
                         Unduh Sertifikat Pengerjaan

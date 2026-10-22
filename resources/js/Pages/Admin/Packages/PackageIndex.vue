@@ -73,11 +73,11 @@ function doDelete() {
                 <span class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                     <Icon icon="mdi:package-variant-closed" class="w-5 h-5" />
                 </span>
-                <span>Bank Soal Tugas</span>
+                <span>Kelola PR Pekanan</span>
             </div>
         </template>
         <template #header-sub>
-            Kelola paket soal tugas, jadwal pengerjaan, kunci jawaban, dan pembahasan materi
+            Kelola paket PR Pekanan, jadwal pengerjaan, kunci jawaban, dan pembahasan materi
         </template>
 
         <!-- Stats Overview Cards -->

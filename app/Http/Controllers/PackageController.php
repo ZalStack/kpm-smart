@@ -16,7 +16,51 @@ class PackageController extends Controller
 {
     public function index()
     {
+        if (auth()->check() && in_array(auth()->user()->role, ['admin', 'super_admin', 'administrator', 'guru'], true)) {
+            return redirect()->route('admin.packages.index');
+        }
+
+        $user = auth()->user();
+        $studentBidang = $user ? trim((string) $user->bidang) : '';
+        $isStudent = $user && $user->role === 'user';
+
+        // Deteksi bidang siswa dari data akun siswa
+        $isStudentMtk = (bool) preg_match('/(mtk|matematika|math)/i', $studentBidang);
+        $isStudentIpa = (bool) preg_match('/(ipa|sains|science)/i', $studentBidang);
+
         $query = Package::where('is_active', true);
+
+        // Kalo siswa bidangnya Matematika: DAPAT SOAL MATEMATIKA, TIDAK ADA SOAL IPA
+        // Kalo siswa bidangnya IPA: DAPAT SOAL IPA, TIDAK ADA SOAL MATEMATIKA
+        if ($isStudent && $isStudentMtk) {
+            $query->where(function ($q) {
+                $q->whereIn('bidang', ['MTK', 'MATEMATIKA', 'Matematika'])
+                  ->orWhere('title', 'like', '%Matematika%')
+                  ->orWhere('title', 'like', '%MTK%');
+            })->where(function ($q) {
+                $q->where(function ($sub) {
+                    $sub->whereNull('bidang')
+                        ->orWhere('bidang', 'not like', '%IPA%');
+                })->where('title', 'not like', '%IPA%');
+            });
+        } elseif ($isStudent && $isStudentIpa) {
+            $query->where(function ($q) {
+                $q->whereIn('bidang', ['IPA', 'Ipa', 'Sains', 'SAINS'])
+                  ->orWhere('title', 'like', '%IPA%')
+                  ->orWhere('title', 'like', '%Sains%');
+            })->where(function ($q) {
+                $q->where(function ($sub) {
+                    $sub->whereNull('bidang')
+                        ->orWhere(function ($s2) {
+                            $s2->where('bidang', 'not like', '%MTK%')
+                               ->where('bidang', 'not like', '%Matematika%');
+                        });
+                })->where('title', 'not like', '%Matematika%')
+                  ->where('title', 'not like', '%MTK%');
+            });
+        } elseif (request('bidang')) {
+            $query->where('bidang', request('bidang'));
+        }
 
         if (request('search')) {
             $search = request('search');
@@ -30,16 +74,46 @@ class PackageController extends Controller
         if (request('kelas')) {
             $query->where('kelas', request('kelas'));
         }
-        if (request('bidang')) {
-            $query->where('bidang', request('bidang'));
-        }
         if (request('level')) {
             $query->where('level', request('level'));
         }
 
-        $packages = $query->latest()->paginate(12)->withQueryString();
+        // Fitur sortir PR Pekanan
+        $sortBy = request('sort', 'latest');
+        switch ($sortBy) {
+            case 'oldest':
+                $query->oldest();
+                break;
+            case 'deadline':
+                $query->orderByRaw('CASE WHEN end_date IS NULL THEN 1 ELSE 0 END, end_date ASC');
+                break;
+            case 'title_asc':
+                $query->orderBy('title', 'asc');
+                break;
+            case 'title_desc':
+                $query->orderBy('title', 'desc');
+                break;
+            case 'latest':
+            default:
+                $query->latest();
+                break;
+        }
+
+        $packages = $query->paginate(12)->withQueryString();
+
+        // Opsi filter bidang yang dinamis sesuai hak siswa
+        if ($isStudent && $isStudentMtk) {
+            $allBidang = collect(['Matematika']);
+            $userBidangGroup = 'Matematika';
+        } elseif ($isStudent && $isStudentIpa) {
+            $allBidang = collect(['IPA']);
+            $userBidangGroup = 'IPA';
+        } else {
+            $allBidang = Package::where('is_active', true)->whereNotNull('bidang')->where('bidang', '!=', '')->distinct()->pluck('bidang')->sort()->values();
+            $userBidangGroup = null;
+        }
+
         $allKelas = Package::where('is_active', true)->whereNotNull('kelas')->where('kelas', '!=', '')->distinct()->pluck('kelas')->sort()->values();
-        $allBidang = Package::where('is_active', true)->whereNotNull('bidang')->where('bidang', '!=', '')->distinct()->pluck('bidang')->sort()->values();
         $allLevel = Package::where('is_active', true)->whereNotNull('level')->where('level', '!=', '')->distinct()->pluck('level')->sort()->values();
 
         return Inertia::render('Packages/PackageList', [
@@ -47,7 +121,10 @@ class PackageController extends Controller
             'allKelas' => $allKelas,
             'allBidang' => $allBidang,
             'allLevel' => $allLevel,
-            'filters' => request()->only(['search', 'kelas', 'bidang', 'level']),
+            'userBidangGroup' => $userBidangGroup,
+            'userBidangRaw' => $studentBidang,
+            'currentSort' => $sortBy,
+            'filters' => request()->only(['search', 'kelas', 'bidang', 'level', 'sort']),
         ]);
     }
 
@@ -368,6 +445,28 @@ class PackageController extends Controller
     {
         if (!$package->is_active) {
             return redirect()->route('user.packages.index')->with('error', 'Paket tidak tersedia!');
+        }
+
+        $user = auth()->user();
+        if ($user && $user->role === 'user') {
+            $studentBidang = trim((string) $user->bidang);
+            $isStudentMtk = (bool) preg_match('/(mtk|matematika|math)/i', $studentBidang);
+            $isStudentIpa = (bool) preg_match('/(ipa|sains|science)/i', $studentBidang);
+
+            $pkgBidang = (string) ($package->bidang ?? '');
+            $pkgTitle = (string) ($package->title ?? '');
+            $pkgIsIpa = (bool) (preg_match('/(ipa|sains)/i', $pkgBidang) || preg_match('/(ipa|sains)/i', $pkgTitle));
+            $pkgIsMtk = (bool) (preg_match('/(mtk|matematika|math)/i', $pkgBidang) || preg_match('/(mtk|matematika|math)/i', $pkgTitle));
+
+            if ($isStudentMtk && $pkgIsIpa) {
+                return redirect()->route('user.packages.index')
+                    ->with('error', 'Maaf, tugas ini khusus untuk bidang studi IPA. Anda terdaftar pada bidang Matematika.');
+            }
+
+            if ($isStudentIpa && $pkgIsMtk) {
+                return redirect()->route('user.packages.index')
+                    ->with('error', 'Maaf, tugas ini khusus untuk bidang studi Matematika. Anda terdaftar pada bidang IPA.');
+            }
         }
 
         $totalCards = count($package->cards ?? []);

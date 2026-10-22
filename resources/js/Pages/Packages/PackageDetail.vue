@@ -49,7 +49,7 @@ function cardSessionId(cardId) {
             class="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-all duration-200 mb-6 group select-none"
         >
             <Icon icon="mdi:arrow-left" class="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" />
-            Kembali ke Daftar Soal
+            Kembali ke PR Pekanan
         </Link>
 
         <!-- Schedule Warning Banners -->
@@ -62,7 +62,7 @@ function cardSessionId(cardId) {
             </div>
             <div>
                 <p class="text-sm font-bold text-rose-900">Jadwal Telah Berakhir</p>
-                <p class="text-xs text-rose-700 mt-0.5 leading-relaxed">Paket soal ini sudah melewati batas waktu pengerjaan.</p>
+                <p class="text-xs text-rose-700 mt-0.5 leading-relaxed">Tugas PR ini sudah melewati batas waktu pengerjaan.</p>
             </div>
         </div>
 

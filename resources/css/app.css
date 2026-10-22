@@ -10,25 +10,25 @@
         --card-foreground: 222 47% 11%;
         --popover: 0 0% 100%;
         --popover-foreground: 222 47% 11%;
-        --primary: 158 64% 39%;
+        --primary: 224 76% 48%;
         --primary-foreground: 0 0% 100%;
-        --secondary: 158 40% 95%;
-        --secondary-foreground: 158 64% 25%;
-        --muted: 210 40% 96.1%;
+        --secondary: 220 50% 95%;
+        --secondary-foreground: 224 76% 35%;
+        --muted: 215 25% 94%;
         --muted-foreground: 215 16% 47%;
-        --accent: 158 50% 95%;
-        --accent-foreground: 158 64% 28%;
+        --accent: 224 60% 95%;
+        --accent-foreground: 224 76% 30%;
         --destructive: 0 84% 60%;
         --destructive-foreground: 0 0% 100%;
-        --border: 214 32% 91.4%;
-        --input: 214 32% 91.4%;
-        --ring: 158 64% 39%;
+        --border: 215 28% 90%;
+        --input: 215 28% 90%;
+        --ring: 224 76% 48%;
         --radius: 0.75rem;
 
-        --chart-1: 158 64% 39%;
-        --chart-2: 199 89% 48%;
-        --chart-3: 38 92% 50%;
-        --chart-4: 262 83% 58%;
+        --chart-1: 224 76% 48%;
+        --chart-2: 262 83% 58%;
+        --chart-3: 199 89% 48%;
+        --chart-4: 38 92% 50%;
         --chart-5: 0 84% 60%;
     }
 
@@ -78,20 +78,20 @@
 @layer components {
     /* ===== Gradient Text ===== */
     .gradient-text {
-        @apply bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 bg-clip-text text-transparent;
+        @apply bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 bg-clip-text text-transparent;
     }
 
     .gradient-brand {
-        @apply bg-gradient-to-r from-emerald-600 to-teal-600;
+        @apply bg-gradient-to-r from-blue-600 to-indigo-600;
     }
 
     /* ===== Brand Panel (Auth) ===== */
     .brand-panel {
         background:
-            radial-gradient(85% 65% at 90% 10%, rgba(52, 211, 153, 0.3), transparent 60%),
-            radial-gradient(75% 55% at 5% 90%, rgba(251, 191, 36, 0.15), transparent 60%),
-            radial-gradient(60% 50% at 70% 95%, rgba(59, 130, 246, 0.15), transparent 60%),
-            linear-gradient(145deg, #064e3b 0%, #065f46 30%, #047857 70%, #059669 100%);
+            radial-gradient(85% 65% at 90% 10%, rgba(99, 102, 241, 0.35), transparent 60%),
+            radial-gradient(75% 55% at 5% 90%, rgba(59, 130, 246, 0.25), transparent 60%),
+            radial-gradient(60% 50% at 70% 95%, rgba(139, 92, 246, 0.2), transparent 60%),
+            linear-gradient(145deg, #0f172a 0%, #1e1b4b 35%, #1e293b 70%, #0f172a 100%);
     }
 
     .grid-dots {
@@ -101,8 +101,8 @@
 
     .right-bg {
         background:
-            radial-gradient(45% 40% at 5% 0%, rgba(16, 185, 129, 0.06), transparent 60%),
-            radial-gradient(40% 35% at 95% 95%, rgba(245, 158, 11, 0.05), transparent 60%),
+            radial-gradient(45% 40% at 5% 0%, rgba(37, 99, 235, 0.06), transparent 60%),
+            radial-gradient(40% 35% at 95% 95%, rgba(99, 102, 241, 0.05), transparent 60%),
             hsl(var(--background));
     }
 
@@ -116,16 +116,16 @@
     .btn-auth {
         position: relative;
         overflow: hidden;
-        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
         color: #ffffff;
-        box-shadow: 0 10px 25px -8px rgba(16, 185, 129, 0.5);
+        box-shadow: 0 10px 25px -8px rgba(37, 99, 235, 0.5);
         transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .btn-auth:hover {
         transform: translateY(-2px);
-        box-shadow: 0 16px 32px -10px rgba(16, 185, 129, 0.6);
-        background: linear-gradient(135deg, #047857 0%, #059669 100%);
+        box-shadow: 0 16px 32px -10px rgba(37, 99, 235, 0.6);
+        background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
     }
 
     .btn-auth:active {
@@ -141,7 +141,7 @@
 
     /* ===== Modern Sidebar ===== */
     .sidebar-modern {
-        background: linear-gradient(180deg, #064e3b 0%, #065f46 35%, #047857 70%, #064e3b 100%);
+        background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 40%, #0f172a 100%);
     }
 
     .sidebar-modern::before {
@@ -149,8 +149,8 @@
         position: absolute;
         inset: 0;
         background:
-            radial-gradient(circle at 100% 0%, rgba(52, 211, 153, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 0% 100%, rgba(251, 191, 36, 0.08) 0%, transparent 50%);
+            radial-gradient(circle at 100% 0%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+            radial-gradient(circle at 0% 100%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
         pointer-events: none;
     }
 

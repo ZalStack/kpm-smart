@@ -227,7 +227,7 @@ onBeforeUnmount(() => {
             <!-- Integrity Agreement Modal (Pre-Test) -->
             <div v-if="!testActive" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
                 <div class="bg-card rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full border border-border/80 space-y-5 anim-fade-in-up">
-                    <div class="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center mx-auto shadow-xs">
+                    <div class="w-16 h-16 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center mx-auto shadow-xs">
                         <Icon icon="mdi:shield-check-outline" class="w-8 h-8" />
                     </div>
                     <div class="text-center">
@@ -459,7 +459,7 @@ onBeforeUnmount(() => {
                                 v-else
                                 size="default"
                                 @click="confirmSubmit"
-                                class="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 font-bold shadow-sm"
+                                class="bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 font-bold shadow-sm"
                             >
                                 <Icon icon="mdi:check-all" class="w-4 h-4" />
                                 Kumpulkan Jawaban
@@ -534,7 +534,7 @@ onBeforeUnmount(() => {
                         <Button
                             @click="confirmSubmit"
                             size="lg"
-                            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md active:scale-98"
+                            class="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-md active:scale-98"
                         >
                             <Icon icon="mdi:check-all" class="w-5 h-5" />
                             Selesai & Kumpulkan
@@ -592,7 +592,7 @@ onBeforeUnmount(() => {
                         <Button variant="outline" size="sm" @click="showConfirm = false" class="flex-1 font-bold">
                             Periksa Lagi
                         </Button>
-                        <Button size="sm" @click="submitForm" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+                        <Button size="sm" @click="submitForm" class="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
                             Ya, Kumpulkan
                         </Button>
                     </div>

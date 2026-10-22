@@ -12,11 +12,48 @@ class DashboardController extends Controller
 {
     public function userDashboard()
     {
-        if (Auth::check() && Auth::user()->role === 'admin') {
+        if (Auth::check() && in_array(Auth::user()->role, ['admin', 'super_admin', 'administrator', 'guru'], true)) {
             return redirect()->route('admin.dashboard');
         }
 
-        $packages = Package::where('is_active', true)->take(6)->get();
+        $user = Auth::user();
+        $studentBidang = $user ? trim((string) $user->bidang) : '';
+        $isStudent = $user && $user->role === 'user';
+
+        $isStudentMtk = (bool) preg_match('/(mtk|matematika|math)/i', $studentBidang);
+        $isStudentIpa = (bool) preg_match('/(ipa|sains|science)/i', $studentBidang);
+
+        $query = Package::where('is_active', true);
+
+        if ($isStudent && $isStudentMtk) {
+            $query->where(function ($q) {
+                $q->whereIn('bidang', ['MTK', 'MATEMATIKA', 'Matematika'])
+                  ->orWhere('title', 'like', '%Matematika%')
+                  ->orWhere('title', 'like', '%MTK%');
+            })->where(function ($q) {
+                $q->where(function ($sub) {
+                    $sub->whereNull('bidang')
+                        ->orWhere('bidang', 'not like', '%IPA%');
+                })->where('title', 'not like', '%IPA%');
+            });
+        } elseif ($isStudent && $isStudentIpa) {
+            $query->where(function ($q) {
+                $q->whereIn('bidang', ['IPA', 'Ipa', 'Sains', 'SAINS'])
+                  ->orWhere('title', 'like', '%IPA%')
+                  ->orWhere('title', 'like', '%Sains%');
+            })->where(function ($q) {
+                $q->where(function ($sub) {
+                    $sub->whereNull('bidang')
+                        ->orWhere(function ($s2) {
+                            $s2->where('bidang', 'not like', '%MTK%')
+                               ->where('bidang', 'not like', '%Matematika%');
+                        });
+                })->where('title', 'not like', '%Matematika%')
+                  ->where('title', 'not like', '%MTK%');
+            });
+        }
+
+        $packages = $query->latest()->take(6)->get();
         $sessions = PracticeSession::where('status', 'completed')
             ->selectRaw('COUNT(*) as total, MAX(total_score) as best, AVG(total_score) as avg_score')
             ->first();

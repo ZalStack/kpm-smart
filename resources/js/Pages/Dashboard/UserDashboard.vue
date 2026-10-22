@@ -41,38 +41,39 @@ const greetingTime = computed(() => {
 
 <template>
     <UserLayout>
-        <Head title="Dasbor Belajar - KPM SMART" />
+        <Head title="Dasbor Siswa - KPM SMART" />
 
         <!-- Hero Welcome Banner -->
-        <div class="anim-fade-in-up rounded-3xl bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-800 p-6 sm:p-8 lg:p-10 text-white mb-8 relative overflow-hidden shadow-xl shadow-emerald-950/15">
+        <div class="anim-fade-in-up rounded-3xl bg-gradient-to-br from-blue-700 via-indigo-700 to-slate-900 p-6 sm:p-8 lg:p-10 text-white mb-8 relative overflow-hidden shadow-xl shadow-indigo-950/20">
             <div class="absolute inset-0 opacity-15 pointer-events-none">
                 <div class="absolute -top-12 -right-12 w-64 h-64 rounded-full bg-white blur-3xl"></div>
-                <div class="absolute -bottom-16 -left-16 w-72 h-72 rounded-full bg-amber-400 blur-3xl"></div>
+                <div class="absolute -bottom-16 -left-16 w-72 h-72 rounded-full bg-cyan-400 blur-3xl"></div>
                 <div class="grid-dots absolute inset-0"></div>
             </div>
 
             <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div class="max-w-xl">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur border border-white/20 text-xs font-semibold text-emerald-100 mb-4">
-                        <Icon icon="mdi:school-outline" class="w-4 h-4 text-emerald-300" />
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur border border-white/20 text-xs font-semibold text-blue-100 mb-4">
+                        <Icon icon="mdi:school-outline" class="w-4 h-4 text-cyan-300" />
                         <span>{{ user?.kelas ? 'Kelas ' + user.kelas : 'Siswa KPM SMART' }}</span>
+                        <span v-if="user?.bidang" class="text-white/80">• Bidang {{ user.bidang }}</span>
                         <span v-if="user?.level" class="text-white/60">• Level {{ user.level }}</span>
                     </div>
 
                     <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 text-white">
                         {{ greetingTime }}, {{ user?.name }}! <span class="inline-block animate-bounce">👋</span>
                     </h2>
-                    <p class="text-emerald-100/85 text-xs sm:text-sm leading-relaxed">
-                        Terus asah kemampuanmu dengan mengerjakan latihan tugas harian dan raih peringkat terbaik di kelasmu.
+                    <p class="text-blue-100/85 text-xs sm:text-sm leading-relaxed">
+                        Terus asah kemampuanmu dengan mengerjakan PR Pekanan terstruktur dan raih pemahaman konsep terbaik.
                     </p>
 
                     <div class="flex flex-wrap items-center gap-3 mt-6">
                         <Link
                             :href="route('user.packages.index')"
-                            class="inline-flex items-center gap-2 bg-white text-emerald-900 hover:bg-emerald-50 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all duration-200 active:scale-95"
+                            class="inline-flex items-center gap-2 bg-white text-blue-900 hover:bg-blue-50 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all duration-200 active:scale-95"
                         >
-                            <Icon icon="mdi:book-open-page-variant" class="w-4 h-4 text-emerald-700" />
-                            Mulai Kerjakan Tugas
+                            <Icon icon="mdi:book-open-page-variant" class="w-4 h-4 text-blue-700" />
+                            Mulai Kerjakan PR Pekanan
                         </Link>
                         <Link
                             :href="route('user.leaderboard')"
@@ -147,10 +148,10 @@ const greetingTime = computed(() => {
             </div>
 
             <!-- Performance Card -->
-            <div class="rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/40 via-card to-card p-5 sm:p-6 shadow-xs hover:shadow-md transition-all duration-300 sm:col-span-2 lg:col-span-1">
+            <div class="rounded-2xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/40 via-card to-card p-5 sm:p-6 shadow-xs hover:shadow-md transition-all duration-300 sm:col-span-2 lg:col-span-1">
                 <div class="flex items-center gap-3 mb-4">
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl shadow-xs border border-emerald-200/60">
-                        <Icon icon="mdi:target" class="w-6 h-6 text-emerald-600" />
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-2xl shadow-xs border border-indigo-200/60">
+                        <Icon icon="mdi:target" class="w-6 h-6 text-indigo-600" />
                     </div>
                     <div>
                         <p class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Performa Tugas</p>
@@ -160,7 +161,7 @@ const greetingTime = computed(() => {
                 <div class="grid grid-cols-2 gap-2 text-xs">
                     <div class="bg-card rounded-xl p-2.5 border border-border/60 text-center">
                         <span class="text-muted-foreground text-[11px] block">Nilai Tertinggi</span>
-                        <p class="font-black text-sm text-emerald-600 mt-0.5">{{ bestScore }}%</p>
+                        <p class="font-black text-sm text-blue-600 mt-0.5">{{ bestScore }}%</p>
                     </div>
                     <div class="bg-card rounded-xl p-2.5 border border-border/60 text-center">
                         <span class="text-muted-foreground text-[11px] block">Rata-rata</span>
@@ -175,25 +176,25 @@ const greetingTime = computed(() => {
             <StatCard
                 title="Total Percobaan"
                 :value="totalAttempts"
-                color="pine-teal"
+                color="blue"
                 icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/></svg>"
             />
             <StatCard
                 title="Skor Tertinggi"
                 :value="bestScore + '%'"
-                color="fern"
+                color="indigo"
                 icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M18.75 4.236c.982.143 1.954.317 2.916.52A6.003 6.003 0 0116.27 9.728M18.75 4.236V4.5c0 2.108-.966 3.99-2.48 5.228m0 0a6.015 6.015 0 01-2.77.665 6.015 6.015 0 01-2.77-.665'/></svg>"
             />
             <StatCard
                 title="Rata-rata Skor"
                 :value="averageScore + '%'"
-                color="dry-sage"
+                color="purple"
                 icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z'/></svg>"
             />
             <StatCard
-                title="Soal Tersedia"
+                title="PR Tersedia"
                 :value="packages.length"
-                color="hunter-green"
+                color="blue"
                 icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'/></svg>"
             />
         </div>
@@ -206,21 +207,21 @@ const greetingTime = computed(() => {
                     :href="route('user.packages.index')"
                     class="group rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-xs hover:shadow-md hover:border-primary/40 transition-all duration-300 hover:-translate-y-1"
                 >
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-2xs">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-2xs">
                         <Icon icon="mdi:book-open-page-variant" class="w-6 h-6" />
                     </div>
-                    <h4 class="font-bold text-sm sm:text-base text-foreground mb-1 group-hover:text-primary transition-colors">Bank Soal Tugas PR</h4>
-                    <p class="text-xs text-muted-foreground leading-relaxed">Jelajahi dan kerjakan paket soal tugas yang tersedia untuk kelasmu.</p>
+                    <h4 class="font-bold text-sm sm:text-base text-foreground mb-1 group-hover:text-primary transition-colors">PR Pekanan</h4>
+                    <p class="text-xs text-muted-foreground leading-relaxed">Jelajahi dan kerjakan paket tugas PR pekanan yang tersedia sesuai bidang belajarmu.</p>
                 </Link>
 
                 <Link
                     :href="route('user.practice.history')"
-                    class="group rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-xs hover:shadow-md hover:border-teal-500/40 transition-all duration-300 hover:-translate-y-1"
+                    class="group rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-xs hover:shadow-md hover:border-indigo-500/40 transition-all duration-300 hover:-translate-y-1"
                 >
-                    <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 border border-teal-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300 shadow-2xs">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-2xs">
                         <Icon icon="mdi:history" class="w-6 h-6" />
                     </div>
-                    <h4 class="font-bold text-sm sm:text-base text-foreground mb-1 group-hover:text-teal-600 transition-colors">Riwayat & Pembahasan</h4>
+                    <h4 class="font-bold text-sm sm:text-base text-foreground mb-1 group-hover:text-indigo-600 transition-colors">Riwayat & Pembahasan</h4>
                     <p class="text-xs text-muted-foreground leading-relaxed">Tinjau kembali nilai, kunci jawaban, dan pembahasan soal yang pernah kamu kerjakan.</p>
                 </Link>
 

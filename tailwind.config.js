@@ -62,23 +62,29 @@ export default {
                     foreground: 'hsl(var(--card-foreground))',
                 },
 
-                /* Vibrant Brand Palette */
-                'olive': '#769826',
-                'olive-light': '#8AB52E',
-                'lime-vibrant': '#A1CB35',
-                'lime-bright': '#B8D94E',
+                /* Vibrant Modern Brand Palette (Royal Blue, Electric Indigo, Cyan, Amber) */
+                'brand-blue': '#2563eb',
+                'brand-indigo': '#4f46e5',
+                'brand-sky': '#0284c7',
+                'brand-violet': '#7c3aed',
+                'brand-dark': '#0f172a',
+                'brand-slate': '#1e293b',
                 'sun-yellow': '#FFDE4E',
                 'sun-warm': '#FFE87A',
                 'tangerine': '#FF9D4D',
                 'tangerine-light': '#FFB877',
                 'coral': '#FF7A5C',
 
-                /* Legacy aliases for backward compat */
-                'dust-grey': '#e8e5dc',
-                'dry-sage': '#A1CB35',
-                'fern': '#769826',
-                'hunter-green': '#5A7A1E',
-                'pine-teal': '#3D5A14',
+                /* Legacy aliases remapped to modern blue/indigo theme */
+                'dust-grey': '#f1f5f9',
+                'dry-sage': '#4f46e5',
+                'fern': '#2563eb',
+                'hunter-green': '#1d4ed8',
+                'pine-teal': '#0284c7',
+                'olive': '#2563eb',
+                'olive-light': '#3b82f6',
+                'lime-vibrant': '#6366f1',
+                'lime-bright': '#818cf8',
 
                 success: {
                     50: '#f0fdf4',
