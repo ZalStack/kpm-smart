@@ -347,7 +347,8 @@ class SatelliteApiController extends Controller
         $email = $request->input('email');
         $user = User::where('email', $email)->first();
 
-        if ($user) {
+        // JANGAN izinkan penghapusan akun admin via endpoint delete siswa satelit
+        if ($user && $user->role !== 'admin') {
             $user->practiceSessions()->delete();
             $user->pushSubscriptions()->delete();
             $user->loginLogs()->delete();
@@ -356,7 +357,7 @@ class SatelliteApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "User {$email} berhasil dihapus dari KPM Smart",
+            'message' => "User {$email} berhasil diproses di KPM Smart",
         ]);
     }
 

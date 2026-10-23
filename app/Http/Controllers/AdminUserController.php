@@ -588,8 +588,13 @@ class AdminUserController extends Controller
                     continue;
                 }
 
+                // Akun guru HANYA boleh ada di Web Induk dan SiGuru. Lewati guru dari web anakan satelit.
+                if (($pu['role'] ?? '') === 'guru') {
+                    continue;
+                }
+
                 $activeEmails[] = $pu['email'];
-                $role = in_array($pu['role'] ?? '', ['super_admin', 'administrator', 'admin', 'guru']) ? 'admin' : 'user';
+                $role = in_array($pu['role'] ?? '', ['super_admin', 'administrator', 'admin']) ? 'admin' : 'user';
                 $username = $pu['nis'] ?? ($pu['username'] ?? explode('@', $pu['email'])[0]);
                 $avatar = ! empty($pu['foto_profil']) ? $pu['foto_profil'] : "{$parentUrl}/api/foto/".urlencode($pu['email']);
 
@@ -629,15 +634,11 @@ class AdminUserController extends Controller
                 $synced++;
             }
 
-            // Bersihkan akun yang tidak ada di Web Induk agar jumlah data identik
+            // Bersihkan akun siswa orphan yang tidak ada di Web Induk (JANGAN sentuh akun admin)
             $deleted = 0;
             if (! empty($activeEmails)) {
-                $currentUserEmail = auth()->user()?->email;
-                $orphans = User::whereNotIn('email', $activeEmails)->get();
+                $orphans = User::where('role', 'user')->whereNotIn('email', $activeEmails)->get();
                 foreach ($orphans as $orphan) {
-                    if ($orphan->email === $currentUserEmail) {
-                        continue;
-                    }
                     if ($orphan->profile_photo && ! str_starts_with($orphan->profile_photo, 'http')) {
                         Storage::disk('public')->delete($orphan->profile_photo);
                     }

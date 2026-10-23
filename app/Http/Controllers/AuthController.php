@@ -28,28 +28,30 @@ class AuthController extends Controller
                 : redirect()->route('user.dashboard');
         }
 
-        // HANYA akun siswa (role: user) yang ditampilkan di opsi bantuan/autocomplete login siswa
+        // Tampilkan akun siswa (role: user) dan admin untuk opsi bantuan/autocomplete login (guru DILARANG)
         $students = User::query()
-            ->where('role', 'user')
+            ->whereIn('role', ['user', 'admin'])
             ->where(function ($q) {
                 $q->where('is_active', true)
-                  ->orWhereNull('is_active');
+                    ->orWhereNull('is_active');
             })
             ->orderBy('name')
             ->get()
             ->map(function ($u) {
+                $isAdmin = $u->role === 'admin';
+
                 return [
                     'id' => $u->id,
                     'name' => $u->name,
                     'email' => $u->email,
                     'username' => $u->username ?: explode('@', $u->email)[0],
-                    'is_admin' => false,
-                    'role' => 'user',
-                    'school' => $u->school_name ?: 'KPM Academy',
-                    'bidang' => $u->bidang ?: 'Matematika & IPA',
-                    'level' => (string) ($u->level ?: '1'),
-                    'kelas' => $u->student_class ?: '-',
-                    'avatar' => '👤',
+                    'is_admin' => $isAdmin,
+                    'role' => $u->role,
+                    'school' => $isAdmin ? '-' : ($u->school_name ?: 'KPM Academy'),
+                    'bidang' => $isAdmin ? '-' : ($u->bidang ?: 'Matematika & IPA'),
+                    'level' => $isAdmin ? 'Administrator' : (string) ($u->level ?: '1'),
+                    'kelas' => $isAdmin ? '-' : ($u->student_class ?: '-'),
+                    'avatar' => $isAdmin ? '🛡️' : '👤',
                 ];
             });
 
