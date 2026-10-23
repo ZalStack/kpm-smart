@@ -3,7 +3,6 @@ import { inject, computed } from 'vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Icon } from '@iconify/vue/offline';
 import UserLayout from '@/Layouts/UserLayout.vue';
-import StatCard from '@/Components/shared/StatCard.vue';
 
 const route = inject('route');
 const page = usePage();
@@ -37,205 +36,307 @@ const greetingTime = computed(() => {
     if (hour < 18) return 'Selamat Sore';
     return 'Selamat Malam';
 });
+
+const firstName = computed(() => (user.value?.name || 'Siswa').split(' ')[0]);
+
+/** Kamu menentukan satu "langkah berikutnya" supaya dasbor terasa terarah. */
+const nextAction = computed(() => {
+    if (props.totalAttempts === 0) {
+        return {
+            title: 'Kerjakan PR pekanan pertamamu',
+            desc: 'Mulai dari paket yang tersedia sesuai bidang belajarmu.',
+            href: route('user.packages.index'),
+            icon: 'mdi:rocket-launch-outline',
+            cta: 'Mulai Sekarang',
+        };
+    }
+    if (xpProgress.value < 100) {
+        return {
+            title: `Naik ke Level ${(g.value.level || 1) + 1}`,
+            desc: `Kumpulkan ${(g.value.xp_to_next || 0)} XP lagi untuk membuka level berikutnya.`,
+            href: route('user.packages.index'),
+            icon: 'mdi:arrow-up-bold-circle-outline',
+            cta: 'Kerjakan PR',
+        };
+    }
+    return {
+        title: 'Pertahankan nilaimu!',
+        desc: 'Lihat posisimu di papan peringkat kelas.',
+        href: route('user.leaderboard'),
+        icon: 'mdi:trophy-outline',
+        cta: 'Lihat Peringkat',
+    };
+});
 </script>
 
 <template>
     <UserLayout>
         <Head title="Dasbor Siswa - KPM SMART" />
 
-        <!-- Hero Welcome Banner -->
-        <div class="anim-fade-in-up rounded-3xl bg-gradient-to-br from-blue-700 via-indigo-700 to-slate-900 p-6 sm:p-8 lg:p-10 text-white mb-8 relative overflow-hidden shadow-xl shadow-indigo-950/20">
-            <div class="absolute inset-0 opacity-15 pointer-events-none">
-                <div class="absolute -top-12 -right-12 w-64 h-64 rounded-full bg-white blur-3xl"></div>
-                <div class="absolute -bottom-16 -left-16 w-72 h-72 rounded-full bg-cyan-400 blur-3xl"></div>
-                <div class="grid-dots absolute inset-0"></div>
+        <!-- ====================== HERO SELAMAT DATANG ====================== -->
+        <section class="hero-panel anim-fade-in-up p-6 sm:p-8 lg:p-10">
+            <!-- Ornamen latar -->
+            <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+                <div class="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-white/15 blur-3xl"></div>
+                <div class="absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-cyan-400/25 blur-3xl"></div>
+                <div class="grid-dots absolute inset-0 opacity-40"></div>
             </div>
 
-            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="relative z-10 flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
                 <div class="max-w-xl">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur border border-white/20 text-xs font-semibold text-blue-100 mb-4">
-                        <Icon icon="mdi:school-outline" class="w-4 h-4 text-cyan-300" />
-                        <span>{{ user?.kelas ? 'Kelas ' + user.kelas : 'Siswa KPM SMART' }}</span>
-                        <span v-if="user?.bidang" class="text-white/80">• Bidang {{ user.bidang }}</span>
-                        <span v-if="user?.level" class="text-white/60">• Level {{ user.level }}</span>
+                    <div class="mb-4 inline-flex flex-wrap items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-[11px] font-bold text-blue-50 backdrop-blur">
+                        <Icon icon="mdi:school-outline" class="h-3.5 w-3.5 text-cyan-200" />
+                        <span>{{ user?.student_class ? 'Kelas ' + user.student_class : (user?.kelas ? 'Kelas ' + user.kelas : 'Siswa KPM SMART') }}</span>
+                        <span v-if="user?.bidang" class="text-white/70">· {{ user.bidang }}</span>
+                        <span v-if="user?.level" class="text-white/60">· Level {{ user.level }}</span>
                     </div>
 
-                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 text-white">
-                        {{ greetingTime }}, {{ user?.name }}! <span class="inline-block animate-bounce">👋</span>
+                    <h2 class="text-[1.6rem] font-extrabold leading-tight tracking-tight text-white sm:text-3xl lg:text-4xl">
+                        {{ greetingTime }}, {{ firstName }}! <span class="inline-block">👋</span>
                     </h2>
-                    <p class="text-blue-100/85 text-xs sm:text-sm leading-relaxed">
-                        Terus asah kemampuanmu dengan mengerjakan PR Pekanan terstruktur dan raih pemahaman konsep terbaik.
+                    <p class="mt-2.5 max-w-md text-sm leading-relaxed text-blue-100/90">
+                        Lanjutkan latihanmu hari ini. Kerjakan PR pekanan terstruktur dan pahami setiap konsep lebih dalam.
                     </p>
 
-                    <div class="flex flex-wrap items-center gap-3 mt-6">
+                    <div class="mt-6 flex flex-wrap items-center gap-3">
                         <Link
                             :href="route('user.packages.index')"
-                            class="inline-flex items-center gap-2 bg-white text-blue-900 hover:bg-blue-50 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all duration-200 active:scale-95"
+                            class="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-indigo-900 shadow-lg shadow-indigo-950/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-50 active:translate-y-0"
                         >
-                            <Icon icon="mdi:book-open-page-variant" class="w-4 h-4 text-blue-700" />
+                            <Icon icon="mdi:book-open-page-variant" class="h-4 w-4 text-indigo-700" />
                             Mulai Kerjakan PR Pekanan
                         </Link>
                         <Link
                             :href="route('user.leaderboard')"
-                            class="inline-flex items-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur border border-white/20 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200"
+                            class="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 py-3 text-sm font-semibold text-white backdrop-blur transition-all duration-200 hover:bg-white/20"
                         >
-                            <Icon icon="mdi:trophy-outline" class="w-4 h-4 text-amber-300" />
+                            <Icon icon="mdi:trophy-outline" class="h-4 w-4 text-amber-300" />
                             Lihat Peringkat
                         </Link>
                     </div>
                 </div>
 
-                <!-- Gamification Quick Badge Circle on Desktop -->
-                <div class="hidden lg:flex flex-col items-center justify-center p-5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-center min-w-[200px] shadow-sm">
-                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white text-xl font-black shadow-md mb-2">
+                <!-- Lencana Level (glass) -->
+                <div class="hero-glass flex shrink-0 items-center gap-4 p-5 text-left sm:p-6 lg:min-w-[240px]">
+                    <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-2xl font-black text-white shadow-lg shadow-amber-900/20">
                         {{ g.level || 1 }}
                     </div>
-                    <p class="text-xs font-bold text-amber-200 tracking-wide uppercase">{{ g.badge || 'Pemula' }}</p>
-                    <p class="text-[11px] text-white/70 mt-0.5">{{ g.xp || 0 }} XP Terkumpul</p>
+                    <div class="min-w-0">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-amber-200">Level Saat Ini</p>
+                        <p class="truncate text-lg font-extrabold text-white">{{ g.badge || 'Pemula' }}</p>
+                        <p class="text-xs text-blue-100/80">{{ g.xp || 0 }} XP Terkumpul</p>
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- Gamification Widgets Section -->
-        <div class="anim-fade-in-up anim-delay-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
-            <!-- Level & XP Card -->
-            <div class="rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50/40 via-card to-card p-5 sm:p-6 shadow-xs hover:shadow-md transition-all duration-300">
-                <div class="flex items-center justify-between mb-4">
+        <!-- ====================== LANGKAH BERIKUTNYA ====================== -->
+        <section class="anim-fade-in-up anim-delay-1 mt-5 sm:mt-6">
+            <Link
+                :href="nextAction.href"
+                class="ui-card ui-card-hover group flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
+            >
+                <div class="flex items-start gap-4">
+                    <span class="icon-box shrink-0 bg-primary/10 text-primary transition-colors duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
+                        <Icon :icon="nextAction.icon" class="h-6 w-6" />
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-primary">Langkah Berikutnya</p>
+                        <h3 class="mt-1 text-base font-bold tracking-tight text-foreground sm:text-lg">{{ nextAction.title }}</h3>
+                        <p class="mt-0.5 text-sm text-muted-foreground">{{ nextAction.desc }}</p>
+                    </div>
+                </div>
+                <span class="btn-primary shrink-0 self-start sm:self-auto">
+                    {{ nextAction.cta }}
+                    <Icon icon="mdi:arrow-right" class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                </span>
+            </Link>
+        </section>
+
+        <!-- ====================== RINGKASAN PERFORMA ====================== -->
+        <section class="anim-fade-in-up anim-delay-2 mt-5 sm:mt-6">
+            <div class="mb-3 flex items-center justify-between">
+                <h3 class="section-title">Ringkasan Belajar</h3>
+                <Link :href="route('user.practice.statistics')" class="text-xs font-bold text-primary transition hover:text-primary/80">
+                    Lihat Statistik →
+                </Link>
+            </div>
+
+            <div class="grid-stats">
+                <!-- Total Percobaan -->
+                <div class="stat-tile-v2">
+                    <div class="flex items-center justify-between">
+                        <span class="stat-label">Percobaan</span>
+                        <span class="icon-box-sm bg-primary/10 text-primary">
+                            <Icon icon="mdi:check-circle-outline" class="h-5 w-5" />
+                        </span>
+                    </div>
+                    <p class="stat-value mt-3">{{ totalAttempts }}</p>
+                    <p class="mt-1 text-xs text-muted-foreground">kali mengerjakan</p>
+                </div>
+
+                <!-- Skor Tertinggi -->
+                <div class="stat-tile-v2">
+                    <div class="flex items-center justify-between">
+                        <span class="stat-label">Tertinggi</span>
+                        <span class="icon-box-sm bg-amber-50 text-amber-600">
+                            <Icon icon="mdi:trophy-outline" class="h-5 w-5" />
+                        </span>
+                    </div>
+                    <p class="stat-value mt-3 text-amber-600">{{ bestScore }}%</p>
+                    <p class="mt-1 text-xs text-muted-foreground">rekor pribadi</p>
+                </div>
+
+                <!-- Rata-rata -->
+                <div class="stat-tile-v2">
+                    <div class="flex items-center justify-between">
+                        <span class="stat-label">Rata-rata</span>
+                        <span class="icon-box-sm bg-indigo-50 text-indigo-600">
+                            <Icon icon="mdi:chart-bar" class="h-5 w-5" />
+                        </span>
+                    </div>
+                    <p class="stat-value mt-3 text-indigo-600">{{ averageScore }}%</p>
+                    <p class="mt-1 text-xs text-muted-foreground">nilai rata-rata</p>
+                </div>
+
+                <!-- PR Tersedia -->
+                <div class="stat-tile-v2">
+                    <div class="flex items-center justify-between">
+                        <span class="stat-label">Tersedia</span>
+                        <span class="icon-box-sm bg-emerald-50 text-emerald-600">
+                            <Icon icon="mdi:book-open-variant" class="h-5 w-5" />
+                        </span>
+                    </div>
+                    <p class="stat-value mt-3 text-emerald-600">{{ packages.length }}</p>
+                    <p class="mt-1 text-xs text-muted-foreground">paket PR pekanan</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ====================== PROGRES & KEAKTIFAN ====================== -->
+        <section class="anim-fade-in-up anim-delay-3 mt-5 grid grid-cols-1 gap-4 sm:mt-6 lg:grid-cols-3">
+            <!-- Progres Level -->
+            <div class="ui-card p-5 sm:p-6">
+                <div class="mb-4 flex items-center justify-between gap-3">
                     <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white text-lg font-black shadow-sm">
-                            {{ g.level || 1 }}
-                        </div>
+                        <span class="icon-box bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-sm">
+                            <Icon icon="mdi:star-four-points-outline" class="h-6 w-6" />
+                        </span>
                         <div>
-                            <p class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Level Belajar</p>
+                            <p class="stat-label">Level Belajar</p>
                             <p class="text-sm font-extrabold text-foreground">{{ g.badge || 'Pemula' }}</p>
                         </div>
                     </div>
-                    <span class="text-xs font-bold text-amber-700 bg-amber-100/80 px-2.5 py-1 rounded-full border border-amber-200">
-                        {{ g.xp || 0 }} XP
+                    <span class="chip bg-amber-100 text-amber-700">{{ g.xp || 0 }} XP</span>
+                </div>
+
+                <div class="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                    <span>Menuju Level {{ (g.level || 1) + 1 }}</span>
+                    <span class="text-primary">{{ xpProgress }}%</span>
+                </div>
+                <div class="progress-track mt-2">
+                    <div class="progress-fill" :style="{ width: xpProgress + '%' }"></div>
+                </div>
+            </div>
+
+            <!-- Streak -->
+            <div class="ui-card p-5 sm:p-6">
+                <div class="mb-4 flex items-center gap-3">
+                    <span class="icon-box bg-orange-50 text-orange-500">
+                        <Icon icon="mdi:fire" class="h-6 w-6" />
                     </span>
-                </div>
-                <div class="space-y-1.5">
-                    <div class="flex justify-between text-xs font-semibold text-muted-foreground">
-                        <span>Progress Level {{ g.level || 1 }}</span>
-                        <span>{{ xpProgress }}%</span>
-                    </div>
-                    <div class="h-2.5 bg-muted rounded-full overflow-hidden p-0.5">
-                        <div
-                            class="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full transition-all duration-700"
-                            :style="{ width: xpProgress + '%' }"
-                        ></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Streak Card -->
-            <div class="rounded-2xl border border-orange-200/80 bg-gradient-to-br from-orange-50/40 via-card to-card p-5 sm:p-6 shadow-xs hover:shadow-md transition-all duration-300">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-12 h-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-2xl shadow-xs border border-orange-200/60">
-                        <Icon icon="mdi:fire" class="w-6 h-6 text-orange-500" />
-                    </div>
                     <div>
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Keaktifan (Streak)</p>
-                        <p class="text-xl sm:text-2xl font-black text-foreground">
-                            {{ g.streak?.current || 0 }} <span class="text-xs font-medium text-muted-foreground">Hari Berturut</span>
-                        </p>
+                        <p class="stat-label">Keaktifan</p>
+                        <p class="text-sm font-extrabold text-foreground">Streak Belajar</p>
                     </div>
                 </div>
-                <p class="text-xs text-muted-foreground flex items-center justify-between border-t border-border/60 pt-3">
-                    <span>Rekor Streak Terbaik:</span>
-                    <span class="font-bold text-orange-700">{{ g.streak?.best || 0 }} Hari</span>
-                </p>
+
+                <div class="flex items-baseline gap-1.5">
+                    <span class="text-3xl font-extrabold tracking-tight text-orange-500">{{ g.streak?.current || 0 }}</span>
+                    <span class="text-xs font-semibold text-muted-foreground">hari berturut-turut</span>
+                </div>
+
+                <div class="mt-4 flex items-center justify-between border-t border-border/60 pt-3 text-xs">
+                    <span class="text-muted-foreground">Rekor terbaik</span>
+                    <span class="font-bold text-orange-600">{{ g.streak?.best || 0 }} hari</span>
+                </div>
             </div>
 
-            <!-- Performance Card -->
-            <div class="rounded-2xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/40 via-card to-card p-5 sm:p-6 shadow-xs hover:shadow-md transition-all duration-300 sm:col-span-2 lg:col-span-1">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-2xl shadow-xs border border-indigo-200/60">
-                        <Icon icon="mdi:target" class="w-6 h-6 text-indigo-600" />
-                    </div>
+            <!-- Performa Tugas -->
+            <div class="ui-card p-5 sm:p-6">
+                <div class="mb-4 flex items-center gap-3">
+                    <span class="icon-box bg-indigo-50 text-indigo-600">
+                        <Icon icon="mdi:target" class="h-6 w-6" />
+                    </span>
                     <div>
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Performa Tugas</p>
-                        <p class="text-base font-extrabold text-foreground">{{ totalAttempts }} Kali Pengerjaan</p>
+                        <p class="stat-label">Performa Tugas</p>
+                        <p class="text-sm font-extrabold text-foreground">{{ totalAttempts }} Pengerjaan</p>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                    <div class="bg-card rounded-xl p-2.5 border border-border/60 text-center">
-                        <span class="text-muted-foreground text-[11px] block">Nilai Tertinggi</span>
-                        <p class="font-black text-sm text-blue-600 mt-0.5">{{ bestScore }}%</p>
+
+                <div class="grid grid-cols-2 gap-2 text-center">
+                    <div class="rounded-xl border border-border/60 bg-muted/30 p-3">
+                        <span class="text-[11px] font-semibold text-muted-foreground">Nilai Tertinggi</span>
+                        <p class="mt-0.5 text-lg font-extrabold text-primary">{{ bestScore }}%</p>
                     </div>
-                    <div class="bg-card rounded-xl p-2.5 border border-border/60 text-center">
-                        <span class="text-muted-foreground text-[11px] block">Rata-rata</span>
-                        <p class="font-black text-sm text-foreground mt-0.5">{{ averageScore }}%</p>
+                    <div class="rounded-xl border border-border/60 bg-muted/30 p-3">
+                        <span class="text-[11px] font-semibold text-muted-foreground">Rata-rata</span>
+                        <p class="mt-0.5 text-lg font-extrabold text-foreground">{{ averageScore }}%</p>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- Metric Stat Cards -->
-        <div class="anim-fade-in-up anim-delay-2 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-8">
-            <StatCard
-                title="Total Percobaan"
-                :value="totalAttempts"
-                color="blue"
-                icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/></svg>"
-            />
-            <StatCard
-                title="Skor Tertinggi"
-                :value="bestScore + '%'"
-                color="indigo"
-                icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M18.75 4.236c.982.143 1.954.317 2.916.52A6.003 6.003 0 0116.27 9.728M18.75 4.236V4.5c0 2.108-.966 3.99-2.48 5.228m0 0a6.015 6.015 0 01-2.77.665 6.015 6.015 0 01-2.77-.665'/></svg>"
-            />
-            <StatCard
-                title="Rata-rata Skor"
-                :value="averageScore + '%'"
-                color="purple"
-                icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z'/></svg>"
-            />
-            <StatCard
-                title="PR Tersedia"
-                :value="packages.length"
-                color="blue"
-                icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'/></svg>"
-            />
-        </div>
+        <!-- ====================== AKSES CEPAT ====================== -->
+        <section class="anim-fade-in-up anim-delay-4 mt-8 sm:mt-10">
+            <div class="mb-4 flex items-center gap-3">
+                <span class="h-6 w-1 rounded-full bg-primary"></span>
+                <h3 class="section-title">Akses Cepat</h3>
+            </div>
 
-        <!-- Quick Navigation Cards -->
-        <div class="anim-fade-in-up anim-delay-3">
-            <h3 class="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Akses Cepat</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <Link
                     :href="route('user.packages.index')"
-                    class="group rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-xs hover:shadow-md hover:border-primary/40 transition-all duration-300 hover:-translate-y-1"
+                    class="ui-card ui-card-hover group p-5 sm:p-6"
                 >
-                    <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-2xs">
-                        <Icon icon="mdi:book-open-page-variant" class="w-6 h-6" />
-                    </div>
-                    <h4 class="font-bold text-sm sm:text-base text-foreground mb-1 group-hover:text-primary transition-colors">PR Pekanan</h4>
-                    <p class="text-xs text-muted-foreground leading-relaxed">Jelajahi dan kerjakan paket tugas PR pekanan yang tersedia sesuai bidang belajarmu.</p>
+                    <span class="icon-box mb-4 border border-blue-100 bg-blue-50 text-blue-600 transition-all duration-300 group-hover:bg-blue-600 group-hover:text-white">
+                        <Icon icon="mdi:book-open-page-variant" class="h-6 w-6" />
+                    </span>
+                    <h4 class="font-bold text-foreground transition-colors group-hover:text-primary">PR Pekanan</h4>
+                    <p class="mt-1.5 text-sm leading-relaxed text-muted-foreground">Jelajahi dan kerjakan paket tugas PR pekanan sesuai bidang belajarmu.</p>
+                    <span class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-primary">
+                        Buka <Icon icon="mdi:arrow-right" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                    </span>
                 </Link>
 
                 <Link
                     :href="route('user.practice.history')"
-                    class="group rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-xs hover:shadow-md hover:border-indigo-500/40 transition-all duration-300 hover:-translate-y-1"
+                    class="ui-card ui-card-hover group p-5 sm:p-6"
                 >
-                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-2xs">
-                        <Icon icon="mdi:history" class="w-6 h-6" />
-                    </div>
-                    <h4 class="font-bold text-sm sm:text-base text-foreground mb-1 group-hover:text-indigo-600 transition-colors">Riwayat & Pembahasan</h4>
-                    <p class="text-xs text-muted-foreground leading-relaxed">Tinjau kembali nilai, kunci jawaban, dan pembahasan soal yang pernah kamu kerjakan.</p>
+                    <span class="icon-box mb-4 border border-indigo-100 bg-indigo-50 text-indigo-600 transition-all duration-300 group-hover:bg-indigo-600 group-hover:text-white">
+                        <Icon icon="mdi:history" class="h-6 w-6" />
+                    </span>
+                    <h4 class="font-bold text-foreground transition-colors group-hover:text-primary">Riwayat & Pembahasan</h4>
+                    <p class="mt-1.5 text-sm leading-relaxed text-muted-foreground">Tinjau kembali nilai, kunci jawaban, dan pembahasan soal yang pernah dikerjakan.</p>
+                    <span class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-primary">
+                        Buka <Icon icon="mdi:arrow-right" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                    </span>
                 </Link>
 
                 <Link
                     :href="route('user.leaderboard')"
-                    class="group rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-xs hover:shadow-md hover:border-amber-500/40 transition-all duration-300 hover:-translate-y-1"
+                    class="ui-card ui-card-hover group p-5 sm:p-6"
                 >
-                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300 shadow-2xs">
-                        <Icon icon="mdi:trophy" class="w-6 h-6" />
-                    </div>
-                    <h4 class="font-bold text-sm sm:text-base text-foreground mb-1 group-hover:text-amber-600 transition-colors">Papan Peringkat</h4>
-                    <p class="text-xs text-muted-foreground leading-relaxed">Pantau posisimu dan bersaing secara sportif dengan teman sekelas.</p>
+                    <span class="icon-box mb-4 border border-amber-100 bg-amber-50 text-amber-600 transition-all duration-300 group-hover:bg-amber-500 group-hover:text-white">
+                        <Icon icon="mdi:trophy" class="h-6 w-6" />
+                    </span>
+                    <h4 class="font-bold text-foreground transition-colors group-hover:text-primary">Papan Peringkat</h4>
+                    <p class="mt-1.5 text-sm leading-relaxed text-muted-foreground">Pantau posisimu dan bersaing secara sportif dengan teman sekelas.</p>
+                    <span class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-primary">
+                        Buka <Icon icon="mdi:arrow-right" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                    </span>
                 </Link>
             </div>
-        </div>
+        </section>
     </UserLayout>
 </template>

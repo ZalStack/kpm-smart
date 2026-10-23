@@ -1,11 +1,13 @@
 <script setup>
-import { inject, ref, computed, onMounted } from 'vue';
+import { inject, computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import UserLayout from '@/Layouts/UserLayout.vue';
 import { Line, Bar } from 'vue-chartjs';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler } from 'chart.js';
-import StatCard from '@/Components/shared/StatCard.vue';
 import { Icon } from '@iconify/vue/offline';
+
+defineOptions({ layout: (h, page) => h(UserLayout, null, () => page) });
+
 const route = inject('route');
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler);
@@ -20,62 +22,77 @@ const props = defineProps({
     accuracy: { type: Number, default: 0 },
 });
 
+const CHART = {
+    indigo: '#4f46e5',
+    indigoFill: 'rgba(79, 70, 229, 0.12)',
+    sky: '#0284c7',
+    skyFill: 'rgba(2, 132, 199, 0.12)',
+    palette: ['#4f46e5', '#0284c7', '#7c3aed', '#0891b2', '#6366f1', '#0ea5e9'],
+};
+
+const baseScales = {
+    y: { min: 0, max: 100, ticks: { callback: (v) => v + '%' }, grid: { color: 'rgba(148, 163, 184, 0.15)' } },
+    x: { grid: { display: false } },
+};
+
 const scoreChartData = computed(() => ({
-    labels: props.scoreOverTime.map(d => d.date),
-    datasets: [{
-        label: 'Nilai',
-        data: props.scoreOverTime.map(d => d.score),
-        borderColor: '#769826',
-        backgroundColor: 'rgba(88, 129, 87, 0.1)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-    }],
+    labels: props.scoreOverTime.map((d) => d.date),
+    datasets: [
+        {
+            label: 'Nilai',
+            data: props.scoreOverTime.map((d) => d.score),
+            borderColor: CHART.indigo,
+            backgroundColor: CHART.indigoFill,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointBackgroundColor: CHART.indigo,
+        },
+    ],
 }));
 
 const scoreChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
-    scales: {
-        y: { min: 0, max: 100, ticks: { callback: v => v + '%' } },
-        x: { grid: { display: false } },
-    },
+    scales: baseScales,
 };
 
 const accuracyChartData = computed(() => ({
-    labels: props.accuracyOverTime.map(d => d.date),
-    datasets: [{
-        label: 'Akurasi',
-        data: props.accuracyOverTime.map(d => d.accuracy),
-        borderColor: '#3D5A14',
-        backgroundColor: 'rgba(52, 78, 65, 0.1)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-    }],
+    labels: props.accuracyOverTime.map((d) => d.date),
+    datasets: [
+        {
+            label: 'Akurasi',
+            data: props.accuracyOverTime.map((d) => d.accuracy),
+            borderColor: CHART.sky,
+            backgroundColor: CHART.skyFill,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointBackgroundColor: CHART.sky,
+        },
+    ],
 }));
 
 const accuracyChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
-    scales: {
-        y: { min: 0, max: 100, ticks: { callback: v => v + '%' } },
-        x: { grid: { display: false } },
-    },
+    scales: baseScales,
 };
 
 const packageChartData = computed(() => ({
-    labels: props.packageStats.map(d => d.name),
-    datasets: [{
-        label: 'Rata-rata Nilai',
-        data: props.packageStats.map(d => d.avg_score),
-        backgroundColor: ['#769826', '#3D5A14', '#A1CB35', '#5A7A1E', '#e8e5dc', '#769826'],
-        borderRadius: 8,
-    }],
+    labels: props.packageStats.map((d) => d.name),
+    datasets: [
+        {
+            label: 'Rata-rata Nilai',
+            data: props.packageStats.map((d) => d.avg_score),
+            backgroundColor: CHART.palette,
+            borderRadius: 8,
+        },
+    ],
 }));
 
 const packageChartOptions = {
@@ -83,107 +100,125 @@ const packageChartOptions = {
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
     scales: {
-        y: { min: 0, max: 100, ticks: { callback: v => v + '%' } },
+        y: { min: 0, max: 100, ticks: { callback: (v) => v + '%' }, grid: { color: 'rgba(148, 163, 184, 0.15)' } },
         x: { grid: { display: false }, ticks: { font: { size: 10 } } },
     },
 };
 
 const hasData = computed(() => props.scoreOverTime.length > 0);
+
+const statItems = computed(() => [
+    { label: 'Total Percobaan', value: props.totalAttempts, icon: 'mdi:check-decagram-outline', cls: 'bg-indigo-50 text-indigo-600' },
+    { label: 'Rata-rata Skor', value: props.avgScore + '%', icon: 'mdi:chart-line', cls: 'bg-sky-50 text-sky-600' },
+    { label: 'Skor Tertinggi', value: props.bestScore + '%', icon: 'mdi:trophy-outline', cls: 'bg-amber-50 text-amber-600' },
+    { label: 'Akurasi', value: props.accuracy + '%', icon: 'mdi:target', cls: 'bg-emerald-50 text-emerald-600' },
+]);
+
+const scoreClass = (v) => (v >= 80 ? 'text-emerald-600' : v >= 60 ? 'text-amber-600' : 'text-rose-500');
 </script>
 
 <template>
-    <UserLayout>
-        <Head title="Analitik - KPM SMART" />
-        <template #header-title><Icon icon="mdi:trending-up" class="w-5 h-5 inline-block mr-1.5 align-middle" /> Analitik Belajar</template>
-        <template #header-sub>Visualisasi progres belajarmu</template>
+    <Head title="Analitik Belajar" />
 
-        <div class="max-w-4xl mx-auto space-y-5">
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 anim-fade-in-up">
-                <StatCard title="Total Percobaan" :value="totalAttempts" color="pine-teal" icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/></svg>" />
-                <StatCard title="Rata-rata Skor" :value="avgScore + '%'" color="fern" icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75z'/></svg>" />
-                <StatCard title="Skor Tertinggi" :value="bestScore + '%'" color="hunter-green" icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516'/></svg>" />
-                <StatCard title="Akurasi" :value="accuracy + '%'" color="dry-sage" icon="<svg class='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z'/></svg>" />
+    <div>
+        <div class="mb-6 hidden sm:block">
+            <h1 class="page-heading">
+                <span class="icon-box"><Icon icon="mdi:chart-timeline-variant" width="22" /></span>
+                Analitik Belajar
+            </h1>
+            <p class="page-subheading">Visualisasi progres belajarmu dari waktu ke waktu</p>
+        </div>
+
+        <div class="grid-stats mb-6">
+            <div v-for="item in statItems" :key="item.label" class="stat-tile-v2 anim-fade-in-up">
+                <div class="stat-tile-head">
+                    <div class="icon-box" :class="item.cls"><Icon :icon="item.icon" width="20" /></div>
+                </div>
+                <p class="stat-label">{{ item.label }}</p>
+                <p class="stat-value">{{ item.value }}</p>
             </div>
+        </div>
 
-            <template v-if="hasData">
-                <!-- Score over time -->
-                <div class="anim-fade-in-up bg-card border rounded-2xl p-5 shadow-card hover:shadow-lg transition-shadow duration-300">
-                    <h3 class="text-sm font-semibold mb-4"><Icon icon="mdi:chart-bar" class="w-4 h-4 inline-block mr-1 align-middle" /> Progres Nilai</h3>
+        <template v-if="hasData">
+            <div class="grid gap-5 lg:grid-cols-2">
+                <div class="ui-card anim-fade-in-up">
+                    <div class="mb-4 flex items-center gap-2">
+                        <div class="icon-box icon-box-sm"><Icon icon="mdi:chart-bar" width="18" /></div>
+                        <h3 class="text-sm font-bold text-slate-900">Progres Nilai</h3>
+                    </div>
                     <div class="h-64">
                         <Line :data="scoreChartData" :options="scoreChartOptions" />
                     </div>
                 </div>
 
-                <!-- Accuracy over time -->
-                <div class="anim-fade-in-up bg-card border rounded-2xl p-5 shadow-card hover:shadow-lg transition-shadow duration-300">
-                    <h3 class="text-sm font-semibold mb-4"><Icon icon="mdi:target" class="w-4 h-4 inline-block mr-1 align-middle" /> Progres Akurasi</h3>
+                <div class="ui-card anim-fade-in-up">
+                    <div class="mb-4 flex items-center gap-2">
+                        <div class="icon-box icon-box-sm"><Icon icon="mdi:target" width="18" /></div>
+                        <h3 class="text-sm font-bold text-slate-900">Progres Akurasi</h3>
+                    </div>
                     <div class="h-64">
                         <Line :data="accuracyChartData" :options="accuracyChartOptions" />
                     </div>
                 </div>
-
-                <!-- Package stats -->
-                <div v-if="packageStats.length > 0" class="anim-fade-in-up bg-card border rounded-2xl p-5 shadow-card hover:shadow-lg transition-shadow duration-300">
-                    <h3 class="text-sm font-semibold mb-4"><Icon icon="mdi:package-variant" class="w-4 h-4 inline-block mr-1 align-middle" /> Skor per Soal</h3>
-                    <div class="h-64">
-                        <Bar :data="packageChartData" :options="packageChartOptions" />
-                    </div>
-                </div>
-
-                <!-- Package detail table -->
-                <div v-if="packageStats.length > 0" class="anim-fade-in-up bg-card border rounded-2xl overflow-hidden shadow-card hover:shadow-lg transition-shadow duration-300">
-                    <div class="px-5 py-4 border-b bg-gradient-to-r from-primary/5 to-transparent">
-                        <h3 class="text-sm font-semibold"><Icon icon="mdi:clipboard-text-outline" class="w-4 h-4 inline-block mr-1 align-middle" /> Detail Statistik per Soal</h3>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead class="bg-muted/30 text-xs text-muted-foreground">
-                                <tr>
-                                    <th class="text-center px-4 py-3 font-medium w-12">No</th>
-                                    <th class="text-left px-5 py-3 font-medium">Soal</th>
-                                    <th class="text-center px-4 py-3 font-medium">Percobaan</th>
-                                    <th class="text-center px-4 py-3 font-medium">Rata-rata</th>
-                                    <th class="text-center px-4 py-3 font-medium">Akurasi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-border/50">
-                                <tr v-for="(pkg, index) in packageStats" :key="pkg.name" class="hover:bg-muted/20">
-                                    <td class="text-center px-4 py-3 text-muted-foreground font-semibold">{{ index + 1 }}</td>
-                                    <td class="px-5 py-3 font-medium truncate max-w-[200px]">{{ pkg.name }}</td>
-                                    <td class="text-center px-4 py-3">{{ pkg.attempts }}</td>
-                                    <td class="text-center px-4 py-3">
-                                        <span :class="pkg.avg_score >= 80 ? 'text-emerald-600' : pkg.avg_score >= 60 ? 'text-yellow-600' : 'text-red-500'" class="font-semibold">
-                                            {{ pkg.avg_score }}%
-                                        </span>
-                                    </td>
-                                    <td class="text-center px-4 py-3">
-                                        <span :class="pkg.accuracy >= 80 ? 'text-emerald-600' : pkg.accuracy >= 60 ? 'text-yellow-600' : 'text-red-500'" class="font-semibold">
-                                            {{ pkg.accuracy }}%
-                                        </span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </template>
-
-            <!-- Empty state -->
-            <div v-else class="bg-card border rounded-2xl p-12 text-center hover:shadow-lg transition-shadow duration-300">
-                <div class="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-4 animate-pulse"><Icon icon="mdi:chart-bar" class="w-10 h-10 text-muted-foreground" /></div>
-                <h3 class="font-semibold text-lg mb-2">Belum Ada Data</h3>
-                <p class="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">Mulai kerjakan soal untuk melihat analitik belajarmu</p>
-                <Link :href="route('user.packages.index')" class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 hover:shadow-md active:scale-95 transition-all duration-200">
-                    Mulai Belajar
-                </Link>
             </div>
 
-            <div class="flex justify-center">
-                <Link :href="route('user.dashboard')" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover:shadow-sm transition-all duration-200">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
-                    Kembali ke Dasbor
-                </Link>
+            <div v-if="packageStats.length > 0" class="ui-card mt-5 anim-fade-in-up">
+                <div class="mb-4 flex items-center gap-2">
+                    <div class="icon-box icon-box-sm"><Icon icon="mdi:package-variant" width="18" /></div>
+                    <h3 class="text-sm font-bold text-slate-900">Skor per Paket</h3>
+                </div>
+                <div class="h-64">
+                    <Bar :data="packageChartData" :options="packageChartOptions" />
+                </div>
             </div>
+
+            <div v-if="packageStats.length > 0" class="ui-card mt-5 overflow-hidden p-0 anim-fade-in-up">
+                <div class="border-b border-slate-100 bg-gradient-to-r from-indigo-50/80 to-transparent px-5 py-4">
+                    <h3 class="flex items-center gap-2 text-sm font-bold text-slate-900">
+                        <Icon icon="mdi:clipboard-text-outline" width="18" class="text-indigo-500" />
+                        Detail Statistik per Paket
+                    </h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[560px] text-sm">
+                        <thead class="bg-slate-50/80 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                            <tr>
+                                <th class="w-12 px-4 py-3 text-center">No</th>
+                                <th class="px-5 py-3 text-left">Paket</th>
+                                <th class="px-4 py-3 text-center">Percobaan</th>
+                                <th class="px-4 py-3 text-center">Rata-rata</th>
+                                <th class="px-4 py-3 text-center">Akurasi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr v-for="(pkg, index) in packageStats" :key="pkg.name" class="transition-colors hover:bg-slate-50/70">
+                                <td class="px-4 py-3 text-center font-semibold text-slate-400">{{ index + 1 }}</td>
+                                <td class="max-w-[200px] truncate px-5 py-3 font-semibold text-slate-800">{{ pkg.name }}</td>
+                                <td class="px-4 py-3 text-center text-slate-600">{{ pkg.attempts }}</td>
+                                <td class="px-4 py-3 text-center font-bold" :class="scoreClass(pkg.avg_score)">{{ pkg.avg_score }}%</td>
+                                <td class="px-4 py-3 text-center font-bold" :class="scoreClass(pkg.accuracy)">{{ pkg.accuracy }}%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </template>
+
+        <div v-else class="empty-state anim-fade-in-up">
+            <div class="empty-icon"><Icon icon="mdi:chart-box-outline" width="44" /></div>
+            <h3 class="empty-title">Belum Ada Data</h3>
+            <p class="empty-desc">Kerjakan latihan pertamamu untuk mulai melihat analitik progres belajarmu.</p>
+            <Link :href="route('user.packages.index')" class="btn-primary mt-4">
+                <Icon icon="mdi:play-circle-outline" width="18" />
+                Mulai Belajar
+            </Link>
         </div>
-    </UserLayout>
+
+        <div class="mt-6 flex justify-center">
+            <Link :href="route('user.dashboard')" class="back-link">
+                <Icon icon="mdi:arrow-left" width="18" />
+                Kembali ke Dasbor
+            </Link>
+        </div>
+    </div>
 </template>

@@ -1,16 +1,21 @@
 <script setup>
-import { inject, ref } from 'vue';
-import { Head, useForm, Link } from '@inertiajs/vue3';
+import { ref, computed, inject } from 'vue';
+import { useForm } from '@inertiajs/vue3';
 import { Icon } from '@iconify/vue/offline';
 import UserLayout from '@/Layouts/UserLayout.vue';
-import Input from '@/Components/ui/input/Input.vue';
-import Label from '@/Components/ui/label/Label.vue';
-import Button from '@/Components/ui/button/Button.vue';
+
+defineOptions({ layout: (h, page) => h(UserLayout, null, () => page) });
 
 const route = inject('route');
 
 const props = defineProps({
-    canChangePassword: { type: Boolean, default: false },
+    status: { type: String, default: null },
+});
+
+const show = ref({
+    current: false,
+    password: false,
+    password_confirmation: false,
 });
 
 const form = useForm({
@@ -19,146 +24,172 @@ const form = useForm({
     password_confirmation: '',
 });
 
-const showCurrent = ref(false);
-const showNew = ref(false);
-const showConfirm = ref(false);
+const submit = () => {
+    form.transform((data) => ({ ...data })).put(route('user.profile.password.update'), {
+        preserveScroll: true,
+        onFinish: () => form.reset('password', 'password_confirmation'),
+    });
+};
 
-function submit() {
-    if (!props.canChangePassword) return;
-    form.put(route('user.profile.change-password.update'));
-}
+const passwordChecklist = computed(() => [
+    { label: 'Minimal 8 karakter', valid: form.password.length >= 8 },
+    { label: 'Mengandung huruf besar', valid: /[A-Z]/.test(form.password) },
+    { label: 'Mengandung angka', valid: /\d/.test(form.password) },
+]);
 </script>
 
 <template>
-    <UserLayout>
-        <Head title="Ubah Kata Sandi - KPM SMART" />
+    <Head title="Ganti Password" />
 
-        <template #header-title>
-            <div class="flex items-center gap-2">
-                <span class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                    <Icon icon="mdi:lock-reset" class="w-5 h-5" />
-                </span>
-                <span>Ubah Kata Sandi</span>
-            </div>
-        </template>
-        <template #header-sub>
-            Amankan akun belajarmu dengan kata sandi baru yang kuat dan unik
-        </template>
+    <div>
+        <div class="lg:grid lg:grid-cols-12 lg:items-start lg:gap-8">
+            <div class="lg:col-span-7">
+                <div class="ui-card">
+                    <div class="card-head">
+                        <div class="icon-box"><Icon icon="mdi:lock-reset" width="22" /></div>
+                        <div>
+                            <h1 class="card-title">Ganti Password</h1>
+                            <p class="card-sub">Perbarui password akun kamu secara berkala</p>
+                        </div>
+                    </div>
 
-        <div class="max-w-2xl mx-auto space-y-5">
-            <!-- Back navigation -->
-            <Link :href="route('user.profile.edit')"
-                  class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition group">
-                <Icon icon="mdi:arrow-left" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-                Kembali ke Pengaturan Profil
-            </Link>
+                    <div
+                        v-if="status === 'password-updated'"
+                        class="mb-5 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-medium text-emerald-700"
+                    >
+                        <Icon icon="mdi:check-circle-outline" width="20" class="mt-0.5 shrink-0" />
+                        <p>Password berhasil diperbarui.</p>
+                    </div>
 
-            <!-- Locked Notice for Students -->
-            <div v-if="!canChangePassword" class="p-5 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-900 shadow-sm flex items-start gap-3.5">
-                <Icon icon="mdi:shield-lock-outline" class="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
-                <div class="space-y-1">
-                    <h4 class="text-sm font-bold text-amber-950">Kata Sandi & Akun Dikelola Terpusat</h4>
-                    <p class="text-xs text-amber-800 leading-relaxed">
-                        Akun dan kata sandi siswa disinkronkan langsung dari <strong>Web Induk (KPM Student Smart)</strong>. Demi keamanan dan keseragaman data, perubahan kata sandi hanya dapat dilakukan melalui portal Web Induk.
-                    </p>
+                    <form class="space-y-5" @submit.prevent="submit">
+                        <div>
+                            <label for="current_password" class="form-label">Password Saat Ini</label>
+                            <div class="relative">
+                                <input
+                                    id="current_password"
+                                    v-model="form.current_password"
+                                    :type="show.current ? 'text' : 'password'"
+                                    name="current_password"
+                                    class="form-input pr-12"
+                                    placeholder="Masukkan password saat ini"
+                                    required
+                                    autocomplete="current-password"
+                                />
+                                <button
+                                    type="button"
+                                    class="absolute right-1 top-1/2 -translate-y-1/2 rounded-lg p-2.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                                    :aria-label="show.current ? 'Sembunyikan password' : 'Tampilkan password'"
+                                    @click="show.current = !show.current"
+                                >
+                                    <Icon :icon="show.current ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" width="20" />
+                                </button>
+                            </div>
+                            <p v-if="form.errors.current_password" class="form-error">{{ form.errors.current_password }}</p>
+                        </div>
+
+                        <div>
+                            <label for="password" class="form-label">Password Baru</label>
+                            <div class="relative">
+                                <input
+                                    id="password"
+                                    v-model="form.password"
+                                    :type="show.password ? 'text' : 'password'"
+                                    name="password"
+                                    class="form-input pr-12"
+                                    placeholder="Minimal 8 karakter"
+                                    required
+                                    autocomplete="new-password"
+                                />
+                                <button
+                                    type="button"
+                                    class="absolute right-1 top-1/2 -translate-y-1/2 rounded-lg p-2.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                                    :aria-label="show.password ? 'Sembunyikan password' : 'Tampilkan password'"
+                                    @click="show.password = !show.password"
+                                >
+                                    <Icon :icon="show.password ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" width="20" />
+                                </button>
+                            </div>
+                            <p v-if="form.errors.password" class="form-error">{{ form.errors.password }}</p>
+
+                            <ul v-if="form.password" class="mt-2.5 grid gap-1.5">
+                                <li
+                                    v-for="item in passwordChecklist"
+                                    :key="item.label"
+                                    class="flex items-center gap-2 text-xs font-medium"
+                                    :class="item.valid ? 'text-emerald-600' : 'text-slate-400'"
+                                >
+                                    <Icon :icon="item.valid ? 'mdi:check-circle' : 'mdi:circle-outline'" width="15" />
+                                    {{ item.label }}
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <label for="password_confirmation" class="form-label">Konfirmasi Password Baru</label>
+                            <div class="relative">
+                                <input
+                                    id="password_confirmation"
+                                    v-model="form.password_confirmation"
+                                    :type="show.password_confirmation ? 'text' : 'password'"
+                                    name="password_confirmation"
+                                    class="form-input pr-12"
+                                    placeholder="Ulangi password baru"
+                                    required
+                                    autocomplete="new-password"
+                                />
+                                <button
+                                    type="button"
+                                    class="absolute right-1 top-1/2 -translate-y-1/2 rounded-lg p-2.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                                    :aria-label="show.password_confirmation ? 'Sembunyikan password' : 'Tampilkan password'"
+                                    @click="show.password_confirmation = !show.password_confirmation"
+                                >
+                                    <Icon :icon="show.password_confirmation ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" width="20" />
+                                </button>
+                            </div>
+                            <p v-if="form.errors.password_confirmation" class="form-error">{{ form.errors.password_confirmation }}</p>
+                        </div>
+
+                        <div class="border-t border-slate-100 pt-5">
+                            <button type="submit" class="btn-primary w-full sm:w-auto" :disabled="form.processing">
+                                <Icon v-if="form.processing" icon="mdi:loading" width="18" class="animate-spin" />
+                                <Icon v-else icon="mdi:content-save-outline" width="18" />
+                                {{ form.processing ? 'Menyimpan...' : 'Simpan Password Baru' }}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
-            <!-- Password Card -->
-            <div v-if="canChangePassword" class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm space-y-5">
-                <form @submit.prevent="submit" class="space-y-5">
-                    <!-- Current Password -->
-                    <div class="space-y-2">
-                        <Label for="current_password">Kata Sandi Saat Ini <span class="text-destructive">*</span></Label>
-                        <div class="relative">
-                            <Input id="current_password"
-                                   v-model="form.current_password"
-                                   :type="showCurrent ? 'text' : 'password'"
-                                   required
-                                   placeholder="Masukkan kata sandi saat ini"
-                                   class="pr-11 rounded-xl" />
-                            <button type="button"
-                                    @click="showCurrent = !showCurrent"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition p-1">
-                                <Icon :icon="showCurrent ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" class="w-5 h-5" />
-                            </button>
-                        </div>
-                        <p v-if="form.errors?.current_password" class="text-xs text-destructive flex items-center gap-1">
-                            <Icon icon="mdi:alert-circle-outline" class="w-3.5 h-3.5" />
-                            {{ form.errors.current_password }}
-                        </p>
+            <div class="mt-6 lg:col-span-5 lg:mt-0">
+                <div class="ui-card">
+                    <div class="mb-3 flex items-center gap-2">
+                        <div class="icon-box icon-box-sm"><Icon icon="mdi:shield-lock-outline" width="18" /></div>
+                        <h2 class="text-sm font-bold text-slate-900">Tips Keamanan</h2>
                     </div>
+                    <ul class="space-y-3">
+                        <li v-for="tip in [
+                            'Gunakan minimal 8 karakter dengan kombinasi huruf besar, huruf kecil, dan angka.',
+                            'Jangan gunakan password yang sama dengan akun lain.',
+                            'Jangan bagikan password kamu kepada siapa pun, termasuk pengajar.',
+                            'Segera ganti password jika mencurigai akun kamu diakses orang lain.',
+                        ]" :key="tip" class="flex items-start gap-2.5 text-sm text-slate-600">
+                            <Icon icon="mdi:check-circle-outline" width="17" class="mt-0.5 shrink-0 text-indigo-500" />
+                            <span>{{ tip }}</span>
+                        </li>
+                    </ul>
+                </div>
 
-                    <!-- New Password -->
-                    <div class="space-y-2">
-                        <Label for="password">Kata Sandi Baru <span class="text-destructive">*</span></Label>
-                        <div class="relative">
-                            <Input id="password"
-                                   v-model="form.password"
-                                   :type="showNew ? 'text' : 'password'"
-                                   required
-                                   placeholder="Minimal 8 karakter"
-                                   class="pr-11 rounded-xl" />
-                            <button type="button"
-                                    @click="showNew = !showNew"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition p-1">
-                                <Icon :icon="showNew ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" class="w-5 h-5" />
-                            </button>
-                        </div>
-                        <p v-if="form.errors?.password" class="text-xs text-destructive flex items-center gap-1">
-                            <Icon icon="mdi:alert-circle-outline" class="w-3.5 h-3.5" />
-                            {{ form.errors.password }}
-                        </p>
+                <div class="ui-card mt-4">
+                    <div class="mb-3 flex items-center gap-2">
+                        <div class="icon-box icon-box-sm"><Icon icon="mdi:history" width="18" /></div>
+                        <h2 class="text-sm font-bold text-slate-900">Informasi</h2>
                     </div>
-
-                    <!-- Confirm Password -->
-                    <div class="space-y-2">
-                        <Label for="password_confirmation">Konfirmasi Kata Sandi Baru <span class="text-destructive">*</span></Label>
-                        <div class="relative">
-                            <Input id="password_confirmation"
-                                   v-model="form.password_confirmation"
-                                   :type="showConfirm ? 'text' : 'password'"
-                                   required
-                                   placeholder="Ketik ulang kata sandi baru"
-                                   class="pr-11 rounded-xl" />
-                            <button type="button"
-                                    @click="showConfirm = !showConfirm"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition p-1">
-                                <Icon :icon="showConfirm ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" class="w-5 h-5" />
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Requirements Box -->
-                    <div class="p-4 rounded-2xl bg-muted/30 border border-border/50 space-y-2 text-xs">
-                        <p class="font-bold text-foreground flex items-center gap-1.5">
-                            <Icon icon="mdi:shield-check-outline" class="w-4 h-4 text-primary" />
-                            Ketentuan Kata Sandi:
-                        </p>
-                        <ul class="space-y-1 text-muted-foreground ml-5 list-disc">
-                            <li :class="form.password.length >= 8 ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : ''">
-                                Terdiri dari minimal 8 karakter
-                            </li>
-                            <li :class="form.password && form.password === form.password_confirmation ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : ''">
-                                Konfirmasi kata sandi harus sama persis
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-3">
-                        <Link :href="route('user.profile.edit')" class="w-full sm:w-auto">
-                            <Button variant="ghost" type="button" class="w-full sm:w-auto">
-                                Batal
-                            </Button>
-                        </Link>
-                        <Button type="submit" :loading="form.processing" class="w-full sm:w-auto gap-2 font-semibold shadow-sm min-h-11">
-                            <Icon v-if="!form.processing" icon="mdi:check" class="w-4 h-4" />
-                            {{ form.processing ? 'Menyimpan Kata Sandi...' : 'Simpan Kata Sandi Baru' }}
-                        </Button>
-                    </div>
-                </form>
+                    <p class="text-sm leading-relaxed text-slate-600">
+                        Setelah password diganti, kamu akan tetap login di perangkat ini. Namun, jika ada perangkat lain yang
+                        mencurigakan, segera hubungi admin sekolah untuk melakukan pengecekan keamanan akun.
+                    </p>
+                </div>
             </div>
         </div>
-    </UserLayout>
+    </div>
 </template>
