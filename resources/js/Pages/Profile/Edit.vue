@@ -43,6 +43,14 @@ const form = useForm({
     date_of_birth: normalizeDate(user.value?.date_of_birth),
     parent_profession: user.value?.parent_profession || '',
     parent_education: user.value?.parent_education || '',
+    father_name: user.value?.father_name || user.value?.parent_name || '',
+    father_phone: user.value?.father_phone || user.value?.parent_phone || '',
+    father_education: user.value?.father_education || user.value?.parent_education || '',
+    father_profession: user.value?.father_profession || user.value?.parent_profession || '',
+    mother_name: user.value?.mother_name || '',
+    mother_phone: user.value?.mother_phone || '',
+    mother_education: user.value?.mother_education || '',
+    mother_profession: user.value?.mother_profession || '',
     profile_photo: null,
 });
 
@@ -284,29 +292,20 @@ function submit() {
                                 <Input id="kelas_student" :value="user?.student_class || '-'" disabled class="rounded-xl opacity-75 bg-muted/40 cursor-not-allowed" />
                             </div>
 
-                            <div class="space-y-2">
-                                <Label for="parent_name">Nama Orang Tua</Label>
-                                <Input id="parent_name" v-model="form.parent_name" placeholder="Nama ayah / ibu..." class="rounded-xl" />
-                                <p v-if="form.errors?.parent_name" class="text-xs text-destructive">{{ form.errors.parent_name }}</p>
-                            </div>
 
-                            <div class="space-y-2 sm:col-span-2">
-                                <Label for="parent_phone">HP Orang Tua</Label>
-                                <Input id="parent_phone" v-model="form.parent_phone" placeholder="0812..." class="rounded-xl" />
-                                <p v-if="form.errors?.parent_phone" class="text-xs text-destructive">{{ form.errors.parent_phone }}</p>
-                            </div>
                         </div>
                     </div>
 
-                    <!-- Section 3: Data Pribadi & Orang Tua -->
-                    <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm">
-                        <div class="flex items-center justify-between pb-4 border-b border-border/50 mb-5">
+                    <!-- Section 3: Data Pribadi & Orang Tua (Ayah & Ibu) -->
+                    <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm space-y-6">
+                        <div class="flex items-center justify-between pb-4 border-b border-border/50">
                             <div class="flex items-center gap-2">
                                 <Icon icon="mdi:account-group-outline" class="w-5 h-5 text-primary" />
                                 <h3 class="font-bold text-base text-foreground">Data Pribadi &amp; Orang Tua</h3>
                             </div>
                         </div>
 
+                        <!-- Tempat & Tanggal Lahir Siswa -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="space-y-2">
                                 <Label for="place_of_birth">Tempat Lahir</Label>
@@ -319,23 +318,71 @@ function submit() {
                                 <Input id="date_of_birth" type="date" v-model="form.date_of_birth" class="rounded-xl" />
                                 <p v-if="form.errors?.date_of_birth" class="text-xs text-destructive">{{ form.errors.date_of_birth }}</p>
                             </div>
+                        </div>
 
-                            <div class="space-y-2">
-                                <Label for="parent_profession">Profesi Orang Tua</Label>
-                                <select id="parent_profession" v-model="form.parent_profession" class="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                                    <option value="">— Pilih Profesi —</option>
-                                    <option v-for="profesi in profesiOrtuOptions" :key="profesi" :value="profesi">{{ profesi }}</option>
-                                </select>
-                                <p v-if="form.errors?.parent_profession" class="text-xs text-destructive">{{ form.errors.parent_profession }}</p>
+                        <!-- Data Ayah -->
+                        <div class="p-4 sm:p-5 rounded-2xl bg-muted/30 border border-border/60 space-y-4">
+                            <h4 class="text-xs font-bold text-foreground flex items-center gap-2">
+                                👨 Data Ayah
+                            </h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <Label for="father_name" class="text-xs">Nama Lengkap Ayah</Label>
+                                    <Input id="father_name" v-model="form.father_name" placeholder="Nama lengkap ayah" class="rounded-xl text-xs" />
+                                    <p v-if="form.errors?.father_name" class="text-[11px] text-destructive">{{ form.errors.father_name }}</p>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <Label for="father_phone" class="text-xs">No. HP / WA Ayah</Label>
+                                    <Input id="father_phone" v-model="form.father_phone" placeholder="08xxxxxxxxxx" class="rounded-xl text-xs" />
+                                    <p v-if="form.errors?.father_phone" class="text-[11px] text-destructive">{{ form.errors.father_phone }}</p>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <Label for="father_profession" class="text-xs">Profesi / Pekerjaan Ayah</Label>
+                                    <select id="father_profession" v-model="form.father_profession" class="w-full px-3.5 py-2 rounded-xl border border-input bg-background text-xs ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring">
+                                        <option value="">— Pilih Profesi Ayah —</option>
+                                        <option v-for="profesi in profesiOrtuOptions" :key="profesi" :value="profesi">{{ profesi }}</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <Label for="father_education" class="text-xs">Pendidikan Terakhir Ayah</Label>
+                                    <select id="father_education" v-model="form.father_education" class="w-full px-3.5 py-2 rounded-xl border border-input bg-background text-xs ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring">
+                                        <option value="">— Pilih Pendidikan Ayah —</option>
+                                        <option v-for="pendidikan in pendidikanOrtuOptions" :key="pendidikan" :value="pendidikan">{{ pendidikan }}</option>
+                                    </select>
+                                </div>
                             </div>
+                        </div>
 
-                            <div class="space-y-2">
-                                <Label for="parent_education">Latar Pendidikan Orang Tua</Label>
-                                <select id="parent_education" v-model="form.parent_education" class="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                                    <option value="">— Pilih Pendidikan —</option>
-                                    <option v-for="pendidikan in pendidikanOrtuOptions" :key="pendidikan" :value="pendidikan">{{ pendidikan }}</option>
-                                </select>
-                                <p v-if="form.errors?.parent_education" class="text-xs text-destructive">{{ form.errors.parent_education }}</p>
+                        <!-- Data Ibu -->
+                        <div class="p-4 sm:p-5 rounded-2xl bg-muted/30 border border-border/60 space-y-4">
+                            <h4 class="text-xs font-bold text-foreground flex items-center gap-2">
+                                👩 Data Ibu
+                            </h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <Label for="mother_name" class="text-xs">Nama Lengkap Ibu</Label>
+                                    <Input id="mother_name" v-model="form.mother_name" placeholder="Nama lengkap ibu" class="rounded-xl text-xs" />
+                                    <p v-if="form.errors?.mother_name" class="text-[11px] text-destructive">{{ form.errors.mother_name }}</p>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <Label for="mother_phone" class="text-xs">No. HP / WA Ibu</Label>
+                                    <Input id="mother_phone" v-model="form.mother_phone" placeholder="08xxxxxxxxxx" class="rounded-xl text-xs" />
+                                    <p v-if="form.errors?.mother_phone" class="text-[11px] text-destructive">{{ form.errors.mother_phone }}</p>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <Label for="mother_profession" class="text-xs">Profesi / Pekerjaan Ibu</Label>
+                                    <select id="mother_profession" v-model="form.mother_profession" class="w-full px-3.5 py-2 rounded-xl border border-input bg-background text-xs ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring">
+                                        <option value="">— Pilih Profesi Ibu —</option>
+                                        <option v-for="profesi in profesiOrtuOptions" :key="profesi" :value="profesi">{{ profesi }}</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <Label for="mother_education" class="text-xs">Pendidikan Terakhir Ibu</Label>
+                                    <select id="mother_education" v-model="form.mother_education" class="w-full px-3.5 py-2 rounded-xl border border-input bg-background text-xs ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring">
+                                        <option value="">— Pilih Pendidikan Ibu —</option>
+                                        <option v-for="pendidikan in pendidikanOrtuOptions" :key="pendidikan" :value="pendidikan">{{ pendidikan }}</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>

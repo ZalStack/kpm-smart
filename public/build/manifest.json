@@ -90,15 +90,19 @@
       "_utils-xn_YJHkT.js"
     ]
   },
-  "_MathRenderer-DFpUHudM.js": {
-    "file": "assets/MathRenderer-DFpUHudM.js",
+  "_MathRenderer-BLlbsoC4.css": {
+    "file": "assets/MathRenderer-BLlbsoC4.css",
+    "src": "_MathRenderer-BLlbsoC4.css"
+  },
+  "_MathRenderer-Bps-tBDs.js": {
+    "file": "assets/MathRenderer-Bps-tBDs.js",
     "name": "MathRenderer",
     "imports": [
       "_dist-BRTwDxe9.js",
       "__plugin-vue_export-helper-BDNMzG2s.js"
     ],
     "css": [
-      "assets/MathRenderer-DnC5vZ3o.css"
+      "assets/MathRenderer-BLlbsoC4.css"
     ],
     "assets": [
       "assets/KaTeX_AMS-Regular-BQhdFMY1.woff2",
@@ -162,10 +166,6 @@
       "assets/KaTeX_Typewriter-Regular-C0xS9mPB.woff",
       "assets/KaTeX_Typewriter-Regular-D3Ib7_Hf.ttf"
     ]
-  },
-  "_MathRenderer-DnC5vZ3o.css": {
-    "file": "assets/MathRenderer-DnC5vZ3o.css",
-    "src": "_MathRenderer-DnC5vZ3o.css"
   },
   "_Pagination-BAmQBtv7.js": {
     "file": "assets/Pagination-BAmQBtv7.js",
@@ -510,7 +510,7 @@
     "src": "node_modules/katex/dist/fonts/KaTeX_Typewriter-Regular.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-ALax3qVr.css",
+    "file": "assets/app-4EsuNO08.css",
     "name": "app",
     "names": [
       "app.css"
@@ -1089,7 +1089,7 @@
     ]
   },
   "resources/js/Pages/Practice/PracticeResult.vue": {
-    "file": "assets/PracticeResult-wQfb5mt_.js",
+    "file": "assets/PracticeResult-DAe3cMzC.js",
     "name": "PracticeResult",
     "src": "resources/js/Pages/Practice/PracticeResult.vue",
     "isDynamicEntry": true,
@@ -1098,11 +1098,11 @@
       "_offline-Bp7E4G3j.js",
       "_UserLayout-Cez-FGv7.js",
       "_confetti.module-Uxh4CK4s.js",
-      "_MathRenderer-DFpUHudM.js"
+      "_MathRenderer-Bps-tBDs.js"
     ]
   },
   "resources/js/Pages/Practice/PracticeShow.vue": {
-    "file": "assets/PracticeShow-A9t_4Qmk.js",
+    "file": "assets/PracticeShow-DDIXWyLx.js",
     "name": "PracticeShow",
     "src": "resources/js/Pages/Practice/PracticeShow.vue",
     "isDynamicEntry": true,
@@ -1112,11 +1112,11 @@
       "_Badge-CzE7zwtl.js",
       "_UserLayout-Cez-FGv7.js",
       "_confetti.module-Uxh4CK4s.js",
-      "_MathRenderer-DFpUHudM.js"
+      "_MathRenderer-Bps-tBDs.js"
     ]
   },
   "resources/js/Pages/Practice/PracticeStart.vue": {
-    "file": "assets/PracticeStart-uDdNE6oF.js",
+    "file": "assets/PracticeStart-y7a4v8hE.js",
     "name": "PracticeStart",
     "src": "resources/js/Pages/Practice/PracticeStart.vue",
     "isDynamicEntry": true,
@@ -1126,7 +1126,7 @@
       "__plugin-vue_export-helper-BDNMzG2s.js",
       "_Button-T8KsZvTy.js",
       "_UserLayout-Cez-FGv7.js",
-      "_MathRenderer-DFpUHudM.js"
+      "_MathRenderer-Bps-tBDs.js"
     ],
     "css": [
       "assets/PracticeStart-C39Gcq_Y.css"
@@ -1162,7 +1162,7 @@
     ]
   },
   "resources/js/Pages/Profile/Edit.vue": {
-    "file": "assets/Edit-DIuZbAs-.js",
+    "file": "assets/Edit-GAS4cdcj.js",
     "name": "Edit",
     "src": "resources/js/Pages/Profile/Edit.vue",
     "isDynamicEntry": true,
@@ -1177,7 +1177,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-BRSm6Ptr.js",
+    "file": "assets/app-BXXo4SL_.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -1235,7 +1235,7 @@
       "resources/js/Pages/Profile/Edit.vue"
     ],
     "css": [
-      "assets/app-ALax3qVr.css"
+      "assets/app-4EsuNO08.css"
     ]
   }
 }

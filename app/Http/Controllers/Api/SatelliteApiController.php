@@ -213,6 +213,14 @@ class SatelliteApiController extends Controller
             'date_of_birth' => 'nullable|string',
             'parent_profession' => 'nullable|string',
             'parent_education' => 'nullable|string',
+            'father_name' => 'nullable|string',
+            'father_phone' => 'nullable|string',
+            'father_profession' => 'nullable|string',
+            'father_education' => 'nullable|string',
+            'mother_name' => 'nullable|string',
+            'mother_phone' => 'nullable|string',
+            'mother_profession' => 'nullable|string',
+            'mother_education' => 'nullable|string',
             'foto_profil' => 'nullable|string',
             'is_active' => 'nullable',
         ]);
@@ -235,7 +243,7 @@ class SatelliteApiController extends Controller
             'is_verified' => true,
         ];
 
-        foreach (['phone', 'address', 'parent_name', 'parent_phone', 'place_of_birth', 'date_of_birth', 'parent_profession', 'parent_education'] as $f) {
+        foreach (['phone', 'address', 'parent_name', 'parent_phone', 'place_of_birth', 'date_of_birth', 'parent_profession', 'parent_education', 'father_name', 'father_phone', 'father_education', 'father_profession', 'mother_name', 'mother_phone', 'mother_education', 'mother_profession'] as $f) {
             if (array_key_exists($f, $validated)) {
                 $data[$f] = $validated[$f];
             }
@@ -293,7 +301,7 @@ class SatelliteApiController extends Controller
                     'updated_at' => now(),
                 ];
 
-                foreach (['phone', 'address', 'parent_name', 'parent_phone', 'place_of_birth', 'date_of_birth', 'parent_profession', 'parent_education'] as $f) {
+                foreach (['phone', 'address', 'parent_name', 'parent_phone', 'place_of_birth', 'date_of_birth', 'parent_profession', 'parent_education', 'father_name', 'father_phone', 'father_education', 'father_profession', 'mother_name', 'mother_phone', 'mother_education', 'mother_profession'] as $f) {
                     if (array_key_exists($f, $item)) {
                         $data[$f] = $item[$f];
                     }

@@ -242,6 +242,14 @@ class AuthController extends Controller
             'date_of_birth' => 'nullable|string',
             'parent_profession' => 'nullable|string',
             'parent_education' => 'nullable|string',
+            'father_name' => 'nullable|string',
+            'father_phone' => 'nullable|string',
+            'father_education' => 'nullable|string',
+            'father_profession' => 'nullable|string',
+            'mother_name' => 'nullable|string',
+            'mother_phone' => 'nullable|string',
+            'mother_education' => 'nullable|string',
+            'mother_profession' => 'nullable|string',
             'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
@@ -252,6 +260,8 @@ class AuthController extends Controller
         $data = $request->only([
             'name', 'phone', 'school_name', 'address', 'parent_name', 'parent_phone',
             'place_of_birth', 'date_of_birth', 'parent_profession', 'parent_education',
+            'father_name', 'father_phone', 'father_education', 'father_profession',
+            'mother_name', 'mother_phone', 'mother_education', 'mother_profession',
         ]);
 
         foreach ($data as $k => $v) {
