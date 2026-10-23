@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class SatelliteApiController extends Controller
 {
@@ -243,12 +244,14 @@ class SatelliteApiController extends Controller
             'is_verified' => true,
         ];
 
+        $userColumns = array_flip(Schema::getColumnListing('users'));
+
         foreach (['phone', 'address', 'parent_name', 'parent_phone', 'place_of_birth', 'date_of_birth', 'parent_profession', 'parent_education', 'father_name', 'father_phone', 'father_education', 'father_profession', 'mother_name', 'mother_phone', 'mother_education', 'mother_profession'] as $f) {
-            if (array_key_exists($f, $validated)) {
+            if (array_key_exists($f, $validated) && isset($userColumns[$f])) {
                 $data[$f] = $validated[$f];
             }
         }
-        if ($avatar) {
+        if ($avatar && isset($userColumns['profile_photo'])) {
             $data['profile_photo'] = $avatar;
         }
         if (! empty($validated['password'])) {
@@ -257,6 +260,7 @@ class SatelliteApiController extends Controller
             $data['password'] = 'kpm12345';
         }
 
+        $data = array_intersect_key($data, $userColumns);
         $user = User::updateOrCreate(['email' => $validated['email']], $data);
 
         return response()->json([
@@ -277,6 +281,7 @@ class SatelliteApiController extends Controller
         }
 
         $synced = 0;
+        $userColumns = array_flip(Schema::getColumnListing('users'));
         DB::beginTransaction();
         try {
             foreach ($users as $item) {
@@ -302,11 +307,11 @@ class SatelliteApiController extends Controller
                 ];
 
                 foreach (['phone', 'address', 'parent_name', 'parent_phone', 'place_of_birth', 'date_of_birth', 'parent_profession', 'parent_education', 'father_name', 'father_phone', 'father_education', 'father_profession', 'mother_name', 'mother_phone', 'mother_education', 'mother_profession'] as $f) {
-                    if (array_key_exists($f, $item)) {
+                    if (array_key_exists($f, $item) && isset($userColumns[$f])) {
                         $data[$f] = $item[$f];
                     }
                 }
-                if (! empty($item['foto_profil'])) {
+                if (! empty($item['foto_profil']) && isset($userColumns['profile_photo'])) {
                     $data['profile_photo'] = $item['foto_profil'];
                 }
                 if (! empty($item['password'])) {
@@ -315,6 +320,8 @@ class SatelliteApiController extends Controller
                 } elseif (! $existing) {
                     $data['password'] = bcrypt('kpm12345');
                 }
+
+                $data = array_intersect_key($data, $userColumns);
 
                 if ($existing) {
                     DB::table('users')->where('id', $existing->id)->update($data);
