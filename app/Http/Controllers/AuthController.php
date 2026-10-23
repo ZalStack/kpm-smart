@@ -28,7 +28,9 @@ class AuthController extends Controller
                 : redirect()->route('user.dashboard');
         }
 
+        // HANYA akun siswa (role: user) yang ditampilkan di opsi bantuan/autocomplete login siswa
         $students = User::query()
+            ->where('role', 'user')
             ->where(function ($q) {
                 $q->where('is_active', true)
                   ->orWhereNull('is_active');
@@ -36,20 +38,18 @@ class AuthController extends Controller
             ->orderBy('name')
             ->get()
             ->map(function ($u) {
-                $isAdmin = $u->role === 'admin';
-
                 return [
                     'id' => $u->id,
                     'name' => $u->name,
                     'email' => $u->email,
                     'username' => $u->username ?: explode('@', $u->email)[0],
-                    'is_admin' => $isAdmin,
-                    'role' => $u->role,
-                    'school' => $isAdmin ? '-' : ($u->school_name ?: 'KPM Academy'),
-                    'bidang' => $isAdmin ? '-' : ($u->bidang ?: 'Matematika & IPA'),
-                    'level' => $isAdmin ? 'Administrator' : (string) ($u->level ?: '1'),
-                    'kelas' => $isAdmin ? '-' : ($u->student_class ?: '-'),
-                    'avatar' => $isAdmin ? '🛡️' : '👤',
+                    'is_admin' => false,
+                    'role' => 'user',
+                    'school' => $u->school_name ?: 'KPM Academy',
+                    'bidang' => $u->bidang ?: 'Matematika & IPA',
+                    'level' => (string) ($u->level ?: '1'),
+                    'kelas' => $u->student_class ?: '-',
+                    'avatar' => '👤',
                 ];
             });
 
@@ -119,7 +119,17 @@ class AuthController extends Controller
 
             if ($response->successful() && ($response->json('valid') ?? false)) {
                 $master = $response->json();
-                $role = in_array($master['role'], ['super_admin', 'administrator', 'admin', 'guru']) ? 'admin' : 'user';
+
+                // Tolak login guru di web anakan satelit: guru hanya boleh login di Web Induk & SiGuru
+                if (($master['role'] ?? '') === 'guru') {
+                    RateLimiter::hit($throttleKey);
+
+                    return back()->withErrors([
+                        'email' => 'Akun pengajar/guru hanya dapat digunakan untuk login di Web Induk dan SiGuru.',
+                    ]);
+                }
+
+                $role = in_array($master['role'], ['super_admin', 'administrator', 'admin']) ? 'admin' : 'user';
                 $fotoProfil = $master['foto_profil'] ?? "{$parentUrl}/api/foto/".urlencode($master['email']);
                 $username = $master['nis'] ?: explode('@', $master['email'])[0];
 
