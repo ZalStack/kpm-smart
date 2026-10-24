@@ -212,14 +212,14 @@ class PracticeController extends Controller
             'answers' => $results,
         ]);
 
-        // Kirim laporan hasil belajar PR ke Web Induk kpm-student-smart
+        // Kirim laporan hasil belajar PR ke Web Induk kpm-student-smart (tanpa notifikasi ke siswa sendiri)
         $currentUser = Auth::user();
         if ($currentUser && !empty($currentUser->email)) {
             \App\Services\ParentWeeklyReportService::report(
                 $currentUser->email,
                 (int) round($totalScore),
                 true,
-                "PR / Latihan Soal: " . ($package->title ?? 'Latihan Mandiri')
+                null
             );
         }
 

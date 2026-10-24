@@ -197,7 +197,7 @@ class SatelliteApiController extends Controller
     public function syncUser(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'email' => 'required|email',
+            'email' => 'required|string',
             'name' => 'required|string',
             'role' => 'nullable|string',
             'username' => 'nullable|string',
@@ -230,8 +230,10 @@ class SatelliteApiController extends Controller
         $username = $validated['username'] ?? explode('@', $validated['email'])[0];
         $avatar = $validated['foto_profil'] ?? null;
 
-        $existing = User::where('email', $validated['email'])->first();
+        $existing = User::where('email', $validated['email'])->first()
+            ?? User::where('username', $username)->first();
         $data = [
+            'email' => $validated['email'],
             'name' => $validated['name'],
             'username' => $username,
             'student_name' => $validated['name'],
@@ -261,7 +263,12 @@ class SatelliteApiController extends Controller
         }
 
         $data = array_intersect_key($data, $userColumns);
-        $user = User::updateOrCreate(['email' => $validated['email']], $data);
+        if ($existing) {
+            $existing->update($data);
+            $user = $existing;
+        } else {
+            $user = User::create($data);
+        }
 
         return response()->json([
             'success' => true,
@@ -290,9 +297,11 @@ class SatelliteApiController extends Controller
                 }
                 $role = in_array($item['role'] ?? '', ['super_admin', 'administrator', 'admin', 'guru']) ? 'admin' : 'user';
                 $username = $item['username'] ?? explode('@', $item['email'])[0];
-                $existing = DB::table('users')->where('email', $item['email'])->first();
+                $existing = DB::table('users')->where('email', $item['email'])->first()
+                    ?? DB::table('users')->where('username', $username)->first();
 
                 $data = [
+                    'email' => $item['email'],
                     'name' => $item['name'],
                     'username' => $username,
                     'student_name' => $item['name'],
