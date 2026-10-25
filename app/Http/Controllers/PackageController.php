@@ -472,14 +472,32 @@ class PackageController extends Controller
         $totalCards = count($package->cards ?? []);
         $totalQuestions = count($package->questions ?? []);
 
+        $sessions = $user ? \App\Models\PracticeSession::where('user_id', $user->id)
+            ->where('package_id', $package->id)
+            ->get() : collect();
+
+        $completedSession = $sessions->where('status', 'completed')->sortByDesc('id')->first();
+        $inProgressSession = $sessions->where('status', 'in_progress')->sortByDesc('id')->first();
+
+        $completedCardIds = [];
+        $inProgressCardIds = [];
+        foreach ($sessions as $s) {
+            $key = $s->card_id ?: 'default';
+            if ($s->status === 'completed' && !isset($completedCardIds[$key])) {
+                $completedCardIds[$key] = $s->id;
+            } elseif ($s->status === 'in_progress' && !isset($inProgressCardIds[$key])) {
+                $inProgressCardIds[$key] = $s->id;
+            }
+        }
+
         return Inertia::render('Packages/PackageDetail', [
             'package' => $package,
             'totalCards' => $totalCards,
             'totalQuestions' => $totalQuestions,
-            'completedSession' => null,
-            'inProgressSession' => null,
-            'completedCardIds' => [],
-            'inProgressCardIds' => [],
+            'completedSession' => $completedSession ? $completedSession->withoutRelations() : null,
+            'inProgressSession' => $inProgressSession ? $inProgressSession->withoutRelations() : null,
+            'completedCardIds' => $completedCardIds,
+            'inProgressCardIds' => $inProgressCardIds,
         ]);
     }
 

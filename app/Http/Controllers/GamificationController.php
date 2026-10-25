@@ -112,31 +112,147 @@ class GamificationController extends Controller
         return ['current' => $currentStreak, 'best' => $bestStreak];
     }
 
+    /**
+     * Papan peringkat siswa: top 10, disaring sesuai bidang & level milik siswa login.
+     */
     public function leaderboard()
     {
-        $users = PracticeSession::where('status', 'completed')
-            ->select('user_id', DB::raw('COUNT(*) as total_attempts'), DB::raw('AVG(total_score) as avg_score'), DB::raw('MAX(total_score) as best_score'))
-            ->groupBy('user_id')
-            ->orderByDesc('avg_score')
-            ->orderByDesc('best_score')
-            ->limit(20)
+        $me = Auth::user();
+
+        $rows = $this->leaderboardQuery($me)
+            ->limit(500)
             ->get()
-            ->map(function ($item, $index) {
-                $user = User::find($item->user_id);
-                return [
-                    'rank' => $index + 1,
-                    'user' => $user ? ['id' => $user->id, 'name' => $user->name] : null,
-                    'total_attempts' => $item->total_attempts,
-                    'avg_score' => round($item->avg_score, 1),
-                    'best_score' => round($item->best_score, 1),
-                ];
-            })
-            ->filter(fn($item) => $item['user'] !== null)
+            ->map(fn ($item, $index) => [
+                'rank' => $index + 1,
+                'user' => $this->leaderboardUser($item->user_id),
+                'total_attempts' => $item->total_attempts,
+                'avg_score' => round($item->avg_score, 1),
+                'best_score' => round($item->best_score, 1),
+            ])
+            ->filter(fn ($item) => $item['user'] !== null)
             ->values();
 
+        $currentUserRank = $me
+            ? $rows->firstWhere('user.id', $me->id)
+            : null;
+
         return Inertia::render('Gamification/Leaderboard', [
+            'leaderboard' => $rows->take(10)->values(),
+            'currentUserRank' => $currentUserRank,
+        ]);
+    }
+
+    /**
+     * Query agregat peringkat (rata-rata nilai lalu nilai tertinggi).
+     */
+    private function leaderboardQuery(?User $me)
+    {
+        $query = PracticeSession::query()
+            ->join('users', 'users.id', '=', 'practice_sessions.user_id')
+            ->where('practice_sessions.status', 'completed')
+            ->where('users.role', 'user')
+            ->select(
+                'practice_sessions.user_id',
+                DB::raw('COUNT(*) as total_attempts'),
+                DB::raw('AVG(practice_sessions.total_score) as avg_score'),
+                DB::raw('MAX(practice_sessions.total_score) as best_score')
+            )
+            ->groupBy('practice_sessions.user_id')
+            ->orderByDesc('avg_score')
+            ->orderByDesc('best_score');
+
+        $this->applyBidangLevelScope($query, $me);
+
+        return $query;
+    }
+
+    /**
+     * Saring peringkat hanya untuk siswa satu bidang & level.
+     */
+    private function applyBidangLevelScope($query, ?User $me): void
+    {
+        if (!$me) {
+            return;
+        }
+
+        $bidang = trim((string) $me->bidang);
+        if ($bidang !== '') {
+            $isMtk = (bool) preg_match('/(mtk|matematika|math)/i', $bidang);
+            $isIpa = (bool) preg_match('/(ipa|sains|science)/i', $bidang);
+
+            $query->where(function ($q) use ($isMtk, $isIpa) {
+                if ($isMtk && !$isIpa) {
+                    $q->whereRaw('LOWER(COALESCE(users.bidang, \'\')) LIKE ?', ['%mtk%'])
+                      ->orWhereRaw('LOWER(COALESCE(users.bidang, \'\')) LIKE ?', ['%matematika%'])
+                      ->orWhereRaw('LOWER(COALESCE(users.bidang, \'\')) LIKE ?', ['%math%']);
+                } elseif ($isIpa && !$isMtk) {
+                    $q->whereRaw('LOWER(COALESCE(users.bidang, \'\')) LIKE ?', ['%ipa%'])
+                      ->orWhereRaw('LOWER(COALESCE(users.bidang, \'\')) LIKE ?', ['%sains%'])
+                      ->orWhereRaw('LOWER(COALESCE(users.bidang, \'\')) LIKE ?', ['%science%']);
+                }
+            });
+        }
+
+        $level = trim((string) $me->level);
+        if ($level !== '') {
+            $query->whereRaw('LOWER(TRIM(COALESCE(users.level, \'\'))) = ?', [strtolower($level)]);
+        }
+    }
+
+    private function leaderboardUser($userId): ?array
+    {
+        $user = User::find($userId);
+
+        return $user ? ['id' => $user->id, 'name' => $user->name] : null;
+    }
+
+    /**
+     * Papan peringkat admin: seluruh daftar siswa pada kelas terpilih.
+     */
+    public function adminLeaderboard(Request $request)
+    {
+        $kelas = $request->query('kelas');
+
+        $availableKelas = User::where('role', 'user')
+            ->whereNotNull('student_class')
+            ->where('student_class', '!=', '')
+            ->orderBy('student_class')
+            ->pluck('student_class')
+            ->unique()
+            ->values();
+
+        $query = User::where('role', 'user')
+            ->when($kelas, fn ($q) => $q->where('student_class', $kelas));
+
+        $users = $query->get()
+            ->map(function ($user) {
+                $sessions = PracticeSession::where('user_id', $user->id)
+                    ->where('status', 'completed');
+
+                return [
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                    ],
+                    'bidang' => $user->bidang,
+                    'level' => $user->level,
+                    'kelas' => $user->student_class,
+                    'total_attempts' => (clone $sessions)->count(),
+                    'avg_score' => round((clone $sessions)->avg('total_score') ?? 0, 1),
+                    'best_score' => round((clone $sessions)->max('total_score') ?? 0, 1),
+                ];
+            })
+            ->sortByDesc('avg_score')
+            ->sortByDesc('best_score')
+            ->values()
+            ->map(fn ($entry, $index) => array_merge(['rank' => $index + 1], $entry));
+
+        return Inertia::render('Admin/Leaderboard/AdminLeaderboardIndex', [
             'leaderboard' => $users,
-            'currentUserRank' => null,
+            'availableKelas' => $availableKelas,
+            'selectedKelas' => $kelas,
+            'totalStudents' => $users->count(),
         ]);
     }
 

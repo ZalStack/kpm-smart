@@ -258,14 +258,10 @@ const isCurrentUser = (id) => id === page.props.auth?.user?.id;
             </div>
 
             <!-- Navigasi -->
-            <div class="flex items-center justify-between pt-2">
-                <Link :href="route('user.practice.statistics')" class="inline-flex items-center gap-1.5 text-sm font-medium text-primary transition hover:text-primary/80">
-                    <Icon icon="mdi:chart-box-outline" class="h-4 w-4" />
-                    Lihat Statistik Lengkap Saya
-                </Link>
+            <div class="flex items-center justify-end pt-2">
                 <Link :href="route('user.dashboard')" class="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground">
                     <Icon icon="mdi:arrow-left" class="h-4 w-4" />
-                    Dasbor
+                    Kembali ke Beranda
                 </Link>
             </div>
         </div>

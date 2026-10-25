@@ -52,7 +52,7 @@ const cardProgress = computed(() => {
         <!-- Navigasi kembali -->
         <Link :href="route('user.packages.index')" class="back-link mb-5 group select-none">
             <Icon icon="mdi:arrow-left" class="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
-            Kembali ke PR Pekanan
+            Kembali ke PR Siswa Kelas Khusus
         </Link>
 
         <!-- Peringatan jadwal -->
@@ -224,7 +224,7 @@ const cardProgress = computed(() => {
                                             class="inline-flex items-center gap-1 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100"
                                         >
                                             <Icon icon="mdi:chart-bar" class="h-4 w-4" />
-                                            Hasil
+                                            Hasil &amp; Pembahasan
                                         </Link>
                                     </template>
                                     <template v-else-if="isCardInProgress(card.id)">
@@ -256,6 +256,21 @@ const cardProgress = computed(() => {
                     </div>
                 </div>
 
+                <!-- Sudah Selesai (paket tanpa kartu) -->
+                <div v-else-if="completedSession" class="empty-state border border-emerald-200 bg-emerald-50/40">
+                    <div class="empty-state-icon !bg-emerald-500 !text-white !shadow-none">
+                        <Icon icon="mdi:check-circle-outline" class="h-8 w-8" />
+                    </div>
+                    <h3 class="text-base font-bold text-foreground">Tugas Sudah Selesai Dikerjakan</h3>
+                    <p class="mt-1.5 max-w-md text-sm leading-relaxed text-muted-foreground">
+                        Tugas PR pekan ini hanya dapat dikerjakan 1 kali. Kamu telah menyelesaikan pengerjaan tugas ini.
+                    </p>
+                    <Link :href="route('user.practice.show', completedSession.id)" class="btn-primary mt-5 px-8 py-3">
+                        <Icon icon="mdi:chart-bar" class="h-5 w-5" />
+                        Lihat Hasil &amp; Pembahasan Soal
+                    </Link>
+                </div>
+
                 <!-- Mulai tunggal (paket tanpa kartu) -->
                 <div v-else-if="canStart" class="empty-state">
                     <div class="empty-state-icon !bg-primary/10 !text-primary !shadow-none">
@@ -263,7 +278,7 @@ const cardProgress = computed(() => {
                     </div>
                     <h3 class="text-base font-bold text-foreground">Siap untuk Memulai?</h3>
                     <p class="mt-1.5 max-w-md text-sm leading-relaxed text-muted-foreground">
-                        Paket ini berisi seluruh butir soal langsung. Pastikan koneksi stabil dan kamu memiliki waktu luang sebelum memulai.
+                        Paket ini berisi seluruh butir soal langsung. Pastikan koneksi stabil dan kamu memiliki waktu luang sebelum memulai. Soal hanya dapat dikerjakan 1 kali.
                     </p>
                     <button @click="startPractice(null)" class="btn-primary mt-5 px-8 py-3">
                         <Icon icon="mdi:play-circle-outline" class="h-5 w-5" />

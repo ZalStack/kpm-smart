@@ -14,14 +14,15 @@ const props = defineProps({
     showAnswerKey: { type: Boolean, default: true },
     showExplanation: { type: Boolean, default: true },
     showScore: { type: Boolean, default: true },
+    isDeadlinePassed: { type: Boolean, default: false },
 });
 
 const allHidden = computed(() => !props.showScore && !props.showAnswerKey && !props.showExplanation);
 
 onMounted(() => {
     if (allHidden.value) {
-        alert('Detail riwayat tidak tersedia. Pengatur soal telah menonaktifkan semua tampilan hasil.');
-        router.visit(route('user.practice.history'));
+        alert('Detail hasil tugas tidak tersedia.');
+        router.visit(route('user.packages.index'));
     }
 
     if (props.session?.total_score >= 80) {
@@ -45,11 +46,11 @@ function formatDate(dateStr) {
 
 <template>
     <UserLayout>
-        <Head title="Detail Riwayat Tugas - KPM SMART" />
+        <Head title="Pembahasan Soal - KPM SMART" />
 
-        <Link :href="route('user.practice.history')" class="back-link mb-5 group select-none">
+        <Link :href="route('user.packages.index')" class="back-link mb-5 group select-none">
             <Icon icon="mdi:arrow-left" class="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
-            Kembali ke Riwayat Pengerjaan
+            Kembali ke PR Siswa Kelas Khusus
         </Link>
 
         <template v-if="!allHidden">
@@ -98,10 +99,15 @@ function formatDate(dateStr) {
                 <div v-if="showAnswerKey" class="space-y-4">
                     <div class="flex items-center justify-between">
                         <h3 class="section-title flex items-center gap-2">
-                            <Icon icon="mdi:clipboard-text-outline" class="h-5 w-5 text-primary" />
-                            Detail &amp; Pembahasan Soal
+                            <Icon icon="mdi:lightbulb-outline" class="h-5 w-5 text-primary" />
+                            Pembahasan Soal
                         </h3>
                         <span class="text-xs font-semibold text-muted-foreground">{{ results.length }} Soal</span>
+                    </div>
+
+                    <div v-if="isDeadlinePassed" class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs font-semibold text-amber-800 flex items-center gap-2">
+                        <Icon icon="mdi:clock-alert-outline" class="h-4 w-4 shrink-0 text-amber-600" />
+                        <span>Pembahasan soal telah otomatis ditutup karena jadwal tugas telah melewati batas waktu (deadline).</span>
                     </div>
 
                     <article
@@ -203,9 +209,18 @@ function formatDate(dateStr) {
                     </article>
                 </div>
 
-                <!-- Sertifikat -->
-                <div v-if="session.status === 'completed'" class="flex justify-center pb-2 pt-2">
-                    <a :href="route('user.practice.certificate', session.id)" class="btn-primary px-6 py-3.5">
+                <!-- Aksi Bawah -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pb-6 pt-2">
+                    <Link :href="route('user.packages.index')" class="btn-outline px-6 py-3.5 w-full sm:w-auto text-xs">
+                        <Icon icon="mdi:book-open-page-variant" class="h-4 w-4" />
+                        Kembali ke PR Siswa Kelas Khusus
+                    </Link>
+
+                    <a
+                        v-if="session.status === 'completed'"
+                        :href="route('user.practice.certificate', session.id)"
+                        class="btn-primary px-6 py-3.5 w-full sm:w-auto text-xs"
+                    >
                         <Icon icon="mdi:certificate-outline" class="h-5 w-5" />
                         Unduh Sertifikat Pengerjaan
                     </a>

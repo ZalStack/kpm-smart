@@ -18,6 +18,7 @@ const props = defineProps({
     showAnswerKey: { type: Boolean, default: true },
     showExplanation: { type: Boolean, default: true },
     showScore: { type: Boolean, default: true },
+    isDeadlinePassed: { type: Boolean, default: false },
 });
 
 const activeTab = ref('summary');
@@ -174,8 +175,8 @@ onMounted(() => {
                             activeTab === 'detail' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                         ]"
                     >
-                        <Icon icon="mdi:clipboard-text-outline" class="h-4 w-4 text-primary" />
-                        <span class="hidden sm:inline">Review Butir Soal ({{ results.length }})</span><span class="sm:hidden">Butir Soal</span>
+                        <Icon icon="mdi:lightbulb-outline" class="h-4 w-4 text-primary" />
+                        <span class="hidden sm:inline">Pembahasan Soal ({{ results.length }})</span><span class="sm:hidden">Pembahasan</span>
                     </button>
                 </div>
 
@@ -219,8 +220,13 @@ onMounted(() => {
                     </div>
                 </div>
 
-                <!-- Tab Detail Jawaban -->
+                <!-- Tab Detail Jawaban & Pembahasan -->
                 <div v-else class="anim-fade-in divide-y divide-border/40">
+                    <div v-if="isDeadlinePassed" class="m-5 flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs font-semibold text-amber-800">
+                        <Icon icon="mdi:clock-alert-outline" class="h-4 w-4 shrink-0 text-amber-600" />
+                        <span>Pembahasan soal telah otomatis ditutup karena jadwal pengerjaan telah melewati batas waktu (deadline).</span>
+                    </div>
+
                     <article
                         v-for="(result, idx) in results"
                         :key="idx"
@@ -310,14 +316,14 @@ onMounted(() => {
 
             <!-- ====== AKSI ====== -->
             <div class="grid grid-cols-1 gap-3 pb-6 sm:grid-cols-2">
-                <Link :href="route('user.practice.history')" class="btn-primary py-3.5">
-                    <Icon icon="mdi:history" class="h-4 w-4" />
-                    Lihat Riwayat Pengerjaan
+                <Link :href="route('user.packages.index')" class="btn-primary py-3.5">
+                    <Icon icon="mdi:book-open-page-variant" class="h-4 w-4" />
+                    Kembali ke PR Siswa Kelas Khusus
                 </Link>
 
-                <Link :href="route('user.practice.statistics')" class="btn-outline py-3.5">
-                    <Icon icon="mdi:chart-box-outline" class="h-4 w-4 text-primary" />
-                    Buka Statistik Saya
+                <Link :href="route('user.dashboard')" class="btn-outline py-3.5">
+                    <Icon icon="mdi:view-dashboard-outline" class="h-4 w-4 text-primary" />
+                    Ke Beranda
                 </Link>
 
                 <a

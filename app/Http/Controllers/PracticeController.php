@@ -13,7 +13,7 @@ class PracticeController extends Controller
 {
     public function index()
     {
-        return redirect()->route('user.practice.history');
+        return redirect()->route('user.packages.index');
     }
 
     public function startRedirect(Package $package)
@@ -111,21 +111,16 @@ class PracticeController extends Controller
             ]);
         }
 
-        // Blokir jika sudah mengerjakan (1-attempt restriction - tidak bisa retry)
+        // Blokir jika sudah mengerjakan (1-attempt restriction: siswa hanya bisa mengerjakan 1 kali setiap pekannya)
         $existingSession = PracticeSession::where('user_id', Auth::id())
             ->where('package_id', $package->id)
-            ->where(function ($q) use ($cardId) {
-                $q->where('card_id', $cardId)
-                    ->orWhereNull('card_id')
-                    ->orWhere('card_id', 'default');
-            })
             ->where('status', 'completed')
             ->latest()
             ->first();
 
         if ($existingSession) {
             return redirect()->route('user.practice.show', $existingSession->id)
-                ->with('info', 'Kamu sudah mengerjakan tugas pada card ini. Soal hanya bisa dikerjakan 1 kali. Berikut hasil tugasmu.');
+                ->with('info', 'Tugas PR pekan ini hanya dapat dikerjakan 1 kali dan kamu sudah menyelesaikannya. Berikut hasil tugasmu.');
         }
 
         $session = PracticeSession::create([
@@ -223,10 +218,20 @@ class PracticeController extends Controller
             );
         }
 
+        $isExpired = $package && $package->schedule_status === 'expired';
+
         // Ambil pengaturan dari package (realtime)
-        $showAnswerKey  = $package->canShowAnswerKey();
-        $showExplanation = $package->canShowExplanation();
-        $showScore      = $package->canShowScore();
+        $showAnswerKey  = $package ? $package->canShowAnswerKey() : true;
+        // Pembahasan soal hanya bisa dilihat sampai batas deadline; jika sudah lewat deadline, otomatis dihapus
+        $showExplanation = (!$isExpired) && ($package ? $package->canShowExplanation() : true);
+        $showScore      = $package ? $package->canShowScore() : true;
+
+        if ($isExpired) {
+            $results = array_map(function ($item) {
+                unset($item['explanation']);
+                return $item;
+            }, $results);
+        }
 
         return Inertia::render('Practice/PracticeResult', [
             'session' => $session->withoutRelations(),
@@ -238,18 +243,13 @@ class PracticeController extends Controller
             'showAnswerKey' => $showAnswerKey,
             'showExplanation' => $showExplanation,
             'showScore' => $showScore,
+            'isDeadlinePassed' => $isExpired,
         ]);
     }
 
     public function history()
     {
-        $sessions = PracticeSession::with('package')
-            ->where('status', 'completed')
-            ->orderBy('created_at', 'desc')
-            ->get();
-        return Inertia::render('Practice/PracticeHistory', [
-            'sessions' => $sessions,
-        ]);
+        return redirect()->route('user.packages.index');
     }
 
     public function show(PracticeSession $session)
@@ -278,11 +278,20 @@ class PracticeController extends Controller
         }
 
         $results = $session->answers ?? [];
+        $isExpired = $package && $package->schedule_status === 'expired';
 
         // Ambil pengaturan realtime dari package (bisa berubah oleh admin kapan saja)
         $showAnswerKey   = $package ? $package->canShowAnswerKey() : true;
-        $showExplanation = $package ? $package->canShowExplanation() : true;
+        // Pembahasan soal hanya bisa dilihat sampai batas deadline; jika sudah lewat deadline, otomatis dihapus
+        $showExplanation = (!$isExpired) && ($package ? $package->canShowExplanation() : true);
         $showScore       = $package ? $package->canShowScore() : true;
+
+        if ($isExpired) {
+            $results = array_map(function ($item) {
+                unset($item['explanation']);
+                return $item;
+            }, $results);
+        }
 
         return Inertia::render('Practice/PracticeShow', [
             'session' => $session->withoutRelations(),
@@ -290,6 +299,7 @@ class PracticeController extends Controller
             'showAnswerKey' => $showAnswerKey,
             'showExplanation' => $showExplanation,
             'showScore' => $showScore,
+            'isDeadlinePassed' => $isExpired,
         ]);
     }
 
@@ -364,35 +374,6 @@ class PracticeController extends Controller
 
     public function statistics()
     {
-        $sessions = PracticeSession::where('status', 'completed')
-            ->with('package')
-            ->get();
-
-        $totalAttempts = $sessions->count();
-        $bestScore = (float) ($sessions->max('total_score') ?? 0);
-        $averageScore = (float) ($sessions->avg('total_score') ?? 0);
-        $totalQuestions = $sessions->sum('total_question');
-        $correctAnswers = $sessions->sum('correct_answer');
-        $accuracy = $totalQuestions > 0 ? ($correctAnswers / $totalQuestions) * 100 : 0;
-
-        $sessionsByPackage = $sessions->groupBy('package_id')->map(function($group) {
-            $first = $group->first();
-            return [
-                'package' => $first && $first->package ? $first->package->title : 'Unknown',
-                'attempts' => $group->count(),
-                'avg_score' => $group->avg('total_score'),
-                'best_score' => $group->max('total_score'),
-            ];
-        });
-
-        return Inertia::render('Practice/PracticeStatistics', [
-            'totalAttempts' => $totalAttempts,
-            'bestScore' => $bestScore,
-            'averageScore' => $averageScore,
-            'totalQuestions' => $totalQuestions,
-            'correctAnswers' => $correctAnswers,
-            'accuracy' => $accuracy,
-            'sessionsByPackage' => array_values($sessionsByPackage->toArray()),
-        ]);
+        return redirect()->route('user.dashboard');
     }
 }

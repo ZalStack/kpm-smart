@@ -178,7 +178,12 @@ function handleKeydown(e) {
 const answeredCount = computed(() => Object.keys(answers.value).filter(k => answers.value[k] !== null && answers.value[k] !== undefined && answers.value[k] !== '').length);
 const progressPercent = computed(() => props.questions.length > 0 ? Math.round((answeredCount.value / props.questions.length) * 100) : 0);
 
+const submitApproval = ref(false);
+const submitCountdown = ref(3);
+let countdownInterval = null;
+
 function submitForm() {
+    if (countdownInterval) clearInterval(countdownInterval);
     testActive.value = false;
     if (timerInterval) clearInterval(timerInterval);
     if (autoSaveInterval.value) clearInterval(autoSaveInterval.value);
@@ -190,19 +195,32 @@ function submitForm() {
 }
 
 function confirmSubmit() {
-    if (answeredCount.value < props.questions.length) {
-        showConfirm.value = true;
-    } else {
-        submitForm();
-    }
+    submitApproval.value = false;
+    submitCountdown.value = 3;
+    showConfirm.value = true;
+    if (countdownInterval) clearInterval(countdownInterval);
+    countdownInterval = setInterval(() => {
+        if (submitCountdown.value > 0) {
+            submitCountdown.value--;
+        } else {
+            clearInterval(countdownInterval);
+        }
+    }, 1000);
 }
 
-/** Kelas status tombol nomor soal. */
+function cancelConfirm() {
+    showConfirm.value = false;
+    submitApproval.value = false;
+    if (countdownInterval) clearInterval(countdownInterval);
+}
+
+/** Kelas status tombol nomor soal: indikator aktif dipertegas dan dipertajam warnanya. */
 function navBtnClass(idx) {
-    const q = props.questions[idx];
-    if (currentIndex === idx) return 'bg-primary text-primary-foreground shadow-sm ring-2 ring-primary/30 scale-105';
+    if (currentIndex.value === idx) {
+        return 'bg-blue-600 text-white font-black shadow-md ring-4 ring-blue-400/50 scale-105 border-blue-600';
+    }
     if (answers.value[idx] !== null && answers.value[idx] !== undefined && answers.value[idx] !== '') {
-        return 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100';
+        return 'bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold hover:bg-emerald-100';
     }
     return 'bg-muted/70 text-muted-foreground border border-transparent hover:bg-muted hover:text-foreground';
 }
@@ -221,6 +239,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+    if (countdownInterval) clearInterval(countdownInterval);
     if (timerInterval) clearInterval(timerInterval);
     if (autoSaveInterval.value) clearInterval(autoSaveInterval.value);
     disableSecureMode();
@@ -448,13 +467,6 @@ onBeforeUnmount(() => {
                             </button>
 
                             <button
-                                @click="saveAnswers(false)"
-                                class="text-xs font-semibold text-muted-foreground underline underline-offset-4 transition hover:text-primary"
-                            >
-                                Simpan Manual
-                            </button>
-
-                            <button
                                 v-if="idx < questions.length - 1"
                                 class="btn-primary px-4 py-2.5 text-xs"
                                 @click="nextQuestion"
@@ -463,13 +475,14 @@ onBeforeUnmount(() => {
                                 <Icon icon="mdi:arrow-right" class="h-4 w-4" />
                             </button>
 
+                            <!-- Di mobile jika nomor terakhir, tombol Selesai & Kumpulkan tunggal -->
                             <button
                                 v-else
-                                class="btn-primary px-4 py-2.5 text-xs"
+                                class="btn-primary px-4 py-2.5 text-xs lg:hidden"
                                 @click="confirmSubmit"
                             >
-                                <Icon icon="mdi:check-all" class="h-4 w-4" />
-                                Kumpulkan
+                                <Icon icon="mdi:check" class="h-4 w-4" />
+                                Selesai &amp; Kumpulkan
                             </button>
                         </div>
                     </div>
@@ -525,16 +538,10 @@ onBeforeUnmount(() => {
                                     {{ idx + 1 }}
                                 </button>
                             </div>
-
-                            <div class="mt-4 flex flex-wrap gap-x-3 gap-y-1.5 border-t border-border/60 pt-3 text-[10px] font-medium text-muted-foreground">
-                                <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded bg-primary"></span> Aktif</span>
-                                <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded border border-emerald-300 bg-emerald-100"></span> Terjawab</span>
-                                <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded border border-border/80 bg-muted"></span> Belum</span>
-                            </div>
                         </div>
 
                         <button @click="confirmSubmit" class="btn-primary w-full py-3.5">
-                            <Icon icon="mdi:check-all" class="h-5 w-5" />
+                            <Icon icon="mdi:check" class="h-5 w-5" />
                             Selesai &amp; Kumpulkan
                         </button>
                     </div>
@@ -571,19 +578,39 @@ onBeforeUnmount(() => {
 
             <!-- ====== KONFIRMASI KUMPUL ====== -->
             <div v-if="showConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-md">
-                <div class="anim-fade-in-up w-full max-w-sm rounded-3xl border border-border/80 bg-card p-6 text-center shadow-2xl sm:p-8">
+                <div class="anim-fade-in-up w-full max-w-md rounded-3xl border border-border/80 bg-card p-6 shadow-2xl sm:p-8">
                     <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
-                        <Icon icon="mdi:alert-outline" class="h-7 w-7" />
+                        <Icon icon="mdi:help-circle-outline" class="h-7 w-7" />
                     </div>
-                    <h3 class="text-base font-bold text-foreground sm:text-lg">Kumpulkan Tugas Sekarang?</h3>
-                    <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
-                        Kamu baru menjawab <strong class="text-foreground">{{ answeredCount }}</strong> dari
+                    <h3 class="text-center text-base font-bold text-foreground sm:text-lg">Selesai &amp; Kumpulkan Tugas?</h3>
+                    <p class="mt-2 text-center text-sm leading-relaxed text-muted-foreground">
+                        Kamu telah menjawab <strong class="text-foreground">{{ answeredCount }}</strong> dari
                         <strong class="text-foreground">{{ questions.length }}</strong> butir soal.
-                        Soal yang belum dijawab akan dinilai kosong.
+                        Tugas ini hanya dapat dikerjakan 1 kali.
                     </p>
+
+                    <!-- Checkbox Approval -->
+                    <label class="mt-5 flex cursor-pointer items-start gap-3 rounded-2xl border border-border/80 bg-muted/40 p-4 transition hover:border-primary/40">
+                        <input
+                            v-model="submitApproval"
+                            type="checkbox"
+                            class="mt-0.5 h-4 w-4 cursor-pointer rounded text-primary focus:ring-primary/20"
+                        />
+                        <span class="text-xs font-semibold leading-relaxed text-foreground select-none">
+                            Saya telah memeriksa jawaban dan yakin untuk mengumpulkan hasil tugas ini.
+                        </span>
+                    </label>
+
                     <div class="mt-6 flex gap-3">
-                        <button class="btn-outline flex-1 py-2.5 text-xs" @click="showConfirm = false">Periksa Lagi</button>
-                        <button class="btn-primary flex-1 py-2.5 text-xs" @click="submitForm">Ya, Kumpulkan</button>
+                        <button class="btn-outline flex-1 py-3 text-xs" @click="cancelConfirm">Periksa Lagi</button>
+                        <button
+                            class="btn-primary flex-1 py-3 text-xs"
+                            :disabled="submitCountdown > 0 || !submitApproval"
+                            @click="submitForm"
+                        >
+                            <span v-if="submitCountdown > 0">Tunggu ({{ submitCountdown }}d)</span>
+                            <span v-else>Ya, Kumpulkan</span>
+                        </button>
                     </div>
                 </div>
             </div>

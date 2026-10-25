@@ -1,15 +1,13 @@
 <script setup>
-import { inject, ref, computed } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { inject } from 'vue';
+import { Head, Link } from '@inertiajs/vue3';
 import { Icon } from '@iconify/vue/offline';
 import UserLayout from '@/Layouts/UserLayout.vue';
-import Input from '@/Components/ui/input/Input.vue';
-import Select from '@/Components/ui/select/Select.vue';
 import Pagination from '@/Components/shared/Pagination.vue';
 
 const route = inject('route');
 
-const props = defineProps({
+defineProps({
     packages: { type: Object, required: true },
     allKelas: { type: Array, default: () => [] },
     allBidang: { type: Array, default: () => [] },
@@ -20,20 +18,23 @@ const props = defineProps({
     filters: { type: Object, default: () => ({}) },
 });
 
-const search = ref(props.filters?.search || '');
-const bidang = ref(props.filters?.bidang || (props.userBidangGroup ? props.userBidangGroup : ''));
-const kelas = ref(props.filters?.kelas || '');
-const level = ref(props.filters?.level || '');
-const sort = ref(props.filters?.sort || props.currentSort || 'latest');
-const showFilters = ref(false);
-
-const packageColors = [
-    'from-blue-600 to-indigo-700',
-    'from-indigo-600 to-violet-700',
-    'from-sky-500 to-blue-700',
-    'from-violet-600 to-purple-700',
-    'from-amber-500 to-orange-600',
-    'from-cyan-600 to-blue-700',
+/**
+ * Warna otomatis per pekan (pekan 1 merah, pekan 2 kuning, dst).
+ * Deterministik berdasarkan urutan pekan agar tidak berubah tiap muat ulang.
+ */
+const pekanColors = [
+    'from-red-500 to-rose-700',
+    'from-amber-400 to-yellow-500',
+    'from-emerald-500 to-teal-600',
+    'from-sky-500 to-blue-600',
+    'from-violet-500 to-purple-600',
+    'from-orange-500 to-amber-600',
+    'from-fuchsia-500 to-pink-600',
+    'from-cyan-500 to-teal-700',
+    'from-indigo-500 to-indigo-700',
+    'from-lime-500 to-green-600',
+    'from-purple-500 to-fuchsia-600',
+    'from-rose-500 to-red-600',
 ];
 
 const packageIcons = [
@@ -45,31 +46,8 @@ const packageIcons = [
     'mdi:flash',
 ];
 
-const isFilterActive = computed(() =>
-    !!(search.value || kelas.value || level.value || (bidang.value && !props.userBidangGroup))
-);
-
-function applyFilters() {
-    router.get(route('user.packages.index'), {
-        search: search.value,
-        bidang: props.userBidangGroup ? props.userBidangGroup : bidang.value,
-        kelas: kelas.value,
-        level: level.value,
-        sort: sort.value,
-    }, { preserveState: true, replace: true });
-}
-
-function resetFilters() {
-    search.value = '';
-    bidang.value = props.userBidangGroup ? props.userBidangGroup : '';
-    kelas.value = '';
-    level.value = '';
-    sort.value = 'latest';
-    applyFilters();
-}
-
 function getColorClass(index) {
-    return packageColors[index % packageColors.length];
+    return pekanColors[index % pekanColors.length];
 }
 
 function getIcon(index) {
@@ -84,8 +62,6 @@ function getTotalQuestions(pkg) {
     return pkg.questions ? pkg.questions.length : 0;
 }
 
-const isBidangLocked = computed(() => !!props.userBidangGroup);
-
 const statusMeta = {
     active: { label: 'Sedang Aktif', cls: 'bg-emerald-500/95 text-white', icon: 'mdi:play-circle' },
     upcoming: { label: 'Akan Datang', cls: 'bg-amber-500/95 text-white', icon: 'mdi:clock-outline' },
@@ -95,9 +71,9 @@ const statusMeta = {
 
 <template>
     <UserLayout>
-        <Head title="PR Pekanan - KPM SMART" />
+        <Head title="PR Siswa Kelas Khusus - KPM SMART" />
 
-        <template #header-title>PR Pekanan</template>
+        <template #header-title>PR Siswa Kelas Khusus</template>
         <template #header-sub>Daftar tugas PR pekanan yang wajib dikerjakan sesuai bidang studi dan kelasmu.</template>
         <template #header-actions>
             <span class="ui-card-flat flex items-center gap-2 px-4 py-2.5 text-sm">
@@ -132,80 +108,6 @@ const statusMeta = {
                 <Icon icon="mdi:lock-outline" class="h-3.5 w-3.5" />
                 Terkunci Sesuai Bidang
             </span>
-        </div>
-
-        <!-- Toolbar Filter -->
-        <div class="ui-card anim-fade-in-up anim-delay-1 mb-6 p-4 sm:p-5">
-            <form @submit.prevent="applyFilters" class="space-y-3.5">
-                <div class="flex flex-col gap-3 sm:flex-row">
-                    <div class="relative flex-1">
-                        <Icon icon="mdi:magnify" class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-                        <Input v-model="search" placeholder="Cari judul PR Pekanan atau topik..." class="h-11 rounded-xl pl-10" />
-                    </div>
-                    <div class="flex gap-2">
-                        <button type="submit" class="btn-primary h-11 flex-1 px-6 sm:flex-initial">
-                            <Icon icon="mdi:filter-variant" class="h-4 w-4" />
-                            Terapkan
-                        </button>
-                        <button
-                            type="button"
-                            class="btn-ghost h-11 px-4 lg:hidden"
-                            :class="{ '!bg-primary/10 !text-primary': showFilters }"
-                            @click="showFilters = !showFilters"
-                        >
-                            <Icon icon="mdi:tune-variant" class="h-4 w-4" />
-                            Filter
-                            <span v-if="isFilterActive" class="h-2 w-2 rounded-full bg-primary"></span>
-                        </button>
-                        <button type="button" class="btn-ghost h-11 px-4" @click="resetFilters">Reset</button>
-                    </div>
-                </div>
-
-                <!-- Filter tambahan: terlipat di mobile, tampil di desktop -->
-                <div :class="['flex-col gap-3 border-t border-border/60 pt-3.5 lg:flex lg:flex-row lg:items-center lg:justify-between', showFilters ? 'flex' : 'hidden']">
-                    <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-                        <div class="relative">
-                            <Select
-                                v-model="bidang"
-                                :disabled="isBidangLocked"
-                                class="h-10 w-full rounded-xl text-xs bg-background"
-                                :class="isBidangLocked ? 'cursor-not-allowed opacity-85' : ''"
-                            >
-                                <option v-if="!isBidangLocked" value="">Semua Bidang</option>
-                                <option v-for="b in allBidang" :key="b" :value="b">{{ b }}</option>
-                            </Select>
-                        </div>
-
-                        <Select v-model="level" class="h-10 w-full rounded-xl bg-background text-xs">
-                            <option value="">Semua Level</option>
-                            <option v-for="l in allLevel" :key="l" :value="l">{{ l }}</option>
-                        </Select>
-
-                        <Select v-model="kelas" class="h-10 w-full rounded-xl bg-background text-xs">
-                            <option value="">Semua Kelas</option>
-                            <option v-for="k in allKelas" :key="k" :value="k">{{ k }}</option>
-                        </Select>
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        <span class="flex shrink-0 items-center gap-1 text-xs font-semibold text-muted-foreground">
-                            <Icon icon="mdi:sort-variant" class="h-4 w-4 text-primary" />
-                            Urutkan
-                        </span>
-                        <select
-                            v-model="sort"
-                            @change="applyFilters"
-                            class="h-10 cursor-pointer rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        >
-                            <option value="latest">Terbaru</option>
-                            <option value="oldest">Terlama</option>
-                            <option value="deadline">Batas Waktu Terdekat</option>
-                            <option value="title_asc">Judul (A-Z)</option>
-                            <option value="title_desc">Judul (Z-A)</option>
-                        </select>
-                    </div>
-                </div>
-            </form>
         </div>
 
         <!-- Grid Paket -->
@@ -292,7 +194,7 @@ const statusMeta = {
                             class="btn-primary w-full py-2.5 text-xs"
                         >
                             <Icon icon="mdi:book-open-page-variant" class="h-4 w-4" />
-                            Buka PR Pekanan
+                            Buka PR
                         </Link>
                     </div>
                 </div>
@@ -304,13 +206,13 @@ const statusMeta = {
             <div class="empty-state-icon">
                 <Icon icon="mdi:folder-open-outline" class="h-8 w-8" />
             </div>
-            <h3 class="text-base font-bold text-foreground">Tidak Ada PR Pekanan Ditemukan</h3>
+            <h3 class="text-base font-bold text-foreground">Belum Ada PR Siswa Kelas Khusus</h3>
             <p class="mt-1.5 max-w-sm text-sm text-muted-foreground">
-                {{ userBidangGroup ? `Saat ini belum ada tugas PR ${userBidangGroup} yang cocok dengan pencarianmu.` : 'Coba ubah kata kunci pencarian atau reset filter untuk melihat semua PR yang tersedia.' }}
+                {{ userBidangGroup ? `Saat ini belum ada tugas PR ${userBidangGroup} yang tersedia untukmu. Silakan kembali lagi sesuai jadwal.` : 'Saat ini belum ada tugas PR yang tersedia. Silakan kembali lagi sesuai jadwal.' }}
             </p>
-            <button type="button" class="btn-outline mt-5 px-5 py-2.5 text-xs" @click="resetFilters">
-                Reset Semua Filter
-            </button>
+            <Link :href="route('user.dashboard')" class="btn-outline mt-5 px-5 py-2.5 text-xs">
+                Kembali ke Beranda
+            </Link>
         </div>
 
         <Pagination :links="packages.links" />
