@@ -29,7 +29,7 @@ const props = defineProps({
             </div>
         </template>
         <template #header-sub>
-            Pusat kendali manajemen siswa, paket soal, izin, dan statistik evaluasi pembelajaran
+            Pusat kendali manajemen siswa, paket soal, dan statistik evaluasi pembelajaran
         </template>
 
         <div class="space-y-7">
@@ -88,13 +88,13 @@ const props = defineProps({
                         <p class="text-xs text-muted-foreground">Analisis nilai rata-rata, tingkat kelulusan, dan akurasi kelas.</p>
                     </Link>
 
-                    <Link :href="route('admin.leave-requests.index')"
+                    <Link :href="route('admin.leaderboard')"
                           class="group rounded-2xl border border-border/60 bg-card p-5 shadow-sm hover:shadow-xl hover:border-primary/40 transition-all duration-300 hover:-translate-y-1">
                         <div class="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                            <Icon icon="mdi:calendar-account-outline" class="w-6 h-6" />
+                            <Icon icon="mdi:trophy-outline" class="w-6 h-6" />
                         </div>
-                        <h4 class="font-bold text-sm sm:text-base text-foreground mb-1 group-hover:text-primary transition-colors">Pengajuan Izin</h4>
-                        <p class="text-xs text-muted-foreground">Tinjau dan setujui permohonan izin ketidakhadiran siswa.</p>
+                        <h4 class="font-bold text-sm sm:text-base text-foreground mb-1 group-hover:text-primary transition-colors">Papan Peringkat</h4>
+                        <p class="text-xs text-muted-foreground">Pantau peringkat siswa per bidang studi, Matematika dan IPA terpisah.</p>
                     </Link>
                 </div>
             </div>

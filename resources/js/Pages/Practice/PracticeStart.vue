@@ -571,6 +571,21 @@ onBeforeUnmount(() => {
                                     {{ idx + 1 }}
                                 </button>
                             </div>
+
+                            <!-- Ringkasan & aksi kumpul (mobile) -->
+                            <div class="mt-5 border-t border-border/60 pt-4">
+                                <div class="mb-1.5 flex items-center justify-between text-xs font-semibold">
+                                    <span class="text-muted-foreground">Terjawab {{ answeredCount }} dari {{ questions.length }} soal</span>
+                                    <span class="text-primary">{{ progressPercent }}%</span>
+                                </div>
+                                <div class="progress-track">
+                                    <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
+                                </div>
+                                <button class="btn-primary mt-4 w-full py-3" @click="confirmSubmit">
+                                    <Icon icon="mdi:check-circle-outline" class="h-4 w-4" />
+                                    Selesai &amp; Kumpulkan
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </Transition>

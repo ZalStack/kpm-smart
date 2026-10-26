@@ -124,6 +124,9 @@ Route::middleware(['auth', 'role:admin'])
         // Image Upload for Questions
         Route::post('/packages/{package}/upload-image', [PackageController::class, 'uploadImage'])->name('packages.upload-image');
 
+        // Papan Peringkat (Admin) — peringkat siswa per bidang studi
+        Route::get('/leaderboard', [GamificationController::class, 'adminLeaderboard'])->name('leaderboard');
+
         // Practice Statistics Management
         Route::prefix('practice-statistics')
             ->name('practice-statistics.')

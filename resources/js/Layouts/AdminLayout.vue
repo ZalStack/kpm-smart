@@ -108,6 +108,7 @@ const navItems = [
         items: [
             { href: route('admin.dashboard'), label: 'Dasbor', icon: 'mdi:view-dashboard-outline', activeIcon: 'mdi:view-dashboard', route: 'admin.dashboard' },
             { href: route('admin.packages.index'), label: 'PR Pekanan', icon: 'mdi:book-open-variant', activeIcon: 'mdi:book-open-page-variant', route: 'admin.packages.*' },
+            { href: route('admin.leaderboard'), label: 'Papan Peringkat', icon: 'mdi:trophy-outline', activeIcon: 'mdi:trophy', route: 'admin.leaderboard' },
             { href: route('admin.announcements.index'), label: 'Pengumuman', icon: 'mdi:bullhorn-outline', activeIcon: 'mdi:bullhorn', route: 'admin.announcements.*' },
         ],
     },
@@ -117,7 +118,6 @@ const navItems = [
             { href: route('admin.users.index'), label: 'Manajemen Siswa', icon: 'mdi:account-group-outline', activeIcon: 'mdi:account-group', route: 'admin.users.*' },
             { href: route('admin.users.import-excel'), label: 'Import User', icon: 'mdi:file-excel-outline', activeIcon: 'mdi:file-excel', route: 'admin.users.import-excel' },
             { href: route('admin.practice-statistics.index'), label: 'Statistik Pengerjaan', icon: 'mdi:chart-box-outline', activeIcon: 'mdi:chart-box', route: 'admin.practice-statistics.*' },
-            { href: route('admin.leave-requests.index'), label: 'Pengajuan Izin', icon: 'mdi:calendar-clock-outline', activeIcon: 'mdi:calendar-clock', route: 'admin.leave-requests.*' },
             { href: route('admin.login-logs.index'), label: 'Log Login', icon: 'mdi:shield-key-outline', activeIcon: 'mdi:shield-key', route: 'admin.login-logs.*' },
             { href: route('admin.notifications.index'), label: 'Notifikasi', icon: 'mdi:bell-outline', activeIcon: 'mdi:bell', route: 'admin.notifications.*' },
         ],
@@ -126,8 +126,9 @@ const navItems = [
 
 const mobileNavItems = [
     { href: route('admin.dashboard'), label: 'Beranda', icon: 'mdi:view-dashboard-outline', route: 'admin.dashboard' },
-    { href: route('admin.users.index'), label: 'Manajemen Siswa', icon: 'mdi:account-group-outline', route: 'admin.users.*' },
-    { href: route('admin.packages.index'), label: 'PR Pekanan', icon: 'mdi:book-open-variant', route: 'admin.packages.*' },
+    { href: route('admin.users.index'), label: 'Siswa', icon: 'mdi:account-group-outline', route: 'admin.users.*' },
+    { href: route('admin.packages.index'), label: 'PR', icon: 'mdi:book-open-variant', route: 'admin.packages.*' },
+    { href: route('admin.leaderboard'), label: 'Peringkat', icon: 'mdi:trophy-outline', route: 'admin.leaderboard' },
     { href: route('admin.practice-statistics.index'), label: 'Statistik', icon: 'mdi:chart-box-outline', route: 'admin.practice-statistics.*' },
 ];
 
