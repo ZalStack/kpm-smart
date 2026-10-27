@@ -609,13 +609,9 @@ class AdminUserController extends Controller
                     continue;
                 }
 
-                // Akun guru HANYA boleh ada di Web Induk dan SiGuru. Lewati guru dari web anakan satelit.
-                if (($pu['role'] ?? '') === 'guru') {
-                    continue;
-                }
-
                 $activeEmails[] = $pu['email'];
-                $role = in_array($pu['role'] ?? '', ['super_admin', 'administrator', 'admin']) ? 'admin' : 'user';
+                $isGuru = ($pu['role'] ?? '') === 'guru';
+                $role = in_array($pu['role'] ?? '', ['super_admin', 'administrator', 'admin']) ? 'admin' : ($isGuru ? 'guru' : 'user');
                 $username = $pu['nis'] ?? ($pu['username'] ?? explode('@', $pu['email'])[0]);
                 $avatar = ! empty($pu['foto_profil']) ? $pu['foto_profil'] : "{$parentUrl}/api/foto/".urlencode($pu['email']);
 

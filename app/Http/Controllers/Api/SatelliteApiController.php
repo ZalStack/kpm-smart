@@ -226,7 +226,8 @@ class SatelliteApiController extends Controller
             'is_active' => 'nullable',
         ]);
 
-        $role = in_array($validated['role'] ?? '', ['super_admin', 'administrator', 'admin', 'guru']) ? 'admin' : 'user';
+        $isGuru = ($validated['role'] ?? '') === 'guru';
+        $role = in_array($validated['role'] ?? '', ['super_admin', 'administrator', 'admin']) ? 'admin' : ($isGuru ? 'guru' : 'user');
         $username = $validated['username'] ?? explode('@', $validated['email'])[0];
         $avatar = $validated['foto_profil'] ?? null;
 
@@ -295,7 +296,8 @@ class SatelliteApiController extends Controller
                 if (empty($item['email']) || empty($item['name'])) {
                     continue;
                 }
-                $role = in_array($item['role'] ?? '', ['super_admin', 'administrator', 'admin', 'guru']) ? 'admin' : 'user';
+                $isGuru = ($item['role'] ?? '') === 'guru';
+                $role = in_array($item['role'] ?? '', ['super_admin', 'administrator', 'admin']) ? 'admin' : ($isGuru ? 'guru' : 'user');
                 $username = $item['username'] ?? explode('@', $item['email'])[0];
                 $existing = DB::table('users')->where('email', $item['email'])->first()
                     ?? DB::table('users')->where('username', $username)->first();

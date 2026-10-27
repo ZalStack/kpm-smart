@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\EnsureGuruIsReadOnly;
 use App\Http\Middleware\ApiKeyAuth;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'api.key' => ApiKeyAuth::class,
+            'guru.readonly' => EnsureGuruIsReadOnly::class,
         ]);
 
         // Keamanan: security headers untuk semua respons web.

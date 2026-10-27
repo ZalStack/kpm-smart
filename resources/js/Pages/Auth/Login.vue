@@ -197,12 +197,15 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
                                     <template v-if="s.is_admin">
                                         Administrator Sistem &bull; {{ s.role }}
                                     </template>
+                                    <template v-else-if="s.is_guru">
+                                        Pengajar / Guru &bull; {{ s.bidang || 'Pembina' }}
+                                    </template>
                                     <template v-else>
                                         {{ s.bidang || 'Matematika & IPA' }} &bull; Level {{ s.level || '1' }} &bull; {{ s.kelas || '-' }}
                                     </template>
                                 </div>
                             </div>
-                            <span class="text-xs shrink-0">{{ s.avatar || (s.is_admin ? '🛡️' : '👤') }}</span>
+                            <span class="text-xs shrink-0">{{ s.avatar || (s.is_admin ? '🛡️' : (s.is_guru ? '👨‍🏫' : '👤')) }}</span>
                         </button>
                     </div>
 
@@ -218,7 +221,7 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
 
                 <!-- 2. Auto-Filled Detail Pill (Muncul saat siswa dipilih) -->
                 <div
-                    v-if="selectedStudent && !selectedStudent.is_admin"
+                    v-if="selectedStudent && !selectedStudent.is_admin && !selectedStudent.is_guru"
                     class="rounded-xl border border-border/80 bg-muted/40 p-3 space-y-2 animate-fadeIn"
                 >
                     <!-- 1. SEKOLAH -->

@@ -63,8 +63,8 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
-// Admin Routes (dilindungi autentikasi dan role admin)
-Route::middleware(['auth', 'role:admin'])
+// Admin Routes (dilindungi autentikasi, role admin/guru, dan restriksi read-only untuk guru)
+Route::middleware(['auth', 'role:admin', 'guru.readonly'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {

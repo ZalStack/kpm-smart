@@ -28,9 +28,9 @@ class AuthController extends Controller
                 : redirect()->route('user.dashboard');
         }
 
-        // Tampilkan akun siswa (role: user) dan admin untuk opsi bantuan/autocomplete login (guru DILARANG)
+        // Tampilkan akun siswa, guru, dan admin untuk opsi bantuan/autocomplete login
         $students = User::query()
-            ->whereIn('role', ['user', 'admin'])
+            ->whereIn('role', ['user', 'admin', 'guru'])
             ->where(function ($q) {
                 $q->where('is_active', true)
                     ->orWhereNull('is_active');
@@ -38,7 +38,22 @@ class AuthController extends Controller
             ->orderBy('name')
             ->get()
             ->map(function ($u) {
-                $isAdmin = $u->role === 'admin';
+                $isAdmin = in_array($u->role, ['admin', 'super_admin', 'administrator'], true);
+                $isGuru = $u->role === 'guru';
+
+                $avatar = '👤';
+                if ($isAdmin) {
+                    $avatar = '🛡️';
+                } elseif ($isGuru) {
+                    $avatar = '👨‍🏫';
+                }
+
+                $levelLabel = (string) ($u->level ?: '1');
+                if ($isAdmin) {
+                    $levelLabel = 'Administrator';
+                } elseif ($isGuru) {
+                    $levelLabel = 'Guru / Pembina';
+                }
 
                 return [
                     'id' => $u->id,
@@ -46,12 +61,13 @@ class AuthController extends Controller
                     'email' => $u->email,
                     'username' => $u->username ?: explode('@', $u->email)[0],
                     'is_admin' => $isAdmin,
+                    'is_guru' => $isGuru,
                     'role' => $u->role,
-                    'school' => $isAdmin ? '-' : ($u->school_name ?: 'KPM Academy'),
-                    'bidang' => $isAdmin ? '-' : ($u->bidang ?: 'Matematika & IPA'),
-                    'level' => $isAdmin ? 'Administrator' : (string) ($u->level ?: '1'),
-                    'kelas' => $isAdmin ? '-' : ($u->student_class ?: '-'),
-                    'avatar' => $isAdmin ? '🛡️' : '👤',
+                    'school' => ($isAdmin || $isGuru) ? '-' : ($u->school_name ?: 'KPM Academy'),
+                    'bidang' => $u->bidang ?: ($isGuru ? 'Pengajar' : 'Matematika & IPA'),
+                    'level' => $levelLabel,
+                    'kelas' => ($isAdmin || $isGuru) ? '-' : ($u->student_class ?: '-'),
+                    'avatar' => $avatar,
                 ];
             });
 
