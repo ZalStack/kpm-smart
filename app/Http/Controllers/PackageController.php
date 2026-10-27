@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Package;
+use App\Support\QuestionFormatter;
+use App\Support\SearchHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -35,8 +37,8 @@ class PackageController extends Controller
         if ($isStudent && $isStudentMtk) {
             $query->where(function ($q) {
                 $q->whereIn('bidang', ['MTK', 'MATEMATIKA', 'Matematika'])
-                  ->orWhere('title', 'like', '%Matematika%')
-                  ->orWhere('title', 'like', '%MTK%');
+                    ->orWhere('title', 'like', '%Matematika%')
+                    ->orWhere('title', 'like', '%MTK%');
             })->where(function ($q) {
                 $q->where(function ($sub) {
                     $sub->whereNull('bidang')
@@ -46,17 +48,17 @@ class PackageController extends Controller
         } elseif ($isStudent && $isStudentIpa) {
             $query->where(function ($q) {
                 $q->whereIn('bidang', ['IPA', 'Ipa', 'Sains', 'SAINS'])
-                  ->orWhere('title', 'like', '%IPA%')
-                  ->orWhere('title', 'like', '%Sains%');
+                    ->orWhere('title', 'like', '%IPA%')
+                    ->orWhere('title', 'like', '%Sains%');
             })->where(function ($q) {
                 $q->where(function ($sub) {
                     $sub->whereNull('bidang')
                         ->orWhere(function ($s2) {
                             $s2->where('bidang', 'not like', '%MTK%')
-                               ->where('bidang', 'not like', '%Matematika%');
+                                ->where('bidang', 'not like', '%Matematika%');
                         });
                 })->where('title', 'not like', '%Matematika%')
-                  ->where('title', 'not like', '%MTK%');
+                    ->where('title', 'not like', '%MTK%');
             });
         } elseif (request('bidang')) {
             $query->where('bidang', request('bidang'));
@@ -64,10 +66,10 @@ class PackageController extends Controller
 
         if (request('search')) {
             $search = request('search');
-            $escapedSearch = \App\Support\SearchHelper::escapeLike($search);
+            $escapedSearch = SearchHelper::escapeLike($search);
             $query->where(function ($q) use ($escapedSearch) {
                 $q->where('title', 'like', "%{$escapedSearch}%")
-                  ->orWhere('description', 'like', "%{$escapedSearch}%");
+                    ->orWhere('description', 'like', "%{$escapedSearch}%");
             });
         }
 
@@ -134,10 +136,10 @@ class PackageController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $escapedSearch = \App\Support\SearchHelper::escapeLike($search);
+            $escapedSearch = SearchHelper::escapeLike($search);
             $query->where(function ($q) use ($escapedSearch) {
                 $q->where('title', 'like', "%{$escapedSearch}%")
-                  ->orWhere('description', 'like', "%{$escapedSearch}%");
+                    ->orWhere('description', 'like', "%{$escapedSearch}%");
             });
         }
 
@@ -196,13 +198,23 @@ class PackageController extends Controller
         ]);
     }
 
+    protected function ensureNotGuru(): void
+    {
+        if (auth()->check() && auth()->user()->role === 'guru') {
+            abort(403, 'Akses Terbatas: Role Guru hanya memiliki hak pantau (monitoring) dan tidak dapat membuat, mengubah, atau menghapus paket PR.');
+        }
+    }
+
     public function create()
     {
+        $this->ensureNotGuru();
+
         return Inertia::render('Admin/Packages/PackageCreate');
     }
 
     public function store(Request $request)
     {
+        $this->ensureNotGuru();
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -257,11 +269,15 @@ class PackageController extends Controller
 
     public function edit(Package $package)
     {
+        $this->ensureNotGuru();
+
         return redirect()->route('admin.packages.edit.informasi', $package);
     }
 
     public function editInformasi(Package $package)
     {
+        $this->ensureNotGuru();
+
         return Inertia::render('Admin/Packages/PackageEditInfo', [
             'package' => $package,
         ]);
@@ -269,6 +285,7 @@ class PackageController extends Controller
 
     public function editCards(Package $package)
     {
+        $this->ensureNotGuru();
         $allQuestions = array_values($package->questions ?? []);
         $questionsByCard = collect($allQuestions)->groupBy('card_id');
 
@@ -280,6 +297,7 @@ class PackageController extends Controller
 
     public function editQuestions(Package $package)
     {
+        $this->ensureNotGuru();
         $allQuestions = array_values($package->questions ?? []);
         $questionsByCard = collect($allQuestions)->groupBy('card_id');
         $totalCards = count($package->cards ?? []);
@@ -299,6 +317,7 @@ class PackageController extends Controller
 
     public function update(Request $request, Package $package)
     {
+        $this->ensureNotGuru();
         $input = $request->all();
         foreach (['kelas', 'bidang', 'level', 'start_date', 'end_date', 'start_time', 'end_time'] as $field) {
             if (isset($input[$field]) && trim((string) $input[$field]) === '') {
@@ -333,7 +352,7 @@ class PackageController extends Controller
 
         if ($request->hasFile('thumbnail')) {
             if ($package->thumbnail) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($package->thumbnail);
+                Storage::disk('public')->delete($package->thumbnail);
             }
             $path = $request->file('thumbnail')->store('thumbnails', 'public');
             $package->update(['thumbnail' => $path]);
@@ -350,6 +369,7 @@ class PackageController extends Controller
      */
     public function ajaxToggleSetting(Request $request, Package $package)
     {
+        $this->ensureNotGuru();
         $validator = Validator::make($request->all(), [
             'field' => 'required|in:show_answer_key,show_explanation,show_score,is_active',
         ]);
@@ -359,7 +379,7 @@ class PackageController extends Controller
         }
 
         $field = $request->field;
-        $newValue = !$package->{$field};
+        $newValue = ! $package->{$field};
         $package->update([$field => $newValue]);
 
         return response()->json([
@@ -375,11 +395,12 @@ class PackageController extends Controller
      */
     public function ajaxUpdateSchedule(Request $request, Package $package)
     {
+        $this->ensureNotGuru();
         $validator = Validator::make($request->all(), [
             'start_date' => 'nullable|date',
-            'end_date'   => 'nullable|date|after_or_equal:start_date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
             'start_time' => 'nullable|date_format:H:i',
-            'end_time'   => 'nullable|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i',
         ], [
             'end_date.after_or_equal' => 'Tanggal berakhir harus sama atau setelah tanggal mulai.',
         ]);
@@ -389,12 +410,20 @@ class PackageController extends Controller
         }
 
         $data = [];
-        if ($request->has('start_date')) $data['start_date'] = $request->start_date ?: null;
-        if ($request->has('end_date')) $data['end_date'] = $request->end_date ?: null;
-        if ($request->has('start_time')) $data['start_time'] = $request->start_time ?: null;
-        if ($request->has('end_time')) $data['end_time'] = $request->end_time ?: null;
+        if ($request->has('start_date')) {
+            $data['start_date'] = $request->start_date ?: null;
+        }
+        if ($request->has('end_date')) {
+            $data['end_date'] = $request->end_date ?: null;
+        }
+        if ($request->has('start_time')) {
+            $data['start_time'] = $request->start_time ?: null;
+        }
+        if ($request->has('end_time')) {
+            $data['end_time'] = $request->end_time ?: null;
+        }
 
-        if (!empty($data)) {
+        if (! empty($data)) {
             $package->update($data);
         }
 
@@ -402,10 +431,10 @@ class PackageController extends Controller
         $package->refresh();
 
         return response()->json([
-            'success'         => true,
+            'success' => true,
             'schedule_status' => $package->schedule_status,
-            'schedule_label'  => $package->schedule_label,
-            'message'         => 'Jadwal berhasil diperbarui.',
+            'schedule_label' => $package->schedule_label,
+            'message' => 'Jadwal berhasil diperbarui.',
         ]);
     }
 
@@ -414,6 +443,7 @@ class PackageController extends Controller
      */
     public function uploadImage(Request $request, Package $package)
     {
+        $this->ensureNotGuru();
         $validator = Validator::make($request->all(), [
             'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:3072',
         ]);
@@ -422,7 +452,7 @@ class PackageController extends Controller
             return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
         }
 
-        $path = $request->file('image')->store('question_images/' . $package->id, 'public');
+        $path = $request->file('image')->store('question_images/'.$package->id, 'public');
 
         return response()->json([
             'success' => true,
@@ -437,13 +467,15 @@ class PackageController extends Controller
 
     public function destroy(Package $package)
     {
+        $this->ensureNotGuru();
         $package->delete();
+
         return redirect()->route('admin.packages.index')->with('success', 'Paket berhasil dihapus!');
     }
 
     public function show(Package $package)
     {
-        if (!$package->is_active) {
+        if (! $package->is_active) {
             return redirect()->route('user.packages.index')->with('error', 'Paket tidak tersedia!');
         }
 
@@ -487,6 +519,7 @@ class PackageController extends Controller
 
     public function addCard(Request $request, Package $package)
     {
+        $this->ensureNotGuru();
         $validator = Validator::make($request->all(), [
             'card_title' => 'required|string|max:255',
             'card_description' => 'required|string',
@@ -511,6 +544,7 @@ class PackageController extends Controller
 
     public function removeCard(Package $package, $cardId)
     {
+        $this->ensureNotGuru();
         $cards = $package->cards ?? [];
         $cards = array_filter($cards, function ($card) use ($cardId) {
             return $card['id'] !== $cardId;
@@ -533,7 +567,9 @@ class PackageController extends Controller
 
     public function createQuestion(Package $package)
     {
+        $this->ensureNotGuru();
         $cards = array_values($package->cards ?? []);
+
         return Inertia::render('Admin/Packages/QuestionForm', [
             'package' => $package,
             'cards' => $cards,
@@ -542,6 +578,7 @@ class PackageController extends Controller
 
     public function editQuestion(Package $package, $questionId)
     {
+        $this->ensureNotGuru();
         $cards = array_values($package->cards ?? []);
         $questions = $package->questions ?? [];
         $question = null;
@@ -553,12 +590,12 @@ class PackageController extends Controller
             }
         }
 
-        if (!$question) {
+        if (! $question) {
             return redirect()->route('admin.packages.edit.questions', $package)->with('error', 'Soal tidak ditemukan!');
         }
 
         $existingImages = [];
-        $imageDir = 'question_images/' . $package->id;
+        $imageDir = 'question_images/'.$package->id;
         if (Storage::disk('public')->exists($imageDir)) {
             $files = Storage::disk('public')->allFiles($imageDir);
             foreach ($files as $file) {
@@ -582,6 +619,7 @@ class PackageController extends Controller
 
     public function addQuestion(Request $request, Package $package)
     {
+        $this->ensureNotGuru();
         $validator = Validator::make($request->all(), [
             'question' => 'required|string',
             'type' => 'nullable|string|in:pilihan_ganda,isian_singkat',
@@ -598,14 +636,14 @@ class PackageController extends Controller
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('question_images/' . $package->id, 'public');
+            $imagePath = $request->file('image')->store('question_images/'.$package->id, 'public');
         }
 
         $questionType = $request->type ?: 'pilihan_ganda';
 
         // Format pertanyaan dan pembahasan agar konsisten dengan import PDF
-        $formattedQuestion = \App\Support\QuestionFormatter::formatImportedText($request->question);
-        $formattedExplanation = \App\Support\QuestionFormatter::formatImportedText($request->explanation ?? '');
+        $formattedQuestion = QuestionFormatter::formatImportedText($request->question);
+        $formattedExplanation = QuestionFormatter::formatImportedText($request->explanation ?? '');
 
         $questions = $package->questions ?? [];
         $questions[] = [
@@ -627,6 +665,7 @@ class PackageController extends Controller
 
     public function updateQuestion(Request $request, Package $package, $questionId)
     {
+        $this->ensureNotGuru();
         $validator = Validator::make($request->all(), [
             'card_id' => 'required|string',
             'question' => 'required|string',
@@ -661,14 +700,14 @@ class PackageController extends Controller
                 if ($imagePath) {
                     Storage::disk('public')->delete($imagePath);
                 }
-                $imagePath = $request->file('image')->store('question_images/' . $package->id, 'public');
+                $imagePath = $request->file('image')->store('question_images/'.$package->id, 'public');
             }
 
             $questionType = $request->type ?: 'pilihan_ganda';
 
             // Format pertanyaan dan pembahasan
-            $formattedQuestion = \App\Support\QuestionFormatter::formatImportedText($request->question);
-            $formattedExplanation = \App\Support\QuestionFormatter::formatImportedText($request->explanation ?? '');
+            $formattedQuestion = QuestionFormatter::formatImportedText($request->question);
+            $formattedExplanation = QuestionFormatter::formatImportedText($request->explanation ?? '');
 
             $questions[$i]['card_id'] = $request->card_id;
             $questions[$i]['question'] = $formattedQuestion;
@@ -682,7 +721,7 @@ class PackageController extends Controller
             break;
         }
 
-        if (!$updated) {
+        if (! $updated) {
             return back()->with('error', 'Soal tidak ditemukan!');
         }
 
@@ -693,10 +732,11 @@ class PackageController extends Controller
 
     public function removeQuestion(Package $package, $questionId)
     {
+        $this->ensureNotGuru();
         $questions = $package->questions ?? [];
 
         foreach ($questions as $question) {
-            if (($question['id'] ?? null) === $questionId && !empty($question['image'])) {
+            if (($question['id'] ?? null) === $questionId && ! empty($question['image'])) {
                 Storage::disk('public')->delete($question['image']);
             }
         }
@@ -714,7 +754,9 @@ class PackageController extends Controller
 
     public function showImportForm(Package $package)
     {
+        $this->ensureNotGuru();
         $cards = array_values($package->cards ?? []);
+
         return Inertia::render('Admin/Packages/ImportPdf', [
             'package' => $package,
             'cards' => $cards,
@@ -723,6 +765,7 @@ class PackageController extends Controller
 
     public function importPdf(Request $request, Package $package)
     {
+        $this->ensureNotGuru();
         $validator = Validator::make($request->all(), [
             'card_id' => 'required|string',
             'pdf_file' => 'required|file|mimes:pdf|max:2048',
@@ -740,7 +783,7 @@ class PackageController extends Controller
         }
 
         try {
-            $parser = new Parser();
+            $parser = new Parser;
             $pdfPath = $request->file('pdf_file')->getPathname();
             $pdf = $parser->parseFile($pdfPath);
             $text = $pdf->getText();
@@ -788,7 +831,7 @@ class PackageController extends Controller
                 if (isset($autoImageMap[$qNum])) {
                     continue; // Sudah dapat gambar dari embedded extraction
                 }
-                $hasImageTag = !empty($q['image_filename']);
+                $hasImageTag = ! empty($q['image_filename']);
                 $mentionsImage = (bool) preg_match(
                     '/\b(gambar|figure|diagram|grafik|graph|ilustrasi|terlihat pada|ditunjukkan pada|tampak pada)\b/i',
                     $q['question']
@@ -797,7 +840,7 @@ class PackageController extends Controller
                     $questionsNeedingImages[] = $qNum;
                 }
             }
-            if (!empty($questionsNeedingImages)) {
+            if (! empty($questionsNeedingImages)) {
                 $rawPageImages = $this->renderPdfPagesAsImages($pdfPath, $package->id, $questionPageMap);
                 $pageImages = [];
                 foreach ($rawPageImages as $pi) {
@@ -830,7 +873,7 @@ class PackageController extends Controller
                 }
 
                 $imagePath = null;
-                if (!empty($question['image_filename'])) {
+                if (! empty($question['image_filename'])) {
                     $key = mb_strtolower(trim($question['image_filename']));
                     if (isset($imageMap[$key])) {
                         $imagePath = $imageMap[$key];
@@ -859,7 +902,7 @@ class PackageController extends Controller
                     if (preg_match_all('/\[GAMBAR\s*:\s*([^\]]+)\]/i', $rawQuestion, $imgMatches)) {
                         foreach ($imgMatches[1] as $imgFilename) {
                             $key = mb_strtolower(trim($imgFilename));
-                            if (!isset($perQuestionImageMap[$key])) {
+                            if (! isset($perQuestionImageMap[$key])) {
                                 $perQuestionImageMap[$key] = $imagePath;
                             }
                         }
@@ -869,7 +912,7 @@ class PackageController extends Controller
                         if (preg_match_all('/\[GAMBAR\s*:\s*([^\]]+)\]/i', $opt, $imgMatches)) {
                             foreach ($imgMatches[1] as $imgFilename) {
                                 $key = mb_strtolower(trim($imgFilename));
-                                if (!isset($perQuestionImageMap[$key])) {
+                                if (! isset($perQuestionImageMap[$key])) {
                                     $perQuestionImageMap[$key] = $imagePath;
                                 }
                             }
@@ -885,20 +928,20 @@ class PackageController extends Controller
                     $rawQuestion = trim($rawQuestion);
                 }
 
-                $formattedQuestion = \App\Support\QuestionFormatter::formatImportedText(
+                $formattedQuestion = QuestionFormatter::formatImportedText(
                     $rawQuestion,
                     $perQuestionImageMap
                 );
 
                 // Format pembahasan juga
-                $formattedExplanation = \App\Support\QuestionFormatter::formatImportedText(
+                $formattedExplanation = QuestionFormatter::formatImportedText(
                     $rawExplanation,
                     $perQuestionImageMap
                 );
 
                 // Format opsi juga (opsi bisa berisi tabel atau gambar)
                 $formattedOptions = array_map(function ($opt) use ($perQuestionImageMap) {
-                    return \App\Support\QuestionFormatter::formatImportedText($opt, $perQuestionImageMap);
+                    return QuestionFormatter::formatImportedText($opt, $perQuestionImageMap);
                 }, $rawOptions);
 
                 $newQuestions[] = [
@@ -916,32 +959,33 @@ class PackageController extends Controller
             }
 
             $package->update([
-                'questions' => array_merge($existingQuestions, $newQuestions)
+                'questions' => array_merge($existingQuestions, $newQuestions),
             ]);
 
-            $message = 'Berhasil mengimport ' . count($newQuestions) . ' soal dari PDF!';
+            $message = 'Berhasil mengimport '.count($newQuestions).' soal dari PDF!';
 
             if ($autoAttachedCount > 0) {
-                $message .= ' ' . $autoAttachedCount . ' gambar otomatis terdeteksi & terpasang.';
+                $message .= ' '.$autoAttachedCount.' gambar otomatis terdeteksi & terpasang.';
             }
 
             if ($skippedNoAnswer > 0) {
-                $message .= ' ' . $skippedNoAnswer . ' soal belum punya jawaban benar (tidak ditemukan di PDF kunci jawaban) — cek & lengkapi manual di daftar soal.';
+                $message .= ' '.$skippedNoAnswer.' soal belum punya jawaban benar (tidak ditemukan di PDF kunci jawaban) — cek & lengkapi manual di daftar soal.';
             }
 
-            if (!empty($missingImages)) {
-                $message .= ' Gambar tidak ditemukan di ZIP untuk: ' . implode(', ', array_unique($missingImages)) . '.';
+            if (! empty($missingImages)) {
+                $message .= ' Gambar tidak ditemukan di ZIP untuk: '.implode(', ', array_unique($missingImages)).'.';
             }
 
             return redirect()->route('admin.packages.edit.questions', $package)->with('success', $message);
 
         } catch (\Exception $e) {
-            \Log::error('Import PDF error: ' . $e->getMessage(), [
+            \Log::error('Import PDF error: '.$e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            return back()->with('error', 'Gagal mengimport PDF: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal mengimport PDF: '.$e->getMessage());
         }
     }
 
@@ -952,14 +996,14 @@ class PackageController extends Controller
         $map = [];
         $allowedExt = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
 
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         $opened = $zip->open($zipFile->getPathname());
 
         if ($opened !== true) {
             return $map;
         }
 
-        $targetDir = 'question_images/' . $packageId;
+        $targetDir = 'question_images/'.$packageId;
         Storage::disk('public')->makeDirectory($targetDir);
 
         for ($i = 0; $i < $zip->numFiles; $i++) {
@@ -972,7 +1016,7 @@ class PackageController extends Controller
             $baseName = basename($entryName);
             $ext = strtolower(pathinfo($baseName, PATHINFO_EXTENSION));
 
-            if (!in_array($ext, $allowedExt, true)) {
+            if (! in_array($ext, $allowedExt, true)) {
                 continue;
             }
 
@@ -981,8 +1025,8 @@ class PackageController extends Controller
                 continue;
             }
 
-            $safeName = Str::uuid() . '.' . $ext;
-            $storedPath = $targetDir . '/' . $safeName;
+            $safeName = Str::uuid().'.'.$ext;
+            $storedPath = $targetDir.'/'.$safeName;
             Storage::disk('public')->put($storedPath, $contents);
 
             $map[mb_strtolower($baseName)] = $storedPath;
@@ -996,15 +1040,15 @@ class PackageController extends Controller
     private function ocrPdfText($pdfPath)
     {
         $tesseractPath = trim((string) exec('which tesseract'));
-        if ($tesseractPath === '' || !function_exists('shell_exec')) {
+        if ($tesseractPath === '' || ! function_exists('shell_exec')) {
             return '';
         }
 
-        $tmpDir = sys_get_temp_dir() . '/kpm_ocr_' . Str::random(8);
+        $tmpDir = sys_get_temp_dir().'/kpm_ocr_'.Str::random(8);
         @mkdir($tmpDir, 0755, true);
 
         $gsPath = trim((string) exec('which gs'));
-        if ($gsPath === '' || !file_exists($gsPath)) {
+        if ($gsPath === '' || ! file_exists($gsPath)) {
             return '';
         }
 
@@ -1017,14 +1061,14 @@ class PackageController extends Controller
 
         $allText = [];
 
-        $pages = glob($tmpDir . '/*.png');
+        $pages = glob($tmpDir.'/*.png');
         sort($pages);
 
         foreach ($pages as $pageImage) {
             try {
                 $ocr = new TesseractOCR($pageImage);
                 $pageText = $ocr->run();
-                if (!empty(trim($pageText))) {
+                if (! empty(trim($pageText))) {
                     $allText[] = $pageText;
                 }
             } catch (\Exception $e) {
@@ -1043,10 +1087,10 @@ class PackageController extends Controller
     private function extractEmbeddedImagesFromPdf($pdfPath, $packageId)
     {
         $images = [];
-        $targetDir = 'question_images/' . $packageId . '/auto';
+        $targetDir = 'question_images/'.$packageId.'/auto';
         Storage::disk('public')->makeDirectory($targetDir);
 
-        $parser = new Parser();
+        $parser = new Parser;
         $pdf = $parser->parseFile($pdfPath);
         $pages = $pdf->getPages();
 
@@ -1061,12 +1105,12 @@ class PackageController extends Controller
                 continue;
             }
 
-            if (!isset($seenHashesPerPage[$pageIndex])) {
+            if (! isset($seenHashesPerPage[$pageIndex])) {
                 $seenHashesPerPage[$pageIndex] = [];
             }
 
             foreach ($xobjects as $xobject) {
-                if (!$this->isImageXObject($xobject)) {
+                if (! $this->isImageXObject($xobject)) {
                     continue;
                 }
 
@@ -1088,8 +1132,8 @@ class PackageController extends Controller
                 }
                 $seenHashesPerPage[$pageIndex][] = $contentHash;
 
-                $filename = 'auto_' . Str::uuid() . '.' . $imageData['ext'];
-                $storedPath = $targetDir . '/' . $filename;
+                $filename = 'auto_'.Str::uuid().'.'.$imageData['ext'];
+                $storedPath = $targetDir.'/'.$filename;
                 Storage::disk('public')->put($storedPath, $imageData['content']);
 
                 $images[] = [
@@ -1107,11 +1151,11 @@ class PackageController extends Controller
     private function renderPdfPagesAsImages($pdfPath, $packageId, array $questionPageMap)
     {
         $images = [];
-        $targetDir = 'question_images/' . $packageId . '/pages';
+        $targetDir = 'question_images/'.$packageId.'/pages';
         Storage::disk('public')->makeDirectory($targetDir);
 
         $gsPath = trim((string) exec('which gs'));
-        if ($gsPath === '' || !file_exists($gsPath)) {
+        if ($gsPath === '' || ! file_exists($gsPath)) {
             return $images;
         }
 
@@ -1124,7 +1168,7 @@ class PackageController extends Controller
 
         foreach ($pageNumbers as $pageIndex) {
             $pageNum = $pageIndex + 1;
-            $outputFile = $targetDir . '/page_' . $pageNum . '_' . Str::uuid() . '.jpg';
+            $outputFile = $targetDir.'/page_'.$pageNum.'_'.Str::uuid().'.jpg';
             $fullPath = Storage::disk('public')->path($outputFile);
 
             $cmd = sprintf(
@@ -1152,7 +1196,7 @@ class PackageController extends Controller
 
     private function isImageXObject($xobject)
     {
-        if (!method_exists($xobject, 'getDetails')) {
+        if (! method_exists($xobject, 'getDetails')) {
             return false;
         }
 
@@ -1260,13 +1304,14 @@ class PackageController extends Controller
         }
 
         $image = imagecreatetruecolor($width, $height);
-        if (!$image) {
+        if (! $image) {
             return null;
         }
 
         $expectedSize = $width * $height * $channels;
         if (strlen($data) < $expectedSize) {
             imagedestroy($image);
+
             return null;
         }
 
@@ -1296,6 +1341,7 @@ class PackageController extends Controller
             }
         } else {
             imagedestroy($image);
+
             return null;
         }
 
@@ -1316,7 +1362,7 @@ class PackageController extends Controller
         }
 
         try {
-            $parser = new Parser();
+            $parser = new Parser;
             $pdf = $parser->parseFile($pdfPath);
             $pages = $pdf->getPages();
 
@@ -1330,7 +1376,7 @@ class PackageController extends Controller
                 $numbersFound = array_map('intval', $matches[1] ?? []);
 
                 foreach ($questionNumbers as $qNum) {
-                    if (in_array($qNum, $numbersFound) && !isset($map[$qNum])) {
+                    if (in_array($qNum, $numbersFound) && ! isset($map[$qNum])) {
                         $map[$qNum] = $pageIndex;
                     }
                 }
@@ -1373,7 +1419,7 @@ class PackageController extends Controller
         $imagesByPage = [];
         foreach ($embeddedImages as $idx => $img) {
             $page = $img['page'];
-            if (!isset($imagesByPage[$page])) {
+            if (! isset($imagesByPage[$page])) {
                 $imagesByPage[$page] = [];
             }
             $imagesByPage[$page][] = $img;
@@ -1383,11 +1429,11 @@ class PackageController extends Controller
         $questionsByPage = [];
         foreach ($questions as $question) {
             $qNum = $question['number'];
-            if (!isset($questionPageMap[$qNum])) {
+            if (! isset($questionPageMap[$qNum])) {
                 continue;
             }
             $page = $questionPageMap[$qNum];
-            if (!isset($questionsByPage[$page])) {
+            if (! isset($questionsByPage[$page])) {
                 $questionsByPage[$page] = [];
             }
             $questionsByPage[$page][] = $question;
@@ -1398,7 +1444,7 @@ class PackageController extends Controller
         // assign gambar ke soal yang punya [GAMBAR:] tag atau yang menyebut "gambar/figure/diagram"
         // Jika tidak bisa match spesifik, assign berurutan ke soal terakhir di halaman
         foreach ($imagesByPage as $page => $pageImgs) {
-            if (!isset($questionsByPage[$page])) {
+            if (! isset($questionsByPage[$page])) {
                 continue;
             }
 
@@ -1410,7 +1456,7 @@ class PackageController extends Controller
 
             foreach ($pageQuestions as $q) {
                 $qNum = $q['number'];
-                $hasImageTag = !empty($q['image_filename']);
+                $hasImageTag = ! empty($q['image_filename']);
                 $mentionsImage = (bool) preg_match(
                     '/\b(gambar|figure|diagram|grafik|graph|ilustrasi|terlihat pada|ditunjukkan pada|tampak pada)\b/i',
                     $q['question']
@@ -1430,7 +1476,7 @@ class PackageController extends Controller
                     break;
                 }
                 $img = $pageImgs[$imgIndex];
-                if (!in_array($img['path'], $usedImages)) {
+                if (! in_array($img['path'], $usedImages)) {
                     $result[$qNum] = $img['path'];
                     $usedImages[] = $img['path'];
                     $imgIndex++;
@@ -1446,12 +1492,12 @@ class PackageController extends Controller
         // cari sisa gambar yang belum terpakai dari halaman manapun
         $remainingImages = [];
         foreach ($embeddedImages as $img) {
-            if (!in_array($img['path'], $usedImages)) {
+            if (! in_array($img['path'], $usedImages)) {
                 $remainingImages[] = $img;
             }
         }
 
-        if (!empty($remainingImages)) {
+        if (! empty($remainingImages)) {
             foreach ($questions as $question) {
                 $qNum = $question['number'];
                 if (isset($result[$qNum])) {
@@ -1462,7 +1508,7 @@ class PackageController extends Controller
                 }
                 // Soal ini punya [GAMBAR:] tag tapi belum dapat gambar
                 // Ambil gambar tersisa yang terdekat (urutan pertama)
-                if (!empty($remainingImages)) {
+                if (! empty($remainingImages)) {
                     $img = array_shift($remainingImages);
                     $result[$qNum] = $img['path'];
                     $usedImages[] = $img['path'];
@@ -1491,6 +1537,7 @@ class PackageController extends Controller
             if ($index >= 0 && isset($options[$index])) {
                 return $options[$index];
             }
+
             return strtoupper($rawAnswer);
         }
 
@@ -1554,6 +1601,7 @@ class PackageController extends Controller
                 if ($phase === 'options' && $foundAnyOption) {
                     $phase = 'post_options';
                 }
+
                 continue;
             }
 
@@ -1561,7 +1609,7 @@ class PackageController extends Controller
             $trimmedLower = mb_strtolower($trimmed);
             $isSection = false;
             foreach ($sectionHeaders as $header) {
-                if ($trimmedLower === $header || preg_match('/^' . preg_quote($header, '/') . '\s*[:\-]?\s*$/i', $trimmedLower)) {
+                if ($trimmedLower === $header || preg_match('/^'.preg_quote($header, '/').'\s*[:\-]?\s*$/i', $trimmedLower)) {
                     $isSection = true;
                     break;
                 }
@@ -1571,6 +1619,7 @@ class PackageController extends Controller
                 if ($phase === 'answer') {
                     $phase = 'post_answer';
                 }
+
                 continue;
             }
 
@@ -1586,9 +1635,10 @@ class PackageController extends Controller
                         $currentImageFilename = $lineImageFilename;
                         // Sertakan tag GAMBAR di question text agar bisa dikonversi nanti
                         if ($phase !== 'explanation' && $phase !== 'options') {
-                            $currentQuestion .= "\n" . "[GAMBAR:{$lineImageFilename}]";
+                            $currentQuestion .= "\n"."[GAMBAR:{$lineImageFilename}]";
                         }
                     }
+
                     continue;
                 }
             }
@@ -1605,7 +1655,7 @@ class PackageController extends Controller
             $newNumber = null;
             $matchSeparator = null;
 
-            if (!$isTableRow && preg_match('/^(\d{1,4})([.\)])\s+(?=\S)/', $trimmed, $matches)) {
+            if (! $isTableRow && preg_match('/^(\d{1,4})([.\)])\s+(?=\S)/', $trimmed, $matches)) {
                 $newNumber = (int) $matches[1];
                 $matchSeparator = $matches[2];
 
@@ -1644,7 +1694,7 @@ class PackageController extends Controller
 
                 // Jika ada tag GAMBAR di baris soal, simpan juga
                 if ($lineImageFilename !== null) {
-                    $questionText .= "\n" . "[GAMBAR:{$lineImageFilename}]";
+                    $questionText .= "\n"."[GAMBAR:{$lineImageFilename}]";
                     $currentImageFilename = $lineImageFilename;
                 } else {
                     $currentImageFilename = null;
@@ -1656,21 +1706,23 @@ class PackageController extends Controller
                 $currentExplanations = [];
                 $phase = 'question';
                 $foundAnyOption = false;
+
                 continue;
             }
 
             // Sub-item (misal "1) Biogas"): append ke teks pertanyaan aktif
             if ($isSubItem && $currentQuestion !== null) {
                 if ($phase === 'question' || $phase === null) {
-                    $currentQuestion .= "\n" . $trimmed;
+                    $currentQuestion .= "\n".$trimmed;
                 } elseif ($phase === 'explanation') {
                     $currentExplanations[] = $trimmed;
                 } else {
-                    $currentQuestion .= "\n" . $trimmed;
+                    $currentQuestion .= "\n".$trimmed;
                 }
                 if ($lineImageFilename !== null) {
                     $currentImageFilename = $lineImageFilename;
                 }
+
                 continue;
             }
 
@@ -1680,7 +1732,7 @@ class PackageController extends Controller
             }
 
             // Deteksi jawaban (Jawaban: / Kunci: / Solusi:)
-            if (!$isTableRow && preg_match('/^(jawaban|kunci\s*jawaban|kunci|solusi)\s*[:\-]?\s*(.+)/i', $trimmed, $matches)) {
+            if (! $isTableRow && preg_match('/^(jawaban|kunci\s*jawaban|kunci|solusi)\s*[:\-]?\s*(.+)/i', $trimmed, $matches)) {
                 $answerValue = trim($matches[2]);
                 $answerValue = preg_replace('/^pilihan\s*/i', '', $answerValue);
                 $answerValue = trim($answerValue);
@@ -1696,24 +1748,26 @@ class PackageController extends Controller
                 if ($lineImageFilename !== null) {
                     $currentImageFilename = $lineImageFilename;
                 }
+
                 continue;
             }
 
             // Deteksi pembahasan
-            if (!$isTableRow && stripos($trimmed, 'pembahasan') === 0) {
+            if (! $isTableRow && stripos($trimmed, 'pembahasan') === 0) {
                 $pembahasanText = preg_replace('/^pembahasan\s*[:\-]?\s*/i', '', $trimmed);
-                if (!empty($pembahasanText)) {
+                if (! empty($pembahasanText)) {
                     $currentExplanations[] = $pembahasanText;
                 }
                 if ($lineImageFilename !== null) {
                     $currentImageFilename = $lineImageFilename;
                 }
                 $phase = 'explanation';
+
                 continue;
             }
 
             // Deteksi opsi (hanya A-E + titik/kurung, standar pilihan ganda Indonesia)
-            if (!$isTableRow && $phase !== 'explanation' && $phase !== 'answer' && $phase !== 'post_answer'
+            if (! $isTableRow && $phase !== 'explanation' && $phase !== 'answer' && $phase !== 'post_answer'
                 && preg_match('/^([A-Ea-e])[.\)]\s*(.+)/', $trimmed, $matches)) {
                 $optionText = trim($matches[2]);
                 if ($optionText === '') {
@@ -1726,31 +1780,33 @@ class PackageController extends Controller
                 $currentOptions[] = $optionText;
                 $phase = 'options';
                 $foundAnyOption = true;
+
                 continue;
             }
 
             // Baris tabel atau teks lanjutan
             if ($isTableRow) {
                 $tableLine = $trimmed;
-                if ($isTabSeparated && !$isPipeTable) {
+                if ($isTabSeparated && ! $isPipeTable) {
                     $cells = array_map('trim', explode("\t", $trimmed));
-                    $tableLine = '| ' . implode(' | ', $cells) . ' |';
+                    $tableLine = '| '.implode(' | ', $cells).' |';
                 }
 
                 // Tabel bisa jadi bagian dari pertanyaan, pembahasan, atau opsi
                 if ($phase === 'explanation') {
                     $currentExplanations[] = $tableLine;
-                } elseif ($phase === 'options' && !empty($currentOptions)) {
+                } elseif ($phase === 'options' && ! empty($currentOptions)) {
                     // Tabel setelah opsi: append ke opsi terakhir
                     $lastIndex = count($currentOptions) - 1;
-                    $currentOptions[$lastIndex] .= "\n" . $tableLine;
+                    $currentOptions[$lastIndex] .= "\n".$tableLine;
                 } else {
                     // Tabel bagian dari pertanyaan
-                    $currentQuestion .= "\n" . $tableLine;
+                    $currentQuestion .= "\n".$tableLine;
                 }
                 if ($lineImageFilename !== null) {
                     $currentImageFilename = $lineImageFilename;
                 }
+
                 continue;
             }
 
@@ -1761,16 +1817,16 @@ class PackageController extends Controller
                 } else {
                     $lastIndex = count($currentExplanations) - 1;
                     $separator = preg_match('/\|\s*$/', $currentExplanations[$lastIndex]) ? "\n" : ' ';
-                    $currentExplanations[$lastIndex] .= $separator . $trimmed;
+                    $currentExplanations[$lastIndex] .= $separator.$trimmed;
                 }
-            } elseif ($phase === 'options' && !empty($currentOptions)) {
+            } elseif ($phase === 'options' && ! empty($currentOptions)) {
                 // Teks lanjutan setelah opsi: append ke opsi terakhir
                 $lastIndex = count($currentOptions) - 1;
                 $separator = preg_match('/\|\s*$/', $currentOptions[$lastIndex]) ? "\n" : ' ';
-                $currentOptions[$lastIndex] .= $separator . $trimmed;
+                $currentOptions[$lastIndex] .= $separator.$trimmed;
             } elseif ($phase === 'answer') {
                 // Teks lanjutan setelah jawaban (hanya untuk jawaban panjang/isian)
-                $currentAnswer .= ' ' . $trimmed;
+                $currentAnswer .= ' '.$trimmed;
             } elseif ($phase === 'post_answer') {
                 // Setelah jawaban huruf tunggal selesai, teks ini bukan bagian jawaban
                 // Bisa jadi teks pertanyaan selanjutnya yang belum ke-flush, skip saja
@@ -1778,7 +1834,7 @@ class PackageController extends Controller
             } else {
                 // Teks lanjutan pertanyaan
                 $separator = preg_match('/\|\s*$/', $currentQuestion) ? "\n" : ' ';
-                $currentQuestion .= $separator . $trimmed;
+                $currentQuestion .= $separator.$trimmed;
             }
 
             if ($lineImageFilename !== null) {
@@ -1806,8 +1862,7 @@ class PackageController extends Controller
                 } else {
                     $answerKey[$number] = $answer;
                 }
-            }
-            elseif (preg_match('/^(\d{1,4})\s*[=:]\s*(.+)/', $line, $matches)) {
+            } elseif (preg_match('/^(\d{1,4})\s*[=:]\s*(.+)/', $line, $matches)) {
                 $number = (int) $matches[1];
                 $answer = trim($matches[2]);
                 if (preg_match('/^[A-Za-z]$/', $answer)) {

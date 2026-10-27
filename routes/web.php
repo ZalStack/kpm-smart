@@ -19,7 +19,7 @@ use Inertia\Inertia;
 // Redirect ke Dashboard jika login, atau Login jika belum
 Route::get('/', function () {
     if (auth()->check()) {
-        return auth()->user()->role === 'admin'
+        return in_array(auth()->user()->role, ['admin', 'super_admin', 'administrator', 'guru'], true)
             ? redirect()->route('admin.dashboard')
             : redirect()->route('user.dashboard');
     }

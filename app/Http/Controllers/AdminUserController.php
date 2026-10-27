@@ -73,11 +73,20 @@ class AdminUserController extends Controller
         ]);
     }
 
+    protected function ensureNotGuru(): void
+    {
+        if (auth()->check() && auth()->user()->role === 'guru') {
+            abort(403, 'Akses Terbatas: Role Guru hanya memiliki hak pantau (monitoring) dan tidak dapat memodifikasi data.');
+        }
+    }
+
     /**
      * Form tambah user baru.
      */
     public function create()
     {
+        $this->ensureNotGuru();
+
         return Inertia::render('Admin/Users/UserCreate');
     }
 
@@ -86,6 +95,7 @@ class AdminUserController extends Controller
      */
     public function store(Request $request)
     {
+        $this->ensureNotGuru();
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -161,6 +171,8 @@ class AdminUserController extends Controller
      */
     public function edit(User $user)
     {
+        $this->ensureNotGuru();
+
         return Inertia::render('Admin/Users/UserEdit', [
             'user' => $user,
         ]);
@@ -171,6 +183,7 @@ class AdminUserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $this->ensureNotGuru();
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,'.$user->id,
@@ -246,6 +259,7 @@ class AdminUserController extends Controller
      */
     public function destroy(User $user)
     {
+        $this->ensureNotGuru();
         if ($user->profile_photo) {
             Storage::disk('public')->delete($user->profile_photo);
         }
@@ -265,6 +279,7 @@ class AdminUserController extends Controller
      */
     public function toggleActive(User $user)
     {
+        $this->ensureNotGuru();
         $user->is_active = ! $user->is_active;
         $user->save();
 
@@ -280,6 +295,7 @@ class AdminUserController extends Controller
      */
     public function updateLevel(Request $request, User $user)
     {
+        $this->ensureNotGuru();
         $validated = $request->validate([
             'level' => 'nullable|string|in:A1,A2,B1,B2,C1,C2',
         ]);
@@ -299,6 +315,8 @@ class AdminUserController extends Controller
      */
     public function showImportExcel()
     {
+        $this->ensureNotGuru();
+
         return Inertia::render('Admin/Users/ImportUsers');
     }
 
@@ -308,6 +326,7 @@ class AdminUserController extends Controller
      */
     public function resetImportedUsers()
     {
+        $this->ensureNotGuru();
         $deleted = User::where('role', 'user')->delete();
 
         return back()->with('success', "Berhasil menghapus {$deleted} data user.");
@@ -321,6 +340,7 @@ class AdminUserController extends Controller
      */
     public function importExcel(Request $request)
     {
+        $this->ensureNotGuru();
         @set_time_limit(0);
         @ini_set('max_execution_time', '0');
         @ini_set('memory_limit', '512M');
@@ -563,6 +583,7 @@ class AdminUserController extends Controller
      */
     public function syncFromParent(Request $request)
     {
+        $this->ensureNotGuru();
         $parentUrl = rtrim(config('app.parent_app_url', env('PARENT_APP_URL', 'https://kelas-khusus.kpmacademic.io')), '/');
         $apiKey = config('services.parent_api_key', env('PARENT_APP_API_KEY', env('API_SECRET_KEY', 'kpm-satellite-secret-key-2026')));
 

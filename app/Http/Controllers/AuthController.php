@@ -122,16 +122,9 @@ class AuthController extends Controller
             if ($response->successful() && ($response->json('valid') ?? false)) {
                 $master = $response->json();
 
-                // Tolak login guru di web anakan satelit: guru hanya boleh login di Web Induk & SiGuru
-                if (($master['role'] ?? '') === 'guru') {
-                    RateLimiter::hit($throttleKey);
-
-                    return back()->withErrors([
-                        'email' => 'Akun pengajar/guru hanya dapat digunakan untuk login di Web Induk dan SiGuru.',
-                    ]);
-                }
-
-                $role = in_array($master['role'], ['super_admin', 'administrator', 'admin']) ? 'admin' : 'user';
+                // Izinkan guru login untuk memantau aktivitas & progres PR siswa
+                $isGuru = ($master['role'] ?? '') === 'guru';
+                $role = in_array($master['role'], ['super_admin', 'administrator', 'admin']) ? 'admin' : ($isGuru ? 'guru' : 'user');
                 $fotoProfil = $master['foto_profil'] ?? "{$parentUrl}/api/foto/".urlencode($master['email']);
                 $username = $master['nis'] ?: explode('@', $master['email'])[0];
 
@@ -169,7 +162,7 @@ class AuthController extends Controller
                 $request->session()->regenerate();
                 $user->update(['last_login_at' => now()]);
 
-                if ($user->role === 'admin') {
+                if (in_array($user->role, ['admin', 'super_admin', 'administrator', 'guru'], true)) {
                     return redirect()->route('admin.dashboard');
                 }
 
@@ -208,7 +201,7 @@ class AuthController extends Controller
                 'login_at' => now(),
             ]);
 
-            if ($localUser->role === 'admin') {
+            if (in_array($localUser->role, ['admin', 'super_admin', 'administrator', 'guru'], true)) {
                 return redirect()->route('admin.dashboard');
             }
 
