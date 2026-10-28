@@ -131,7 +131,7 @@ class PracticeController extends Controller
         $session = PracticeSession::create([
             'user_id' => Auth::id(),
             'package_id' => $package->id,
-            'card_id' => $cardId ?: 'card-1',
+            'card_id' => $cardId,
             'total_question' => count($questions),
             'started_at' => now(),
             'status' => 'in_progress',

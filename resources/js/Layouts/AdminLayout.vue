@@ -114,8 +114,6 @@ const navItems = [
     {
         label: 'Manajemen Data',
         items: [
-            { href: route('admin.users.index'), label: 'Manajemen Siswa', icon: 'mdi:account-group-outline', activeIcon: 'mdi:account-group', route: 'admin.users.*' },
-            { href: route('admin.users.import-excel'), label: 'Import User', icon: 'mdi:file-excel-outline', activeIcon: 'mdi:file-excel', route: 'admin.users.import-excel' },
             { href: route('admin.practice-statistics.index'), label: 'Statistik Pengerjaan', icon: 'mdi:chart-box-outline', activeIcon: 'mdi:chart-box', route: 'admin.practice-statistics.*' },
             { href: route('admin.leave-requests.index'), label: 'Pengajuan Izin', icon: 'mdi:calendar-clock-outline', activeIcon: 'mdi:calendar-clock', route: 'admin.leave-requests.*' },
             { href: route('admin.login-logs.index'), label: 'Log Login', icon: 'mdi:shield-key-outline', activeIcon: 'mdi:shield-key', route: 'admin.login-logs.*' },
