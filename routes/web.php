@@ -124,6 +124,9 @@ Route::middleware(['auth', 'role:admin', 'guru.readonly'])
         // Image Upload for Questions
         Route::post('/packages/{package}/upload-image', [PackageController::class, 'uploadImage'])->name('packages.upload-image');
 
+        // Papan Peringkat (Admin) — peringkat siswa per bidang studi
+        Route::get('/leaderboard', [GamificationController::class, 'adminLeaderboard'])->name('leaderboard');
+
         // Practice Statistics Management
         Route::prefix('practice-statistics')
             ->name('practice-statistics.')
@@ -191,13 +194,15 @@ Route::middleware(['auth', 'role:user'])->name('user.')->group(function () {
     Route::get('/profile/change-password', [AuthController::class, 'showChangePassword'])->name('profile.change-password');
     Route::put('/profile/change-password', [AuthController::class, 'changePassword'])->name('profile.change-password.update');
 
-    // Packages
+    // PR Siswa Kelas Khusus (Packages)
     Route::get('/packages', [PackageController::class, 'index'])->name('packages.index');
     Route::get('/packages/{package}', [PackageController::class, 'show'])->name('packages.show');
+    Route::get('/pr', fn () => redirect()->route('user.packages.index'));
+    Route::get('/pr/{package}', fn ($package) => redirect()->route('user.packages.show', $package));
 
-    // Leave Requests (User)
-    Route::get('/leave-requests', [LeaveRequestController::class, 'index'])->name('leave-requests.index');
-    Route::get('/leave-requests/create', [LeaveRequestController::class, 'create'])->name('leave-requests.create');
+    // Leave Requests (User - menu dihapus, diarahkan ke dashboard)
+    Route::get('/leave-requests', fn () => redirect()->route('user.dashboard'))->name('leave-requests.index');
+    Route::get('/leave-requests/create', fn () => redirect()->route('user.dashboard'))->name('leave-requests.create');
     Route::post('/leave-requests', [LeaveRequestController::class, 'store'])->name('leave-requests.store');
 
     // Practice

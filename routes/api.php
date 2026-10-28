@@ -81,9 +81,9 @@ Route::prefix('v1/auth')->name('api.auth.')->group(function () {
 
 // ==========================================
 // ADMIN API ROUTES (/api/admin/v1/...)
-// Publicly accessible as documented
+// Wajib login sebagai admin.
 // ==========================================
-Route::prefix('admin/v1')->name('api.admin.')->group(function () {
+Route::prefix('admin/v1')->name('api.admin.')->middleware(['auth:sanctum', 'role:admin'])->group(function () {
     // 1. Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
@@ -120,9 +120,10 @@ Route::prefix('admin/v1')->name('api.admin.')->group(function () {
 
 // ==========================================
 // USER / SISWA API ROUTES (/api/user/v1/...)
-// Publicly accessible as documented (falls back to requested user_id or first user)
+// Wajib login. Data yang dikembalikan selalu milik user yang sedang login.
+// `?user_id=` hanya dipercaya bila role-nya admin (lihat BaseApiController).
 // ==========================================
-Route::prefix('user/v1')->name('api.user.')->group(function () {
+Route::prefix('user/v1')->name('api.user.')->middleware('auth:sanctum')->group(function () {
     // 1. Dashboard
     Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
 

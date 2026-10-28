@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Package;
+use App\Models\PracticeSession;
 use App\Support\QuestionFormatter;
 use App\Support\SearchHelper;
 use Illuminate\Http\Request;
@@ -103,6 +104,47 @@ class PackageController extends Controller
 
         $packages = $query->paginate(12)->withQueryString();
 
+        // Status pengerjaan PR milik siswa yang login untuk tiap paket di halaman ini.
+        // Dipakai daftar PR agar klik kartu langsung masuk ke bagian soal:
+        //   none        -> "Kerjakan" (langsung ke soal)
+        //   in_progress -> "Lanjutkan" (lanjutkan sesi yang sama)
+        //   completed   -> "Lihat Hasil" (PR pekanan hanya boleh dikerjakan 1 kali)
+        $packageStatuses = [];
+        if ($user && $packages->count() > 0) {
+            $ownSessions = PracticeSession::where('user_id', $user->id)
+                ->whereIn('package_id', $packages->pluck('id'))
+                ->get();
+
+            foreach ($packages as $pkg) {
+                $own = $ownSessions->where('package_id', $pkg->id);
+                $completed = $own->where('status', 'completed')->sortByDesc('id')->first();
+                $inProgress = $own->where('status', 'in_progress')->sortByDesc('id')->first();
+
+                $packageStatuses[$pkg->id] = [
+                    'status' => $completed ? 'completed' : ($inProgress ? 'in_progress' : 'none'),
+                    'session_id' => $completed?->id ?? $inProgress?->id,
+                ];
+            }
+        }
+
+        // Kirim hanya data yang aman untuk siswa: tanpa daftar soal
+        // (kolom questions memuat kunci jawaban dan pembahasan).
+        $packages->setCollection($packages->getCollection()->map(fn (Package $pkg) => [
+            'id' => $pkg->id,
+            'title' => $pkg->title,
+            'description' => $pkg->description,
+            'thumbnail' => $pkg->thumbnail,
+            'bidang' => $pkg->bidang,
+            'level' => $pkg->level,
+            'kelas' => $pkg->kelas,
+            'total_cards' => count($pkg->cards ?? []),
+            'total_questions' => count($pkg->questions ?? []),
+            'schedule_status' => $pkg->schedule_status,
+            'schedule_label' => $pkg->schedule_label,
+            'start_date' => $pkg->start_date,
+            'end_date' => $pkg->end_date,
+        ]));
+
         // Opsi filter bidang yang dinamis sesuai hak siswa
         if ($isStudent && $isStudentMtk) {
             $allBidang = collect(['Matematika']);
@@ -120,6 +162,7 @@ class PackageController extends Controller
 
         return Inertia::render('Packages/PackageList', [
             'packages' => $packages,
+            'packageStatuses' => $packageStatuses,
             'allKelas' => $allKelas,
             'allBidang' => $allBidang,
             'allLevel' => $allLevel,

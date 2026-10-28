@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
@@ -19,6 +20,8 @@ use Tests\TestCase;
  */
 class IconBundleTest extends TestCase
 {
+    use RefreshDatabase;
+
     private const SOURCE_DIR = 'resources/js';
     private const BUNDLE = 'resources/js/icons/mdi.json';
     private const GENERATOR = 'scripts/generate-icon-bundle.mjs';

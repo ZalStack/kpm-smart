@@ -54,7 +54,10 @@ class DashboardController extends Controller
         }
 
         $packages = $query->latest()->take(6)->get();
+
+        // Rekap pengerjaan PR milik siswa yang sedang login
         $sessions = PracticeSession::where('status', 'completed')
+            ->when($user, fn ($q) => $q->where('user_id', $user->id))
             ->selectRaw('COUNT(*) as total, MAX(total_score) as best, AVG(total_score) as avg_score')
             ->first();
 
@@ -62,12 +65,32 @@ class DashboardController extends Controller
         $bestScore = (float) ($sessions->best ?? 0);
         $averageScore = (float) ($sessions->avg_score ?? 0);
 
+        // Catatan guru (notifikasi weekly_report_note dari sinkronisasi satelit)
+        $teacherNotes = \App\Models\Notification::where('user_id', optional($user)->id)
+            ->where('type', 'weekly_report_note')
+            ->latest()
+            ->take(6)
+            ->get()
+            ->map(fn ($note) => [
+                'id' => $note->id,
+                'title' => $note->title,
+                'message' => $note->message,
+                'teacher_name' => $note->data['teacher_name'] ?? 'Guru Pembimbing',
+                'week_number' => $note->data['week_number'] ?? null,
+                'year' => $note->data['year'] ?? null,
+                'notes' => $note->data['notes'] ?? null,
+                'pr_score' => $note->data['pr_score'] ?? null,
+                'created_at' => $note->created_at?->format('d M Y H:i'),
+            ])
+            ->values();
+
         return Inertia::render('Dashboard/UserDashboard', [
             'packages' => $packages,
             'totalAttempts' => $totalAttempts,
             'bestScore' => $bestScore,
             'averageScore' => round($averageScore, 1),
             'gamification' => null,
+            'teacherNotes' => $teacherNotes,
         ]);
     }
 

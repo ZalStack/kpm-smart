@@ -58,8 +58,8 @@ class ApiAuthorizationTest extends TestCase
                 continue;
             }
 
-            // Endpoint login memang harus bisa diakses tanpa token.
-            if ($uri === 'api/v1/auth/login') {
+            // Endpoint login dan webhook satelit tidak memakai Bearer token pengguna.
+            if ($uri === 'api/v1/auth/login' || str_starts_with($uri, 'api/satellite')) {
                 continue;
             }
 

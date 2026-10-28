@@ -52,47 +52,50 @@ class PracticeController extends Controller
 
         // Cek jadwal pengerjaan
         if ($package->schedule_status === 'expired') {
-            return redirect()->route('user.packages.show', $package->id)
+            return redirect()->route('user.packages.index')
                 ->with('error', 'Jadwal pengerjaan paket ini telah berakhir!');
         }
 
         if ($package->schedule_status === 'upcoming') {
-            return redirect()->route('user.packages.show', $package->id)
+            return redirect()->route('user.packages.index')
                 ->with('error', 'Paket ini belum bisa dikerjakan. Silakan tunggu jadwal mulai.');
         }
 
         $cardId = $request->card_id;
 
-        // If card_id is not provided, pick first card if available
-        if (! $cardId && ! empty($package->cards)) {
-            $cardId = $package->cards[0]['id'] ?? null;
-        }
-
-        if (! $cardId) {
-            $firstQ = collect($package->questions ?? [])->first();
-            $cardId = $firstQ['card_id'] ?? 'card-1';
-        }
-
-        // Tanpa kunci jawaban: siswa tidak boleh bisa membaca kunci jawaban dari payload.
-        $questions = $package->questionsForAttempt($cardId);
-
-        if (empty($questions)) {
-            return redirect()->route('user.packages.show', $package->id)
-                ->with('error', 'Tidak ada soal pada card ini!');
-        }
-
-        // Check if there is an in-progress session for this card
+        // 1-attempt restriction: siswa hanya boleh memiliki SESI AKTIF SATU per
+        // paket PR, berapapun jumlah kartunya. Sesi lama dilanjutkan, bukan dibuat baru.
         $inProgress = PracticeSession::where('user_id', Auth::id())
             ->where('package_id', $package->id)
-            ->where(function ($q) use ($cardId) {
-                $q->where('card_id', $cardId)
-                    ->orWhereNull('card_id')
-                    ->orWhere('card_id', 'default');
-            })
             ->where('status', 'in_progress')
+            ->latest()
             ->first();
 
+        // Blokir jika sudah mengerjakan (1-attempt restriction: siswa hanya bisa mengerjakan 1 kali setiap pekannya)
+        $existingSession = PracticeSession::where('user_id', Auth::id())
+            ->where('package_id', $package->id)
+            ->where('status', 'completed')
+            ->latest()
+            ->first();
+
+        if ($existingSession) {
+            return redirect()->route('user.practice.show', $existingSession->id)
+                ->with('info', 'Tugas PR pekan ini hanya dapat dikerjakan 1 kali dan kamu sudah menyelesaikannya. Berikut hasil tugasmu.');
+        }
+
         if ($inProgress) {
+            // Sesi lama dilanjutkan: pakai soal milik kartu sesi tersebut.
+            $questions = $package->questionsForAttempt($inProgress->card_id);
+
+            if (empty($questions)) {
+                $questions = $package->questionsForAttempt($cardId);
+            }
+
+            if (empty($questions)) {
+                return redirect()->route('user.packages.index')
+                    ->with('error', 'Tidak ada soal pada PR ini!');
+            }
+
             $savedAnswers = [];
             if (! empty($inProgress->answers)) {
                 foreach ($inProgress->answers as $idx => $item) {
@@ -111,21 +114,12 @@ class PracticeController extends Controller
             ]);
         }
 
-        // Blokir jika sudah mengerjakan (1-attempt restriction - tidak bisa retry)
-        $existingSession = PracticeSession::where('user_id', Auth::id())
-            ->where('package_id', $package->id)
-            ->where(function ($q) use ($cardId) {
-                $q->where('card_id', $cardId)
-                    ->orWhereNull('card_id')
-                    ->orWhere('card_id', 'default');
-            })
-            ->where('status', 'completed')
-            ->latest()
-            ->first();
+        // Tanpa kunci jawaban: siswa tidak boleh bisa membaca kunci jawaban dari payload.
+        $questions = $package->questionsForAttempt($cardId);
 
-        if ($existingSession) {
-            return redirect()->route('user.practice.show', $existingSession->id)
-                ->with('info', 'Kamu sudah mengerjakan tugas pada card ini. Soal hanya bisa dikerjakan 1 kali. Berikut hasil tugasmu.');
+        if (empty($questions)) {
+            return redirect()->route('user.packages.index')
+                ->with('error', 'Tidak ada soal pada PR ini!');
         }
 
         $session = PracticeSession::create([
@@ -150,6 +144,13 @@ class PracticeController extends Controller
     {
         if ($session->user_id !== Auth::id()) {
             return redirect()->back()->with('error', 'Akses ditolak!');
+        }
+
+        // Cegah pengumpulan ganda: sesi yang sudah "completed" tidak dinilai
+        // ulang, sehingga PR tetap bernilai satu kali percobaan.
+        if ($session->status === 'completed') {
+            return redirect()->route('user.practice.show', $session->id)
+                ->with('info', 'Tugas ini sudah pernah kamu kumpulkan. Nilai akhir tidak dapat diubah.');
         }
 
         $answers = $request->answers ?? [];
@@ -223,14 +224,25 @@ class PracticeController extends Controller
             );
         }
 
+        $isExpired = $package && $package->schedule_status === 'expired';
+
         // Ambil pengaturan dari package (realtime)
-        $showAnswerKey  = $package->canShowAnswerKey();
-        $showExplanation = $package->canShowExplanation();
-        $showScore      = $package->canShowScore();
+        $showAnswerKey  = $package ? $package->canShowAnswerKey() : true;
+        // Pembahasan soal hanya bisa dilihat sampai batas deadline; jika sudah lewat deadline, otomatis dihapus
+        $showExplanation = (!$isExpired) && ($package ? $package->canShowExplanation() : true);
+        $showScore      = $package ? $package->canShowScore() : true;
+
+        if ($isExpired) {
+            $results = array_map(function ($item) {
+                unset($item['explanation']);
+                return $item;
+            }, $results);
+        }
 
         return Inertia::render('Practice/PracticeResult', [
             'session' => $session->withoutRelations(),
             'results' => $results,
+            'package' => $package ? $package->summary() : null,
             'correct' => $correct,
             'wrong' => $wrong,
             'unanswered' => $unanswered,
@@ -238,18 +250,13 @@ class PracticeController extends Controller
             'showAnswerKey' => $showAnswerKey,
             'showExplanation' => $showExplanation,
             'showScore' => $showScore,
+            'isDeadlinePassed' => $isExpired,
         ]);
     }
 
     public function history()
     {
-        $sessions = PracticeSession::with('package')
-            ->where('status', 'completed')
-            ->orderBy('created_at', 'desc')
-            ->get();
-        return Inertia::render('Practice/PracticeHistory', [
-            'sessions' => $sessions,
-        ]);
+        return redirect()->route('user.packages.index');
     }
 
     public function show(PracticeSession $session)
@@ -278,11 +285,20 @@ class PracticeController extends Controller
         }
 
         $results = $session->answers ?? [];
+        $isExpired = $package && $package->schedule_status === 'expired';
 
         // Ambil pengaturan realtime dari package (bisa berubah oleh admin kapan saja)
         $showAnswerKey   = $package ? $package->canShowAnswerKey() : true;
-        $showExplanation = $package ? $package->canShowExplanation() : true;
+        // Pembahasan soal hanya bisa dilihat sampai batas deadline; jika sudah lewat deadline, otomatis dihapus
+        $showExplanation = (!$isExpired) && ($package ? $package->canShowExplanation() : true);
         $showScore       = $package ? $package->canShowScore() : true;
+
+        if ($isExpired) {
+            $results = array_map(function ($item) {
+                unset($item['explanation']);
+                return $item;
+            }, $results);
+        }
 
         return Inertia::render('Practice/PracticeShow', [
             'session' => $session->withoutRelations(),
@@ -290,6 +306,7 @@ class PracticeController extends Controller
             'showAnswerKey' => $showAnswerKey,
             'showExplanation' => $showExplanation,
             'showScore' => $showScore,
+            'isDeadlinePassed' => $isExpired,
         ]);
     }
 
@@ -364,35 +381,6 @@ class PracticeController extends Controller
 
     public function statistics()
     {
-        $sessions = PracticeSession::where('status', 'completed')
-            ->with('package')
-            ->get();
-
-        $totalAttempts = $sessions->count();
-        $bestScore = (float) ($sessions->max('total_score') ?? 0);
-        $averageScore = (float) ($sessions->avg('total_score') ?? 0);
-        $totalQuestions = $sessions->sum('total_question');
-        $correctAnswers = $sessions->sum('correct_answer');
-        $accuracy = $totalQuestions > 0 ? ($correctAnswers / $totalQuestions) * 100 : 0;
-
-        $sessionsByPackage = $sessions->groupBy('package_id')->map(function($group) {
-            $first = $group->first();
-            return [
-                'package' => $first && $first->package ? $first->package->title : 'Unknown',
-                'attempts' => $group->count(),
-                'avg_score' => $group->avg('total_score'),
-                'best_score' => $group->max('total_score'),
-            ];
-        });
-
-        return Inertia::render('Practice/PracticeStatistics', [
-            'totalAttempts' => $totalAttempts,
-            'bestScore' => $bestScore,
-            'averageScore' => $averageScore,
-            'totalQuestions' => $totalQuestions,
-            'correctAnswers' => $correctAnswers,
-            'accuracy' => $accuracy,
-            'sessionsByPackage' => array_values($sessionsByPackage->toArray()),
-        ]);
+        return redirect()->route('user.dashboard');
     }
 }

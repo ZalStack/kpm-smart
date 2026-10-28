@@ -167,7 +167,12 @@ class Package extends Model
     {
         $all = collect($this->questions ?? []);
 
-        if ($cardId !== null && $all->contains('card_id', $cardId)) {
+        // Paket lama bisa saja belum memiliki konsep kartu pada soalnya.
+        $hasCardConcept = $all->contains(fn ($question) => array_key_exists('card_id', $question));
+
+        if ($cardId !== null && $hasCardConcept) {
+            // Kartu tidak dikenal = tidak ada soal. Mencegah siswa menembak
+            // seluruh soal semua kartu lewat card_id acak.
             $questions = $all->where('card_id', $cardId)->values()->all();
         } else {
             $questions = $all->values()->all();

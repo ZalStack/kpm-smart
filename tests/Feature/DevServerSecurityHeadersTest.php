@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
@@ -21,6 +22,8 @@ use Tests\TestCase;
  */
 class DevServerSecurityHeadersTest extends TestCase
 {
+    use RefreshDatabase;
+
     private string $hotPath;
 
     /** Isi asli `public/hot` sebelum test dibiarkan, supaya bisa dikembalikan. */

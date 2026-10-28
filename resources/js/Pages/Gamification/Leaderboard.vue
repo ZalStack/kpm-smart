@@ -11,7 +11,10 @@ const page = usePage();
 const props = defineProps({
     leaderboard: { type: Array, default: () => [] },
     currentUserRank: { type: Object, default: null },
+    bidangLabel: { type: String, default: 'Lainnya' },
 });
+
+const isGeneralRanking = computed(() => !props.bidangLabel || props.bidangLabel === 'Lainnya');
 
 const searchQuery = ref('');
 
@@ -85,7 +88,24 @@ const isCurrentUser = (id) => id === page.props.auth?.user?.id;
         <Head title="Papan Peringkat - KPM SMART" />
 
         <template #header-title>Papan Peringkat</template>
-        <template #header-sub>Peringkat siswa terbaik berdasarkan rata-rata nilai latihan dan ujian.</template>
+        <template #header-sub>
+            {{ isGeneralRanking
+                ? 'Peringkat siswa terbaik berdasarkan rata-rata nilai PR pekanan.'
+                : 'Peringkat khusus bidang ' + bidangLabel + ' — tidak dicampur dengan bidang lain.' }}
+        </template>
+        <template #header-actions>
+            <span
+                class="ui-card-flat flex items-center gap-2 px-4 py-2.5 text-sm"
+                :class="bidangLabel === 'Matematika' ? 'text-blue-700' : 'text-violet-700'"
+            >
+                <Icon
+                    :icon="bidangLabel === 'Matematika' ? 'mdi:calculator-variant' : (bidangLabel === 'IPA' ? 'mdi:flask-outline' : 'mdi:trophy-outline')"
+                    class="h-4 w-4"
+                />
+                <span class="font-extrabold">{{ bidangLabel }}</span>
+                <span class="text-muted-foreground">Bidang</span>
+            </span>
+        </template>
 
         <div class="mx-auto max-w-5xl space-y-6">
             <!-- Peringkatmu -->
@@ -125,6 +145,30 @@ const isCurrentUser = (id) => id === page.props.auth?.user?.id;
                             <p class="mt-0.5 text-base font-extrabold sm:text-lg">{{ currentUserRank.total_attempts }}</p>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <!-- Belum masuk peringkat -->
+            <section
+                v-else
+                class="anim-fade-in-up relative overflow-hidden rounded-3xl border border-dashed border-border/80 bg-card p-6 shadow-sm"
+            >
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center gap-4">
+                        <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-muted/60 text-muted-foreground">
+                            <Icon icon="mdi:trophy-outline" class="h-7 w-7" />
+                        </span>
+                        <div class="min-w-0">
+                            <h2 class="text-base font-bold text-foreground sm:text-lg">Belum Masuk Peringkat</h2>
+                            <p class="mt-0.5 text-sm leading-relaxed text-muted-foreground">
+                                Selesaikan minimal 1 tugas PR untuk memunculkan namamu di papan peringkat bidang {{ bidangLabel }}.
+                            </p>
+                        </div>
+                    </div>
+                    <Link :href="route('user.packages.index')" class="btn-primary shrink-0 px-5 py-2.5 text-xs">
+                        <Icon icon="mdi:book-open-page-variant" class="h-4 w-4" />
+                        Kerjakan PR Sekarang
+                    </Link>
                 </div>
             </section>
 
@@ -188,7 +232,7 @@ const isCurrentUser = (id) => id === page.props.auth?.user?.id;
                 <div class="flex flex-col gap-3 border-b border-border/60 bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
                     <div class="flex items-center gap-2">
                         <Icon icon="mdi:format-list-numbered" class="h-5 w-5 text-primary" />
-                        <h3 class="text-base font-bold text-foreground">Daftar Peringkat Siswa</h3>
+                        <h3 class="text-base font-bold text-foreground">Daftar Peringkat Bidang {{ bidangLabel }}</h3>
                     </div>
                     <div class="relative w-full sm:w-64">
                         <Icon icon="mdi:magnify" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -258,14 +302,10 @@ const isCurrentUser = (id) => id === page.props.auth?.user?.id;
             </div>
 
             <!-- Navigasi -->
-            <div class="flex items-center justify-between pt-2">
-                <Link :href="route('user.practice.statistics')" class="inline-flex items-center gap-1.5 text-sm font-medium text-primary transition hover:text-primary/80">
-                    <Icon icon="mdi:chart-box-outline" class="h-4 w-4" />
-                    Lihat Statistik Lengkap Saya
-                </Link>
+            <div class="flex items-center justify-end pt-2">
                 <Link :href="route('user.dashboard')" class="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground">
                     <Icon icon="mdi:arrow-left" class="h-4 w-4" />
-                    Dasbor
+                    Kembali ke Beranda
                 </Link>
             </div>
         </div>
