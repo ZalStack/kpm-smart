@@ -19,7 +19,7 @@ function submit() {
 
 <template>
     <GuestLayout>
-        <Head title="Lupa Kata Sandi - KPM SMART" />
+        <Head title="Lupa Kata Sandi - PR KK" />
 
         <div class="auth-card rounded-[1.75rem] p-5 sm:p-9 anim-fade-in-up">
             <div class="mb-7">

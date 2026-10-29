@@ -79,7 +79,7 @@ function submit() {
 
 <template>
     <AdminLayout>
-        <Head title="Profil Admin - KPM SMART" />
+        <Head title="Profil Admin - PR KK" />
 
         <template #header-title>Profil Admin</template>
         <template #header-sub>Kelola informasi pribadi dan keamanan akun Anda</template>

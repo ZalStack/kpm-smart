@@ -3,7 +3,6 @@ import { ref, inject, computed, onMounted, onUnmounted, useSlots } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { Icon } from '@iconify/vue/offline';
 import FlashMessage from '@/Components/shared/FlashMessage.vue';
-import { usePushNotification } from '@/composables/usePushNotification';
 
 const route = inject('route');
 const page = usePage();
@@ -12,29 +11,7 @@ const user = computed(() => page.props.auth?.user);
 
 const sidebarOpen = ref(false);
 const userDropdownOpen = ref(false);
-const notifDropdownOpen = ref(false);
-const pushNotifOpen = ref(false);
 const scrolled = ref(false);
-const notifications = ref([]);
-const unreadCount = ref(0);
-
-const {
-    isSupported: pushSupported,
-    permission: pushPermission,
-    isSubscribed: pushSubscribed,
-    isLoading: pushLoading,
-    error: pushError,
-    requestPermission,
-    unsubscribe: unsubscribePush,
-} = usePushNotification();
-
-async function togglePushNotification() {
-    if (pushSubscribed.value) {
-        await unsubscribePush();
-    } else {
-        await requestPermission();
-    }
-}
 
 const profilePhotoUrl = computed(() => {
     if (!user.value?.profile_photo) return null;
@@ -73,10 +50,10 @@ const fallbackTitle = computed(() => {
                 ? 'Peringkat'
                 : route().current('user.dashboard')
                     ? 'Beranda'
-                    : 'KPM SMART';
+                    : 'PR KK';
         return name;
     } catch (e) {
-        return 'KPM SMART';
+        return 'PR KK';
     }
 });
 
@@ -164,73 +141,10 @@ function toggleUserDropdown() {
     userDropdownOpen.value = !userDropdownOpen.value;
 }
 
-function toggleNotifDropdown() {
-    notifDropdownOpen.value = !notifDropdownOpen.value;
-    if (notifDropdownOpen.value) loadNotifications();
-}
-
-async function loadNotifications() {
-    if (typeof document !== 'undefined' && document.hidden) return;
-    try {
-        const notifUrl = safeRoute('user.notifications.dropdown');
-        const response = await fetch(notifUrl, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': page.props.csrfToken,
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-        });
-        const data = await response.json();
-        notifications.value = data.notifications || [];
-        unreadCount.value = data.unread_count || 0;
-    } catch (e) {}
-}
-
-async function markAllRead() {
-    try {
-        const markUrl = safeRoute('user.notifications.mark-all-read');
-        await fetch(markUrl, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': page.props.csrfToken,
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-        });
-        unreadCount.value = 0;
-        loadNotifications();
-    } catch (e) {}
-}
-
-function getNotifHref(n) {
-    if (n.type === 'announcement' && n.data?.announcement_id) {
-        return safeRoute('user.announcements.show', n.data.announcement_id);
-    }
-    return safeRoute('user.notifications.index');
-}
-
-async function handleNotifClick(n) {
-    try {
-        const readUrl = safeRoute('user.notifications.mark-read', n.id);
-        await fetch(readUrl, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': page.props.csrfToken,
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-        });
-    } catch (e) {}
-}
-
 function closeAllDropdowns() {
     userDropdownOpen.value = false;
-    notifDropdownOpen.value = false;
-    pushNotifOpen.value = false;
 }
 
-let pollInterval;
 let clickHandler;
 let keyHandler;
 let resizeHandler;
@@ -241,17 +155,10 @@ function handleScroll() {
 }
 
 onMounted(() => {
-    if (user.value) {
-        loadNotifications();
-        pollInterval = setInterval(loadNotifications, 5000);
-    }
-
     handleScroll();
 
     clickHandler = (e) => {
         if (!e.target.closest('#userDropdown')) userDropdownOpen.value = false;
-        if (!e.target.closest('#notifWrap')) notifDropdownOpen.value = false;
-        if (!e.target.closest('#pushNotifWrap')) pushNotifOpen.value = false;
     };
 
     keyHandler = (e) => {
@@ -272,7 +179,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    if (pollInterval) clearInterval(pollInterval);
     if (clickHandler) document.removeEventListener('click', clickHandler);
     if (keyHandler) document.removeEventListener('keydown', keyHandler);
     if (resizeHandler) window.removeEventListener('resize', resizeHandler);
@@ -444,96 +350,7 @@ onUnmounted(() => {
                                 <span>{{ currentDate }}</span>
                             </div>
 
-                            <!-- Notifikasi Browser -->
-                            <div v-if="pushSupported" class="relative" id="pushNotifWrap">
-                                <button
-                                    @click="pushNotifOpen = !pushNotifOpen"
-                                    :aria-expanded="pushNotifOpen"
-                                    aria-label="Notifikasi browser"
-                                    class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-border/60 bg-card/60 text-muted-foreground transition-all hover:border-primary/30 hover:bg-accent/70 hover:text-foreground"
-                                    :title="pushSubscribed ? 'Notifikasi aktif' : 'Aktifkan notifikasi'"
-                                >
-                                    <Icon :icon="pushSubscribed ? 'mdi:bell-ring-outline' : 'mdi:bell-off-outline'" class="h-5 w-5" :class="pushSubscribed ? 'text-primary' : ''" />
-                                </button>
 
-                                <Transition name="dropdown">
-                                    <div v-if="pushNotifOpen" class="absolute right-0 z-50 mt-2 w-72 rounded-2xl border border-border/80 bg-card p-4 text-card-foreground shadow-xl">
-                                        <p class="text-xs font-bold text-foreground">Notifikasi Browser</p>
-                                        <p class="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">Dapatkan pemberitahuan di browser saat jadwal PR pekanan dimulai.</p>
-                                        <div class="mt-3 border-t border-border/60 pt-3">
-                                            <button
-                                                @click="togglePushNotification"
-                                                :disabled="pushLoading"
-                                                class="w-full rounded-xl px-3 py-2 text-xs font-bold transition"
-                                                :class="pushSubscribed ? 'bg-rose-50 text-rose-700 hover:bg-rose-100' : 'btn-primary'"
-                                            >
-                                                <Icon :icon="pushSubscribed ? 'mdi:bell-off' : 'mdi:bell-check'" class="h-4 w-4" />
-                                                {{ pushLoading ? 'Memproses...' : (pushSubscribed ? 'Nonaktifkan' : 'Aktifkan Notifikasi') }}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </Transition>
-                            </div>
-
-                            <!-- Lonceng Notifikasi -->
-                            <div v-if="user" class="relative" id="notifWrap">
-                                <button
-                                    @click="toggleNotifDropdown"
-                                    class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-border/60 bg-card/60 text-muted-foreground transition-all hover:border-primary/30 hover:bg-accent/70 hover:text-foreground"
-                                    aria-label="Notifikasi"
-                                >
-                                    <Icon icon="mdi:bell-outline" class="h-5 w-5" />
-                                    <span
-                                        v-if="unreadCount > 0"
-                                        class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-background"
-                                    >
-                                        {{ unreadCount > 99 ? '99+' : unreadCount }}
-                                    </span>
-                                </button>
-
-                                <Transition name="dropdown">
-                                    <div v-if="notifDropdownOpen" class="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-border/80 bg-card py-1.5 shadow-xl sm:w-96">
-                                        <div class="flex items-center justify-between border-b border-border/60 px-4 py-3">
-                                            <div class="flex items-center gap-2">
-                                                <p class="text-sm font-bold text-foreground">Notifikasi</p>
-                                                <span v-if="unreadCount > 0" class="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">{{ unreadCount }} baru</span>
-                                            </div>
-                                            <button @click="markAllRead" class="text-xs font-bold text-primary transition hover:text-primary/80">Tandai dibaca</button>
-                                        </div>
-                                        <div class="max-h-80 divide-y divide-border/40 overflow-y-auto">
-                                            <div v-if="notifications.length === 0" class="px-4 py-10 text-center">
-                                                <div class="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted/60 text-muted-foreground/50">
-                                                    <Icon icon="mdi:bell-off-outline" class="h-6 w-6" />
-                                                </div>
-                                                <p class="text-xs font-semibold text-muted-foreground">Tidak ada notifikasi baru</p>
-                                            </div>
-                                            <Link
-                                                v-for="n in notifications"
-                                                :key="n.id"
-                                                :href="getNotifHref(n)"
-                                                @click="handleNotifClick(n)"
-                                                class="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-muted/50"
-                                                :class="{ 'bg-primary/5': !n.is_read }"
-                                            >
-                                                <span class="mt-1.5 h-2 w-2 shrink-0 rounded-full" :class="n.is_read ? 'bg-transparent' : (n.type === 'announcement' ? 'bg-amber-500' : 'bg-primary')"></span>
-                                                <span class="min-w-0 flex-1">
-                                                    <span class="flex items-center gap-1.5 text-xs font-bold text-foreground">
-                                                        <span v-if="n.type === 'announcement'" class="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-extrabold text-amber-800">PENGUMUMAN</span>
-                                                        <span class="truncate">{{ n.title }}</span>
-                                                    </span>
-                                                    <span class="mt-0.5 block truncate text-xs text-muted-foreground">{{ n.message }}</span>
-                                                    <span class="mt-1 block text-[10px] text-muted-foreground/60">{{ n.created_at }}</span>
-                                                </span>
-                                            </Link>
-                                        </div>
-                                        <div class="border-t border-border/60 p-2">
-                                            <Link :href="safeRoute('user.notifications.index')" class="block rounded-xl py-2 text-center text-xs font-bold text-primary transition hover:bg-muted/60">
-                                                Lihat Semua Notifikasi
-                                            </Link>
-                                        </div>
-                                    </div>
-                                </Transition>
-                            </div>
 
                             <!-- Menu Profil -->
                             <div v-if="user" class="relative" id="userDropdown">

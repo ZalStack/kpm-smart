@@ -118,7 +118,7 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
 
 <template>
     <GuestLayout>
-        <Head title="Masuk - KPM SMART" />
+        <Head title="Masuk - PR KK" />
 
         <div class="auth-card rounded-[1.75rem] p-5 sm:p-9 anim-fade-in-up">
             <div class="mb-7 text-center sm:text-left">

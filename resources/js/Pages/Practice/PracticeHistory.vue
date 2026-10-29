@@ -69,7 +69,7 @@ const bestScore = computed(() => {
 
 <template>
     <UserLayout>
-        <Head title="Riwayat Tugas - KPM SMART" />
+        <Head title="Riwayat Tugas - PR KK" />
 
         <template #header-title>Riwayat Pengerjaan</template>
         <template #header-sub>Semua tugas yang sudah kamu kerjakan, lengkap dengan nilai dan pembahasannya.</template>

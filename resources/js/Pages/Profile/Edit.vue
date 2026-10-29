@@ -135,7 +135,7 @@ function toggleSection(key) {
 
 <template>
     <UserLayout>
-        <Head title="Pengaturan Profil - KPM SMART" />
+        <Head title="Pengaturan Profil - PR KK" />
 
         <template #header-title>Pengaturan Profil</template>
         <template #header-sub>Kelola data diri, akademik, kontak orang tua, dan foto profil akun belajarmu.</template>

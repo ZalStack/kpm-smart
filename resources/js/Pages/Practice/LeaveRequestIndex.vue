@@ -39,7 +39,7 @@ function countBy(status) {
 
 <template>
     <UserLayout>
-        <Head title="Pengajuan Izin - KPM SMART" />
+        <Head title="Pengajuan Izin - PR KK" />
 
         <template #header-title>Pengajuan Izin Belajar</template>
         <template #header-sub>Kelola dan pantau status permohonan izin ketidakhadiran kegiatan belajar.</template>

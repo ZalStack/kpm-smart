@@ -51,7 +51,7 @@ function submit() {
 
 <template>
     <AdminLayout>
-        <Head title="Ubah Password - Admin KPM SMART" />
+        <Head title="Ubah Password - Admin PR KK" />
 
         <template #header-title>Ubah Password</template>
         <template #header-sub>Perbarui password untuk menjaga keamanan akun Administrator Anda</template>

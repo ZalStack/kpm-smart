@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Sertifikat - KPM SMART</title>
+    <title>Sertifikat - PR KK</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -91,7 +91,7 @@
         <div class="corner corner-br"></div>
 
         <div class="content">
-            <div class="logo">KPM SMART</div>
+            <div class="logo">PR KK</div>
             <div class="logo-sub">Platform Pembelajaran Digital</div>
 
             <div class="title">Sertifikat</div>
@@ -135,7 +135,7 @@
                 </div>
                 <div class="signature">
                     <div class="line">
-                        <div class="sig-name">KPM SMART</div>
+                        <div class="sig-name">PR KK</div>
                         <div class="sig-role">Sistem</div>
                     </div>
                 </div>

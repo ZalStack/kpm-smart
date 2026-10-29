@@ -14,12 +14,12 @@ const year = new Date().getFullYear();
             <!-- Top Brand Header -->
             <div class="relative z-10">
                 <div class="flex items-center gap-3.5">
-                    <div class="w-11 h-11 shrink-0 rounded-2xl bg-white/20 backdrop-blur border border-white/30 flex items-center justify-center text-white font-extrabold text-xl shadow-lg shadow-black/10">
-                        K
+                    <div class="w-11 h-11 shrink-0 rounded-2xl bg-white/20 backdrop-blur border border-white/30 flex items-center justify-center text-white font-black text-base shadow-lg shadow-black/10">
+                        PR
                     </div>
                     <div class="leading-tight">
-                        <span class="font-extrabold text-lg tracking-tight block text-white">KPM SMART</span>
-                        <span class="text-[11px] text-blue-200/80 tracking-wider uppercase font-semibold">Sistem Belajar & PR Pekanan</span>
+                        <span class="font-extrabold text-lg tracking-tight block text-white">PR KK</span>
+                        <span class="text-[11px] text-blue-200/80 tracking-wider uppercase font-semibold">PR Siswa Kelas Khusus</span>
                     </div>
                 </div>
             </div>
@@ -53,7 +53,7 @@ const year = new Date().getFullYear();
 
             <!-- Bottom Copyright -->
             <div class="relative z-10 text-xs text-blue-200/60 font-medium">
-                &copy; {{ year }} KPM SMART. Hak cipta dilindungi.
+                &copy; {{ year }} PR KK. Hak cipta dilindungi.
             </div>
         </div>
 
@@ -62,12 +62,12 @@ const year = new Date().getFullYear();
             <div class="w-full max-w-md my-auto">
                 <!-- Mobile Brand Header -->
                 <div class="lg:hidden flex items-center justify-center gap-3 mb-8">
-                    <div class="w-10 h-10 shrink-0 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white font-extrabold text-base shadow-md shadow-blue-600/25">
-                        K
+                    <div class="w-10 h-10 shrink-0 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white font-black text-xs shadow-md shadow-blue-600/25">
+                        PR
                     </div>
                     <div class="leading-tight text-left">
-                        <span class="font-extrabold text-foreground block text-base tracking-tight">KPM SMART</span>
-                        <span class="text-[11px] text-muted-foreground font-semibold">Platform Belajar & PR Pekanan</span>
+                        <span class="font-extrabold text-foreground block text-base tracking-tight">PR KK</span>
+                        <span class="text-[11px] text-muted-foreground font-semibold">PR Siswa Kelas Khusus</span>
                     </div>
                 </div>
 

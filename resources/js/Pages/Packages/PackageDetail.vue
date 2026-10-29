@@ -47,7 +47,7 @@ const cardProgress = computed(() => {
 
 <template>
     <UserLayout>
-        <Head :title="package.title + ' - KPM SMART'" />
+        <Head :title="package.title + ' - PR KK'" />
 
         <!-- Navigasi kembali -->
         <Link :href="route('user.packages.index')" class="back-link mb-5 group select-none">

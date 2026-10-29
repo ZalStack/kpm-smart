@@ -85,7 +85,7 @@ const isCurrentUser = (id) => id === page.props.auth?.user?.id;
 
 <template>
     <UserLayout>
-        <Head title="Papan Peringkat - KPM SMART" />
+        <Head title="Papan Peringkat - PR KK" />
 
         <template #header-title>Papan Peringkat</template>
         <template #header-sub>

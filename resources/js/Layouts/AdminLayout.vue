@@ -10,9 +10,6 @@ const page = usePage();
 const user = computed(() => page.props.auth?.user);
 const sidebarOpen = ref(false);
 const profileDropdownOpen = ref(false);
-const notifDropdownOpen = ref(false);
-const notifications = ref([]);
-const unreadCount = ref(0);
 
 const profilePhotoUrl = computed(() => {
     if (!user.value?.profile_photo) return null;
@@ -43,81 +40,19 @@ function toggleProfileDropdown() {
     profileDropdownOpen.value = !profileDropdownOpen.value;
 }
 
-function toggleNotifDropdown() {
-    notifDropdownOpen.value = !notifDropdownOpen.value;
-    if (notifDropdownOpen.value) {
-        loadNotifications();
-    }
-}
-
-async function loadNotifications() {
-    if (typeof document !== 'undefined' && document.hidden) return;
-    try {
-        const response = await fetch(route('admin.notifications.dropdown'), {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': page.props.csrfToken,
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-        });
-        const data = await response.json();
-        notifications.value = data.notifications || [];
-        unreadCount.value = data.unread_count || 0;
-    } catch (e) {}
-}
-
-async function markAllRead() {
-    try {
-        await fetch(route('admin.notifications.mark-all-read'), {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': page.props.csrfToken,
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-        });
-        unreadCount.value = 0;
-        loadNotifications();
-    } catch (e) {}
-}
-
-function getNotifHref(n) {
-    if (n.type === 'announcement' && n.data?.announcement_id) {
-        return route('admin.announcements.show', n.data.announcement_id);
-    }
-    return route('admin.notifications.index');
-}
-
-async function handleNotifClick(n) {
-    try {
-        await fetch(route('admin.notifications.mark-read', n.id), {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': page.props.csrfToken,
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-        });
-    } catch (e) {}
-}
-
 const navItems = [
     {
         label: 'Menu Utama',
         items: [
             { href: route('admin.dashboard'), label: 'Dasbor', icon: 'mdi:view-dashboard-outline', activeIcon: 'mdi:view-dashboard', route: 'admin.dashboard' },
-            { href: route('admin.packages.index'), label: 'PR Pekanan', icon: 'mdi:book-open-variant', activeIcon: 'mdi:book-open-page-variant', route: 'admin.packages.*' },
-            { href: route('admin.announcements.index'), label: 'Pengumuman', icon: 'mdi:bullhorn-outline', activeIcon: 'mdi:bullhorn', route: 'admin.announcements.*' },
+            { href: route('admin.packages.index'), label: 'PR Pekanan', icon: 'mdi:book-open-page-variant', activeIcon: 'mdi:book-open-page-variant', route: 'admin.packages.*' },
         ],
     },
     {
-        label: 'Manajemen Data',
+        label: 'Manajemen',
         items: [
+            { href: route('admin.users.index'), label: 'Manajemen Siswa', icon: 'mdi:account-group-outline', activeIcon: 'mdi:account-group', route: 'admin.users.*' },
             { href: route('admin.practice-statistics.index'), label: 'Statistik Pengerjaan', icon: 'mdi:chart-box-outline', activeIcon: 'mdi:chart-box', route: 'admin.practice-statistics.*' },
-            { href: route('admin.leave-requests.index'), label: 'Pengajuan Izin', icon: 'mdi:calendar-clock-outline', activeIcon: 'mdi:calendar-clock', route: 'admin.leave-requests.*' },
-            { href: route('admin.login-logs.index'), label: 'Log Login', icon: 'mdi:shield-key-outline', activeIcon: 'mdi:shield-key', route: 'admin.login-logs.*' },
-            { href: route('admin.notifications.index'), label: 'Notifikasi', icon: 'mdi:bell-outline', activeIcon: 'mdi:bell', route: 'admin.notifications.*' },
         ],
     },
 ];
@@ -129,17 +64,12 @@ const mobileNavItems = [
     { href: route('admin.practice-statistics.index'), label: 'Statistik', icon: 'mdi:chart-box-outline', route: 'admin.practice-statistics.*' },
 ];
 
-let pollInterval;
 let clickHandler;
 let resizeHandler;
 
 onMounted(() => {
-    loadNotifications();
-    pollInterval = setInterval(loadNotifications, 5000);
-
     clickHandler = (e) => {
         if (!e.target.closest('#profileDropdownWrap')) profileDropdownOpen.value = false;
-        if (!e.target.closest('#notifWrap')) notifDropdownOpen.value = false;
     };
     document.addEventListener('click', clickHandler);
 
@@ -150,7 +80,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    if (pollInterval) clearInterval(pollInterval);
     if (clickHandler) document.removeEventListener('click', clickHandler);
     if (resizeHandler) window.removeEventListener('resize', resizeHandler);
 });
@@ -174,10 +103,10 @@ onUnmounted(() => {
             <div class="relative flex items-center justify-between gap-3.5 px-5 py-5 border-b border-white/10 flex-shrink-0">
                 <Link :href="route('admin.dashboard')" class="flex items-center gap-3 min-w-0 group">
                     <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur border border-white/20 flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform duration-200">
-                        <span class="text-white text-base font-extrabold tracking-tight">K</span>
+                        <span class="text-white text-xs font-black tracking-tight">PR</span>
                     </div>
                     <div class="min-w-0">
-                        <span class="text-sm font-bold text-white block leading-tight tracking-tight">KPM SMART</span>
+                        <span class="text-sm font-bold text-white block leading-tight tracking-tight">PR KK</span>
                         <span class="text-[11px] text-white/60 font-medium">Administrator</span>
                     </div>
                 </Link>
@@ -262,65 +191,7 @@ onUnmounted(() => {
                             <span>{{ currentDate }}</span>
                         </div>
 
-                        <!-- Notifications Dropdown -->
-                        <div class="relative" id="notifWrap">
-                            <button
-                                @click="toggleNotifDropdown"
-                                class="inline-flex items-center justify-center w-10 h-10 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition relative border border-border/60"
-                                aria-label="Notifikasi"
-                            >
-                                <Icon icon="mdi:bell-outline" class="w-5 h-5" />
-                                <span
-                                    v-if="unreadCount > 0"
-                                    class="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-xs ring-2 ring-background animate-pulse-soft"
-                                >
-                                    {{ unreadCount > 99 ? '99+' : unreadCount }}
-                                </span>
-                            </button>
 
-                            <Transition name="dropdown">
-                                <div v-if="notifDropdownOpen" class="absolute right-0 mt-2 w-80 sm:w-96 max-w-[calc(100vw-2rem)] bg-card text-card-foreground rounded-2xl shadow-xl border border-border/80 py-2 z-50">
-                                    <div class="px-4 py-3 border-b border-border/60 flex items-center justify-between">
-                                        <div class="flex items-center gap-2">
-                                            <p class="text-sm font-bold text-foreground">Notifikasi</p>
-                                            <span v-if="unreadCount > 0" class="text-[10px] bg-rose-100 text-rose-700 font-bold px-1.5 py-0.5 rounded-full">{{ unreadCount }} baru</span>
-                                        </div>
-                                        <button @click="markAllRead" class="text-xs text-primary hover:text-primary/80 font-semibold transition">Tandai dibaca</button>
-                                    </div>
-                                    <div class="max-h-80 overflow-y-auto divide-y divide-border/40">
-                                        <div v-if="notifications.length === 0" class="px-4 py-10 text-center">
-                                            <div class="w-12 h-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto mb-2 text-muted-foreground/50">
-                                                <Icon icon="mdi:bell-off-outline" class="w-6 h-6" />
-                                            </div>
-                                            <p class="text-xs font-semibold text-muted-foreground">Tidak ada notifikasi baru</p>
-                                        </div>
-                                        <Link
-                                            v-for="n in notifications"
-                                            :key="n.id"
-                                            :href="getNotifHref(n)"
-                                            @click="handleNotifClick(n)"
-                                            class="flex items-start gap-3 px-4 py-3 hover:bg-accent/60 transition-colors"
-                                            :class="{ 'bg-primary/5': !n.is_read }"
-                                        >
-                                            <div :class="['w-2 h-2 rounded-full mt-1.5 shrink-0', n.is_read ? 'bg-transparent' : (n.type === 'announcement' ? 'bg-amber-500' : 'bg-primary')]"></div>
-                                            <div class="min-w-0 flex-1">
-                                                <p class="text-xs font-bold text-foreground truncate flex items-center gap-1.5">
-                                                    <span v-if="n.type === 'announcement'" class="text-[9px] font-extrabold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">PENGUMUMAN</span>
-                                                    {{ n.title }}
-                                                </p>
-                                                <p class="text-xs text-muted-foreground truncate mt-0.5">{{ n.message }}</p>
-                                                <span class="text-[10px] text-muted-foreground/60 block mt-1">{{ n.created_at }}</span>
-                                            </div>
-                                        </Link>
-                                    </div>
-                                    <div class="border-t border-border/60 pt-2 px-2">
-                                        <Link :href="route('admin.notifications.index')" class="block py-2 text-center text-xs text-primary hover:bg-accent/60 rounded-xl font-bold transition">
-                                            Lihat Semua Notifikasi
-                                        </Link>
-                                    </div>
-                                </div>
-                            </Transition>
-                        </div>
 
                         <!-- Profile Dropdown -->
                         <div class="relative" id="profileDropdownWrap">

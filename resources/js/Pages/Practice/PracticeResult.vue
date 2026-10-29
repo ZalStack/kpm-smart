@@ -74,7 +74,7 @@ onMounted(() => {
 
 <template>
     <UserLayout>
-        <Head title="Hasil Pengerjaan Tugas - KPM SMART" />
+        <Head title="Hasil Pengerjaan Tugas - PR KK" />
 
         <div class="mx-auto max-w-4xl space-y-6">
             <!-- ====== HERO NILAI ====== -->

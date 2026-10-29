@@ -27,13 +27,13 @@ const greetingTime = computed(() => {
 
 const firstName = computed(() => (user.value?.name || 'Siswa').split(' ')[0]);
 
-/** Isi catatan guru: utamakan teks notes, fallback ke pesan notifikasi. */
+/** Isi catatan guru: utamakan teks notes, fallback ke teks message. */
 const noteText = (note) => note.notes || note.message || '';
 </script>
 
 <template>
     <UserLayout>
-        <Head title="Beranda - KPM SMART" />
+        <Head title="Beranda - PR KK" />
         <template #header-title>Beranda</template>
         <template #header-sub>Ringkasan belajar dan catatan guru terbarumu.</template>
 
@@ -49,7 +49,7 @@ const noteText = (note) => note.notes || note.message || '';
             <div class="relative z-10 max-w-2xl">
                 <div class="mb-4 inline-flex flex-wrap items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-[11px] font-bold text-blue-50 backdrop-blur">
                     <Icon icon="mdi:school-outline" class="h-3.5 w-3.5 text-cyan-200" />
-                    <span>{{ user?.student_class ? 'Kelas ' + user.student_class : (user?.kelas ? 'Kelas ' + user.kelas : 'Siswa KPM SMART') }}</span>
+                    <span>{{ user?.student_class ? 'Kelas ' + user.student_class : (user?.kelas ? 'Kelas ' + user.kelas : 'Siswa PR KK') }}</span>
                     <span v-if="user?.bidang" class="text-white/70">· {{ user.bidang }}</span>
                     <span v-if="user?.level" class="text-white/60">· Level {{ user.level }}</span>
                 </div>

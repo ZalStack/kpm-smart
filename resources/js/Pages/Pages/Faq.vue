@@ -9,7 +9,7 @@ const faqGroups = [
     {
         icon: 'mdi:puzzle-outline', title: 'Umum', color: '#00a2e9',
         items: [
-            { q: 'Apa itu KPM SMART?', a: 'KPM SMART adalah platform belajar yang menyediakan bank soal latihan dengan pembahasan lengkap untuk mendukung belajar mandiri.' },
+            { q: 'Apa itu PR KK?', a: 'PR KK adalah platform belajar yang menyediakan bank soal latihan dengan pembahasan lengkap untuk mendukung belajar mandiri.' },
             { q: 'Apakah perlu membuat akun untuk mengakses soal?', a: 'Ya. Kamu perlu mendaftar (gratis) terlebih dahulu agar progres belajarmu tersimpan rapi di satu akun.' },
             { q: 'Apakah bisa diakses dari HP?', a: 'Bisa! Tampilan platform sudah responsif dan nyaman digunakan dari HP, tablet, maupun laptop.' },
         ],

@@ -62,7 +62,7 @@ function submit() {
 
 <template>
     <UserLayout>
-        <Head title="Ajukan Izin - KPM SMART" />
+        <Head title="Ajukan Izin - PR KK" />
 
         <template #header-title>Formulir Pengajuan Izin</template>
         <template #header-sub>Lengkapi data di bawah ini untuk mengajukan izin ketidakhadiran.</template>

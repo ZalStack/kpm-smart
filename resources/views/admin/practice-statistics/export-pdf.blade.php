@@ -81,8 +81,8 @@
     </table>
 
     <div class="footer">
-        <p>Dokumen ini dibuat oleh sistem KPM SMART Membership</p>
-        <p>© {{ date('Y') }} KPM SMART. All rights reserved.</p>
+        <p>Dokumen ini dibuat oleh sistem PR KK Membership</p>
+        <p>© {{ date('Y') }} PR KK. All rights reserved.</p>
     </div>
 </body>
 </html>

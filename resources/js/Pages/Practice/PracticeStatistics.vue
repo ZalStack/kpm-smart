@@ -55,7 +55,7 @@ const tips = [
 
 <template>
     <UserLayout>
-        <Head title="Statistik Belajar - KPM SMART" />
+        <Head title="Statistik Belajar - PR KK" />
 
         <template #header-title>Statistik Belajar</template>
         <template #header-sub>Ringkasan performa belajarmu secara keseluruhan.</template>

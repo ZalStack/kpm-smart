@@ -88,7 +88,7 @@ const tabs = [
 
 <template>
     <UserLayout>
-        <Head title="Pusat Notifikasi - KPM SMART" />
+        <Head title="Pusat Notifikasi - PR KK" />
 
         <template #header-title>Pusat Notifikasi</template>
         <template #header-sub>Informasi penting seputar jadwal tugas, pengumuman, dan evaluasi hasil belajarmu.</template>

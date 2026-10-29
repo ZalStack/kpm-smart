@@ -149,7 +149,7 @@ function doDelete() {
                         </Button>
                         <Link :href="route('admin.packages.create')">
                             <Button size="sm" class="gap-1.5 h-10 px-4 font-semibold bg-primary shadow-sm">
-                                <Icon icon="mdi:plus" class="w-4 h-4" /> Tambah Soal
+                                <Icon icon="mdi:plus" class="w-4 h-4" /> Tambah PR
                             </Button>
                         </Link>
                     </div>
@@ -183,18 +183,19 @@ function doDelete() {
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
-                        <tr class="border-b border-border/50 bg-muted/20 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                            <th class="text-left px-5 py-3.5">#</th>
-                            <th class="text-left px-5 py-3.5">Judul Paket Soal</th>
-                            <th class="text-left px-5 py-3.5">Bidang / Level</th>
-                            <th class="text-left px-5 py-3.5">Kelas</th>
-                            <th class="text-left px-5 py-3.5">Status</th>
-                            <th class="text-center px-5 py-3.5">Aksi</th>
+                        <tr class="border-b border-border/60 bg-muted/30">
+                            <th class="text-center px-4 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider w-12">No</th>
+                            <th class="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Judul Paket PR</th>
+                            <th class="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Kelas</th>
+                            <th class="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Bidang</th>
+                            <th class="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Level</th>
+                            <th class="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Status</th>
+                            <th class="text-center px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border/40">
                         <tr v-if="packages.data.length === 0">
-                            <td colspan="6" class="px-5 py-16 text-center text-muted-foreground">
+                            <td colspan="7" class="px-5 py-16 text-center text-muted-foreground">
                                 <div class="w-16 h-16 rounded-2xl bg-muted/70 flex items-center justify-center mx-auto mb-3 text-muted-foreground">
                                     <Icon icon="mdi:package-variant-remove" class="w-8 h-8" />
                                 </div>
@@ -204,58 +205,57 @@ function doDelete() {
                         </tr>
 
                         <tr v-for="(pkg, idx) in packages.data" :key="pkg.id"
-                            class="hover:bg-muted/30 transition-colors group">
-                            <td class="px-5 py-4 text-xs text-muted-foreground font-mono">{{ packages.from + idx }}</td>
-                            <td class="px-5 py-4">
+                            class="hover:bg-muted/30 transition-colors group cursor-pointer"
+                            @click="$inertia ? $inertia.get(route('admin.packages.detail', pkg.id)) : null">
+                            <td class="px-4 py-3.5 text-center text-xs font-semibold text-muted-foreground">{{ packages.from + idx }}</td>
+                            <td class="px-5 py-3.5">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-sm flex-shrink-0 overflow-hidden border border-border/60">
+                                    <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-sm flex-shrink-0 overflow-hidden border border-border/60 shrink-0">
                                         <img v-if="pkg.thumbnail" :src="'/storage/' + pkg.thumbnail" class="w-full h-full object-cover" />
-                                        <Icon v-else icon="mdi:package-variant" class="w-6 h-6 text-primary" />
+                                        <Icon v-else icon="mdi:book-open-page-variant" class="w-5 h-5 text-primary" />
                                     </div>
                                     <div class="min-w-0">
-                                        <p class="font-bold text-foreground truncate max-w-xs group-hover:text-primary transition-colors">{{ pkg.title }}</p>
+                                        <p class="font-bold text-foreground truncate hover:text-primary transition-colors">{{ pkg.title }}</p>
                                         <p class="text-xs text-muted-foreground truncate max-w-xs mt-0.5">{{ pkg.description || 'Tanpa deskripsi' }}</p>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-5 py-4">
-                                <div class="flex flex-wrap gap-1">
-                                    <span v-if="pkg.bidang" class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-primary/10 text-primary">
-                                        {{ pkg.bidang }}
-                                    </span>
-                                    <span v-if="pkg.level" class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                                        {{ pkg.level }}
-                                    </span>
-                                </div>
+                            <td class="px-5 py-3.5">
+                                <span class="text-xs text-foreground font-medium">{{ pkg.kelas || '-' }}</span>
                             </td>
-                            <td class="px-5 py-4 text-xs font-semibold text-foreground">
-                                {{ pkg.kelas || '-' }}
+                            <td class="px-5 py-3.5">
+                                <span v-if="pkg.bidang" class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-primary/10 text-primary">{{ pkg.bidang }}</span>
+                                <span v-else class="text-xs text-muted-foreground">-</span>
                             </td>
-                            <td class="px-5 py-4">
+                            <td class="px-5 py-3.5">
+                                <span v-if="pkg.level" class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400">{{ pkg.level }}</span>
+                                <span v-else class="text-xs text-muted-foreground">-</span>
+                            </td>
+                            <td class="px-5 py-3.5">
                                 <span :class="['inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border', pkg.is_active ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200' : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border-rose-200']">
                                     <span class="w-1.5 h-1.5 rounded-full" :class="pkg.is_active ? 'bg-emerald-500' : 'bg-rose-500'"></span>
                                     {{ pkg.is_active ? 'Aktif' : 'Nonaktif' }}
                                 </span>
                             </td>
-                            <td class="px-5 py-4 text-center">
-                                <div class="flex items-center justify-center gap-1">
+                            <td class="px-5 py-3.5 text-center">
+                                <div class="flex items-center justify-center gap-1" @click.stop>
                                     <Link :href="route('admin.packages.detail', pkg.id)"
-                                          class="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition"
+                                          class="p-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition"
                                           title="Lihat Detail">
                                         <Icon icon="mdi:eye-outline" class="w-4 h-4" />
                                     </Link>
                                     <Link :href="route('admin.packages.edit.informasi', pkg.id)"
-                                          class="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition"
+                                          class="p-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition"
                                           title="Edit Informasi">
                                         <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
                                     </Link>
                                     <Link :href="route('admin.packages.edit.questions', pkg.id)"
-                                          class="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition"
+                                          class="p-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition"
                                           title="Kelola Soal">
                                         <Icon icon="mdi:help-circle-outline" class="w-4 h-4" />
                                     </Link>
                                     <button type="button" @click="confirmDelete(pkg)"
-                                            class="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition"
+                                            class="p-2 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition"
                                             title="Hapus Paket">
                                         <Icon icon="mdi:trash-can-outline" class="w-4 h-4" />
                                     </button>

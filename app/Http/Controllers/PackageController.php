@@ -212,8 +212,28 @@ class PackageController extends Controller
             $totalQuestions += count($pkg->questions ?? []);
         }
 
+        $allPackages = Package::query()
+            ->latest()
+            ->get()
+            ->map(function ($pkg) {
+                return [
+                    'id' => $pkg->id,
+                    'title' => $pkg->title,
+                    'description' => $pkg->description,
+                    'kelas' => $pkg->kelas ?: '',
+                    'level' => $pkg->level ?: '',
+                    'bidang' => $pkg->bidang ?: '',
+                    'is_active' => (bool) $pkg->is_active,
+                    'start_date' => $pkg->start_date,
+                    'end_date' => $pkg->end_date,
+                    'thumbnail' => $pkg->thumbnail,
+                    'total_questions' => count($pkg->questions ?? []),
+                ];
+            });
+
         return Inertia::render('Admin/Packages/PackageIndex', [
             'packages' => $packages,
+            'allPackages' => $allPackages,
             'allKelas' => $allKelas,
             'allBidang' => $allBidang,
             'allLevel' => $allLevel,
@@ -248,11 +268,15 @@ class PackageController extends Controller
         }
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $this->ensureNotGuru();
 
-        return Inertia::render('Admin/Packages/PackageCreate');
+        return Inertia::render('Admin/Packages/PackageCreate', [
+            'initialKelas' => $request->query('kelas', ''),
+            'initialBidang' => $request->query('bidang', ''),
+            'initialLevel' => $request->query('level', ''),
+        ]);
     }
 
     public function store(Request $request)

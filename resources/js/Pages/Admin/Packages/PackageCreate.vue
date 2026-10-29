@@ -11,12 +11,18 @@ import { Icon } from '@iconify/vue/offline';
 
 const route = inject('route');
 
+const props = defineProps({
+    initialKelas: { type: String, default: '' },
+    initialBidang: { type: String, default: '' },
+    initialLevel: { type: String, default: '' },
+});
+
 const form = useForm({
     title: '',
     description: '',
-    kelas: '',
-    bidang: '',
-    level: '',
+    kelas: props.initialKelas || '',
+    bidang: props.initialBidang || '',
+    level: props.initialLevel || '',
     is_active: true,
     start_date: '',
     end_date: '',
@@ -56,18 +62,18 @@ function submit() {
 
 <template>
     <AdminLayout>
-        <Head title="Tambah Paket Soal Baru - Admin" />
+        <Head title="Tambah PR Baru - Admin" />
 
         <template #header-title>
             <div class="flex items-center gap-2">
                 <span class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                     <Icon icon="mdi:plus-circle-outline" class="w-5 h-5" />
                 </span>
-                <span>Buat Paket Soal Baru</span>
+                <span>Tambah PR Baru</span>
             </div>
         </template>
         <template #header-sub>
-            Lengkapi detail paket soal tugas latihan / evaluasi untuk siswa
+            Lengkapi detail paket PR Pekanan tugas evaluasi untuk siswa kelas khusus
         </template>
 
         <div class="max-w-4xl mx-auto space-y-5">
@@ -75,7 +81,7 @@ function submit() {
             <Link :href="route('admin.packages.index')"
                   class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition group">
                 <Icon icon="mdi:arrow-left" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-                Kembali ke Daftar Bank Soal
+                Kembali ke Kelola PR Pekanan
             </Link>
 
             <form @submit.prevent="submit" class="space-y-6">

@@ -46,7 +46,7 @@ function formatDate(dateStr) {
 
 <template>
     <UserLayout>
-        <Head title="Pembahasan Soal - KPM SMART" />
+        <Head title="Pembahasan Soal - PR KK" />
 
         <Link :href="route('user.packages.index')" class="back-link mb-5 group select-none">
             <Icon icon="mdi:arrow-left" class="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />

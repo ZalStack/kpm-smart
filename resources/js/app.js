@@ -8,7 +8,7 @@ import { Ziggy } from './ziggy';
 
 import './icons';
 
-const appName = import.meta.env.VITE_APP_NAME || 'KPM SMART';
+const appName = import.meta.env.VITE_APP_NAME || 'PR KK';
 
 createInertiaApp({
     title: (title) => title ? `${title} - ${appName}` : appName,
@@ -23,7 +23,7 @@ createInertiaApp({
             .mount(el);
     },
     progress: {
-        color: '#769826',
+        color: '#2563eb',
         showSpinner: false,
     },
 });
