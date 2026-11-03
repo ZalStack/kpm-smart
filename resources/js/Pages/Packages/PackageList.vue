@@ -15,6 +15,7 @@ const props = defineProps({
     userBidangGroup: { type: String, default: null },
     userBidangRaw: { type: String, default: '' },
     currentSort: { type: String, default: 'latest' },
+    isHomeworkWindowOpen: { type: Boolean, default: true },
     filters: { type: Object, default: () => ({}) },
 });
 
@@ -30,6 +31,7 @@ function attemptStatus(pkg) {
 }
 
 function isLocked(pkg) {
+    if (!props.isHomeworkWindowOpen) return true;
     return pkg.schedule_status === 'expired' || pkg.schedule_status === 'upcoming';
 }
 
@@ -47,6 +49,7 @@ function openPackage(pkg) {
 }
 
 function ctaLabel(pkg) {
+    if (!props.isHomeworkWindowOpen) return 'Jadwal Istirahat';
     if (pkg.schedule_status === 'expired') return 'Berakhir';
     if (pkg.schedule_status === 'upcoming') return 'Belum Dimulai';
     const s = attemptStatus(pkg);
@@ -168,6 +171,29 @@ const totalActive = computed(() =>
                 </span>
             </div>
         </template>
+
+        <!-- Banner Jadwal PR Istirahat (Sabtu 19:00 - Jumat 19:00 WIB) -->
+        <div
+            v-if="!isHomeworkWindowOpen"
+            class="anim-fade-in-up mb-6 flex flex-col gap-3 rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-500/15 via-amber-400/10 to-transparent p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
+        >
+            <div class="flex items-start gap-3 sm:items-center">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs">
+                    <Icon icon="mdi:clock-alert-outline" class="h-5 w-5" />
+                </span>
+                <div>
+                    <p class="text-sm font-bold text-amber-900 dark:text-amber-200">
+                        Jadwal Pengerjaan PR Sedang Istirahat
+                    </p>
+                    <p class="mt-0.5 text-xs leading-relaxed text-amber-800/80 dark:text-amber-300/80">
+                        Tugas PR dibuka setiap hari <strong>Sabtu pukul 19:00 WIB</strong> hingga <strong>Jumat pukul 19:00 WIB</strong>. Pengerjaan baru dapat dimulai saat jam aktif dibuka kembali.
+                    </p>
+                </div>
+            </div>
+            <span class="shrink-0 self-start rounded-full border border-amber-400/40 bg-amber-100/80 px-3 py-1 text-xs font-bold text-amber-900 sm:self-auto">
+                Sedang Ditutup
+            </span>
+        </div>
 
         <!-- Empty state -->
         <div v-if="grouped.length === 0" class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card px-6 py-20 text-center">

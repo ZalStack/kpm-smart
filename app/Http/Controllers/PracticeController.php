@@ -11,6 +11,24 @@ use Inertia\Inertia;
 
 class PracticeController extends Controller
 {
+    public static function isHomeworkWindowOpen(): bool
+    {
+        $now = now('Asia/Jakarta');
+        $dayOfWeek = (int) $now->format('w'); // 0 (Sun) to 6 (Sat)
+        $timeInMinutes = ((int) $now->format('G')) * 60 + ((int) $now->format('i'));
+        $sevenPm = 19 * 60;
+
+        // Tutup: Jumat 19:00 s.d. Sabtu 19:00 WIB
+        if ($dayOfWeek === 5 && $timeInMinutes >= $sevenPm) {
+            return false;
+        }
+        if ($dayOfWeek === 6 && $timeInMinutes < $sevenPm) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function index()
     {
         return redirect()->route('user.practice.history');
@@ -30,6 +48,11 @@ class PracticeController extends Controller
 
         $user = Auth::user();
         if ($user && $user->role === 'user') {
+            if (! self::isHomeworkWindowOpen()) {
+                return redirect()->route('user.packages.index')
+                    ->with('error', 'Jadwal pengerjaan PR sedang istirahat. Akses dibuka setiap Sabtu pukul 19:00 WIB s.d. Jumat pukul 19:00 WIB.');
+            }
+
             $studentBidang = trim((string) $user->bidang);
             $isStudentMtk = (bool) preg_match('/(mtk|matematika|math)/i', $studentBidang);
             $isStudentIpa = (bool) preg_match('/(ipa|sains|science)/i', $studentBidang);
@@ -144,6 +167,11 @@ class PracticeController extends Controller
     {
         if ($session->user_id !== Auth::id()) {
             return redirect()->back()->with('error', 'Akses ditolak!');
+        }
+
+        $user = Auth::user();
+        if ($user && $user->role === 'user' && ! self::isHomeworkWindowOpen()) {
+            return redirect()->route('user.packages.index')->with('error', 'Jadwal pengerjaan PR sedang istirahat (Sabtu 19:00 - Jumat 19:00 WIB).');
         }
 
         // Cegah pengumpulan ganda: sesi yang sudah "completed" tidak dinilai
@@ -314,6 +342,11 @@ class PracticeController extends Controller
     {
         if ($session->user_id !== Auth::id()) {
             return response()->json(['error' => 'Akses ditolak!'], 403);
+        }
+
+        $user = Auth::user();
+        if ($user && $user->role === 'user' && ! self::isHomeworkWindowOpen()) {
+            return response()->json(['error' => 'Jadwal pengerjaan PR sedang istirahat (Sabtu 19:00 - Jumat 19:00 WIB).'], 403);
         }
 
         if ($session->status !== 'in_progress') {

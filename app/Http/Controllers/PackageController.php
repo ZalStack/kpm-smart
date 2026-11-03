@@ -169,6 +169,7 @@ class PackageController extends Controller
             'userBidangGroup' => $userBidangGroup,
             'userBidangRaw' => $studentBidang,
             'currentSort' => $sortBy,
+            'isHomeworkWindowOpen' => PracticeController::isHomeworkWindowOpen(),
             'filters' => request()->only(['search', 'kelas', 'bidang', 'level', 'sort']),
         ]);
     }
