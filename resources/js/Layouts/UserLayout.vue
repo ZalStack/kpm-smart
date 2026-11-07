@@ -9,8 +9,8 @@ const page = usePage();
 const slots = useSlots();
 const user = computed(() => page.props.auth?.user);
 
-const sidebarOpen = ref(false);
 const userDropdownOpen = ref(false);
+const mobileMenuOpen = ref(false);
 const scrolled = ref(false);
 
 const profilePhotoUrl = computed(() => {
@@ -28,10 +28,10 @@ const currentDate = new Date().toLocaleDateString('id-ID', {
     year: 'numeric',
 });
 
-/** Nama lengkap siswa yang login (ditampilkan di sidebar & header mobile). */
+/** Nama lengkap siswa yang login */
 const fullName = computed(() => user.value?.name || 'Siswa');
 
-/** Subjudul identitas: bidang, lalu kelas. */
+/** Subjudul identitas: bidang, lalu kelas */
 const userSubtitle = computed(() => {
     const u = user.value || {};
     const kelas = u.student_class || u.kelas;
@@ -41,19 +41,16 @@ const userSubtitle = computed(() => {
     return 'Siswa Kelas Khusus';
 });
 
-/** Judul cadangan bila halaman tidak mengirim slot header-title. */
+/** Judul cadangan bila halaman tidak mengirim slot header-title */
 const fallbackTitle = computed(() => {
     try {
-        const name = route().current('user.packages.*')
-            ? 'PR Siswa Kelas Khusus'
-            : route().current('user.leaderboard')
-                ? 'Peringkat'
-                : route().current('user.dashboard')
-                    ? 'Beranda'
-                    : 'PR KK';
-        return name;
+        if (route().current('user.packages.*')) return 'PR Siswa Kelas Khusus';
+        if (route().current('user.leaderboard')) return 'Peringkat';
+        if (route().current('user.profile.*')) return 'Profil & Akun';
+        if (route().current('user.dashboard')) return 'Beranda';
+        return 'PR Kelas Khusus';
     } catch (e) {
-        return 'PR KK';
+        return 'PR Kelas Khusus';
     }
 });
 
@@ -77,32 +74,56 @@ function safeRoute(name, params, fallback = '#') {
     return fallback;
 }
 
-// Navigasi Siswa (Beranda, PR Siswa Kelas Khusus, Peringkat)
-const navItems = [
+// Navigasi Utama Siswa (Desktop Sidebar)
+const desktopNavItems = [
     {
-        href: safeRoute('user.dashboard'),
-        label: 'Beranda',
-        icon: 'mdi:view-dashboard-outline',
-        activeIcon: 'mdi:view-dashboard',
-        match: 'user.dashboard',
+        section: 'Menu Belajar',
+        items: [
+            {
+                href: safeRoute('user.dashboard'),
+                label: 'Beranda',
+                icon: 'mdi:view-dashboard-outline',
+                activeIcon: 'mdi:view-dashboard',
+                match: 'user.dashboard',
+            },
+            {
+                href: safeRoute('user.packages.index'),
+                label: 'PR Siswa Kelas Khusus',
+                icon: 'mdi:book-open-page-variant-outline',
+                activeIcon: 'mdi:book-open-page-variant',
+                match: 'user.packages.*',
+            },
+            {
+                href: safeRoute('user.leaderboard'),
+                label: 'Peringkat',
+                icon: 'mdi:trophy-outline',
+                activeIcon: 'mdi:trophy',
+                match: 'user.leaderboard',
+            },
+        ],
     },
     {
-        href: safeRoute('user.packages.index'),
-        label: 'PR Siswa Kelas Khusus',
-        icon: 'mdi:book-open-variant',
-        activeIcon: 'mdi:book-open-page-variant',
-        match: 'user.packages.*',
-    },
-    {
-        href: safeRoute('user.leaderboard'),
-        label: 'Peringkat',
-        icon: 'mdi:trophy-outline',
-        activeIcon: 'mdi:trophy',
-        match: 'user.leaderboard',
+        section: 'Akun & Pengaturan',
+        items: [
+            {
+                href: safeRoute('user.profile.edit'),
+                label: 'Profil Saya',
+                icon: 'mdi:account-outline',
+                activeIcon: 'mdi:account',
+                match: 'user.profile.edit',
+            },
+            {
+                href: safeRoute('user.profile.change-password'),
+                label: 'Ubah Password',
+                icon: 'mdi:lock-reset',
+                activeIcon: 'mdi:lock-reset',
+                match: 'user.profile.change-password',
+            },
+        ],
     },
 ];
 
-// Navigasi Bawah (Mobile)
+// Navigasi Bawah Handphone (Mobile Bottom Navigation Bar)
 const mobileBottomTabs = [
     {
         href: safeRoute('user.dashboard'),
@@ -113,8 +134,8 @@ const mobileBottomTabs = [
     },
     {
         href: safeRoute('user.packages.index'),
-        label: 'PR',
-        icon: 'mdi:book-open-variant',
+        label: 'PR Siswa',
+        icon: 'mdi:book-open-page-variant-outline',
         activeIcon: 'mdi:book-open-page-variant',
         match: 'user.packages.*',
     },
@@ -125,289 +146,335 @@ const mobileBottomTabs = [
         activeIcon: 'mdi:trophy',
         match: 'user.leaderboard',
     },
+    {
+        href: safeRoute('user.profile.edit'),
+        label: 'Akun',
+        icon: 'mdi:account-circle-outline',
+        activeIcon: 'mdi:account-circle',
+        match: 'user.profile.*',
+    },
 ];
-
-function openSidebar() {
-    sidebarOpen.value = true;
-    document.body.style.overflow = 'hidden';
-}
-
-function closeSidebar() {
-    sidebarOpen.value = false;
-    document.body.style.overflow = '';
-}
 
 function toggleUserDropdown() {
     userDropdownOpen.value = !userDropdownOpen.value;
 }
 
+function toggleMobileMenu() {
+    mobileMenuOpen.value = !mobileMenuOpen.value;
+}
+
 function closeAllDropdowns() {
     userDropdownOpen.value = false;
+    mobileMenuOpen.value = false;
 }
 
 let clickHandler;
 let keyHandler;
-let resizeHandler;
 let scrollHandler;
 
 function handleScroll() {
-    scrolled.value = window.scrollY > 6;
+    scrolled.value = window.scrollY > 8;
 }
 
 onMounted(() => {
     handleScroll();
 
     clickHandler = (e) => {
-        if (!e.target.closest('#userDropdown')) userDropdownOpen.value = false;
+        if (!e.target.closest('#desktopUserDropdown') && !e.target.closest('#mobileUserDropdown')) {
+            closeAllDropdowns();
+        }
     };
 
     keyHandler = (e) => {
         if (e.key === 'Escape') {
             closeAllDropdowns();
-            closeSidebar();
         }
-    };
-
-    resizeHandler = () => {
-        if (window.innerWidth >= 1024) closeSidebar();
     };
 
     document.addEventListener('click', clickHandler);
     document.addEventListener('keydown', keyHandler);
-    window.addEventListener('resize', resizeHandler);
     window.addEventListener('scroll', handleScroll, { passive: true });
 });
 
 onUnmounted(() => {
     if (clickHandler) document.removeEventListener('click', clickHandler);
     if (keyHandler) document.removeEventListener('keydown', keyHandler);
-    if (resizeHandler) window.removeEventListener('resize', resizeHandler);
     if (scrollHandler) window.removeEventListener('scroll', scrollHandler);
-    document.body.style.overflow = '';
 });
 </script>
 
 <template>
-    <div class="min-h-screen flex flex-col bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground">
+    <div class="min-h-screen bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground flex flex-col">
         <!-- ==================================================================== -->
-        <!-- OVERLAY SIDEBAR (MOBILE)                                              -->
-        <!-- ==================================================================== -->
-        <Transition name="overlay">
-            <div
-                v-if="sidebarOpen"
-                class="fixed inset-0 z-40 bg-slate-900/55 backdrop-blur-xs lg:hidden"
-                @click="closeSidebar"
-            />
-        </Transition>
-
-        <!-- ==================================================================== -->
-        <!-- SIDEBAR                                                               -->
+        <!-- SIDEBAR SISWA (HANYA DITAMPILKAN DI DESKTOP - lg: ke atas)           -->
         <!-- ==================================================================== -->
         <aside
-            :class="[
-                'sidebar-modern fixed top-0 left-0 z-50 flex h-full w-[270px] flex-col overflow-hidden text-white shadow-2xl transition-transform duration-300 ease-in-out',
-                sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
-            ]"
-            aria-label="Menu siswa"
+            class="hidden lg:flex fixed top-0 left-0 z-40 h-full w-[280px] flex-col overflow-hidden text-white sidebar-modern border-r border-white/10 shadow-2xl transition-all duration-300"
+            aria-label="Menu navigasi siswa desktop"
         >
-            <!-- Brand: Nama Lengkap Siswa -->
-            <div class="relative flex flex-shrink-0 items-center justify-between gap-3 border-b border-white/10 px-5 py-5">
+            <!-- Brand Logo & Platform Title -->
+            <div class="relative flex flex-shrink-0 items-center gap-3.5 border-b border-white/10 px-6 py-5">
                 <Link :href="safeRoute('user.dashboard')" class="group flex min-w-0 items-center gap-3">
-                    <span class="relative flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/20 bg-white/15 text-base font-extrabold text-white shadow-sm backdrop-blur transition-transform duration-200 group-hover:scale-105">
-                        <img v-if="profilePhotoUrl" :src="profilePhotoUrl" :alt="fullName" class="h-full w-full object-cover" />
-                        <span v-else>{{ fullName.charAt(0).toUpperCase() }}</span>
-                        <span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-slate-900 bg-emerald-500"></span>
+                    <span class="relative flex h-11 w-11 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-900/30 ring-2 ring-white/20 transition-transform duration-300 group-hover:scale-105">
+                        <Icon icon="mdi:school-outline" class="h-6 w-6 text-white" />
                     </span>
                     <span class="min-w-0">
-                        <span class="block truncate text-sm font-bold leading-tight tracking-tight text-white">{{ fullName }}</span>
-                        <span class="block truncate text-[11px] font-medium text-white/60">{{ userSubtitle }}</span>
+                        <span class="block truncate text-base font-extrabold tracking-tight text-white group-hover:text-blue-200 transition-colors">PR KELAS KHUSUS</span>
+                        <span class="block truncate text-[11px] font-semibold text-blue-300/80">KPM Smart Learning</span>
                     </span>
                 </Link>
-                <button
-                    @click="closeSidebar"
-                    class="rounded-lg p-1.5 text-white/60 transition hover:bg-white/10 hover:text-white lg:hidden"
-                    aria-label="Tutup menu"
-                >
-                    <Icon icon="mdi:close" class="h-5 w-5" />
-                </button>
             </div>
 
-            <!-- Navigasi -->
-            <nav class="sidebar-scroll relative min-h-0 flex-1 space-y-6 overflow-y-auto px-3 py-4">
-                <div class="space-y-1">
-                    <p class="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-white/40">Menu Siswa</p>
+            <!-- Profile Info Card di Sidebar -->
+            <div class="relative mx-4 mt-4 flex items-center gap-3 rounded-2xl border border-white/15 bg-white/10 p-3.5 backdrop-blur-md">
+                <div class="relative flex h-11 w-11 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/25 bg-gradient-to-br from-indigo-500 to-blue-600 text-sm font-black text-white shadow-sm">
+                    <img v-if="profilePhotoUrl" :src="profilePhotoUrl" :alt="fullName" class="h-full w-full object-cover" />
+                    <span v-else>{{ fullName.charAt(0).toUpperCase() }}</span>
+                    <span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-slate-900 bg-emerald-400"></span>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="truncate text-xs font-bold leading-tight text-white">{{ fullName }}</p>
+                    <p class="mt-0.5 truncate text-[11px] font-medium text-blue-200/90">{{ userSubtitle }}</p>
+                    <span v-if="user?.level" class="mt-1 inline-block rounded-md bg-white/20 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                        Level {{ user.level }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Navigasi Sidebar Desktop -->
+            <nav class="sidebar-scroll relative min-h-0 flex-1 space-y-5 overflow-y-auto px-4 py-5">
+                <div v-for="section in desktopNavItems" :key="section.section" class="space-y-1.5">
+                    <p class="px-3 text-[10px] font-extrabold uppercase tracking-widest text-white/40">{{ section.section }}</p>
                     <Link
-                        v-for="item in navItems"
+                        v-for="item in section.items"
                         :key="item.href"
                         :href="item.href"
-                        @click="closeSidebar"
                         :class="[
-                            'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200',
+                            'group flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm transition-all duration-200',
                             isActive(item.match)
-                                ? 'bg-white/15 font-semibold text-white shadow-xs'
-                                : 'text-white/70 hover:bg-white/10 hover:text-white',
+                                ? 'bg-gradient-to-r from-white/20 to-white/10 font-bold text-white shadow-sm border border-white/20'
+                                : 'text-white/75 hover:bg-white/10 hover:text-white',
                         ]"
                     >
                         <span
                             :class="[
                                 'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-all duration-200',
                                 isActive(item.match)
-                                    ? 'scale-105 bg-white text-blue-700 shadow-xs'
+                                    ? 'bg-white text-blue-700 shadow-md scale-105'
                                     : 'bg-white/10 text-white group-hover:bg-white/20',
                             ]"
                         >
                             <Icon :icon="isActive(item.match) ? item.activeIcon : item.icon" class="h-4 w-4" />
                         </span>
                         <span class="truncate">{{ item.label }}</span>
+                        <span v-if="isActive(item.match)" class="ml-auto h-2 w-2 rounded-full bg-cyan-300"></span>
                     </Link>
                 </div>
             </nav>
 
-            <!-- Info Akun di Sidebar -->
-            <div class="relative flex-shrink-0 border-t border-white/10 bg-black/10 px-4 py-4">
-                <div class="flex items-center gap-3">
-                    <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/20 bg-white/20 text-sm font-bold text-white shadow-xs">
-                        <img v-if="profilePhotoUrl" :src="profilePhotoUrl" :alt="fullName" class="h-full w-full object-cover" />
-                        <span v-else>{{ fullName.charAt(0).toUpperCase() }}</span>
-                    </span>
+            <!-- Footer Sidebar Desktop -->
+            <div class="relative flex-shrink-0 border-t border-white/10 bg-black/20 p-4">
+                <div class="flex items-center justify-between gap-3">
                     <div class="min-w-0 flex-1">
-                        <p class="truncate text-xs font-bold leading-tight text-white">{{ fullName }}</p>
-                        <p class="mt-0.5 truncate text-[11px] text-white/60">{{ user?.email || user?.username }}</p>
+                        <p class="truncate text-xs font-semibold text-white/80">Tahun Ajaran Aktif</p>
+                        <p class="truncate text-[11px] text-white/50">Kelas Khusus KPM</p>
                     </div>
                     <Link
                         :href="safeRoute('logout')"
                         method="post"
                         as="button"
-                        class="rounded-lg p-1.5 text-white/60 transition hover:bg-white/10 hover:text-rose-300"
-                        title="Keluar"
+                        class="flex items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/15 px-3 py-2 text-xs font-bold text-rose-200 transition-colors hover:bg-rose-500 hover:text-white"
+                        title="Keluar dari akun"
                     >
                         <Icon icon="mdi:logout" class="h-4 w-4" />
+                        <span>Keluar</span>
                     </Link>
                 </div>
             </div>
         </aside>
 
         <!-- ==================================================================== -->
-        <!-- AREA KONTEN (HEADER + ISI TANPA FOOTER)                               -->
+        <!-- AREA UTAMA (HEADER + KONTEN LEBAR FULL)                                -->
         <!-- ==================================================================== -->
-        <div class="flex min-h-screen flex-1 flex-col lg:ml-[270px]">
-            <!-- HEADER -->
+        <div class="flex min-h-screen flex-1 flex-col lg:pl-[280px]">
+            <!-- ================================================================ -->
+            <!-- HEADER MOBILE (TAMPIL HANYA DI HANDPHONE & TABLET KECIL)        -->
+            <!-- Tanpa tombol sidebar burger, fokus identitas siswa & quick menu -->
+            <!-- ================================================================ -->
             <header
-                class="sticky top-0 z-30 w-full transition-all duration-300"
-                :class="scrolled
-                    ? 'border-b border-border/70 bg-card/85 shadow-sm backdrop-blur-xl'
-                    : 'border-b border-border/60 bg-background/75 backdrop-blur-sm'"
+                class="sticky top-0 z-30 w-full border-b border-border/70 bg-card/90 backdrop-blur-xl transition-all duration-200 lg:hidden shadow-xs"
             >
-                <div class="page-shell-wide">
-                    <div class="flex h-16 items-center justify-between gap-3 sm:gap-5">
-                        <!-- Kiri: Tombol menu + nama lengkap (mobile) / judul halaman (desktop) -->
-                        <div class="flex min-w-0 items-center gap-3">
-                            <button
-                                @click="openSidebar"
-                                class="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-border/60 text-muted-foreground transition hover:bg-accent hover:text-foreground lg:hidden"
-                                aria-label="Buka navigasi"
-                            >
-                                <Icon icon="mdi:menu" class="h-5 w-5" />
-                            </button>
+                <div class="flex h-16 items-center justify-between px-4 sm:px-6">
+                    <!-- Sisi Kiri: Avatar & Info Siswa -->
+                    <div class="flex min-w-0 items-center gap-3">
+                        <div class="relative flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-primary to-indigo-600 text-sm font-extrabold text-white shadow-sm ring-1 ring-border">
+                            <img v-if="profilePhotoUrl" :src="profilePhotoUrl" :alt="fullName" class="h-full w-full object-cover" />
+                            <span v-else>{{ fullName.charAt(0).toUpperCase() }}</span>
+                            <span class="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-card bg-emerald-500"></span>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-extrabold leading-tight text-foreground">{{ fullName }}</p>
+                            <p class="mt-0.5 truncate text-[11px] font-semibold text-primary">{{ userSubtitle }}</p>
+                        </div>
+                    </div>
 
-                            <!-- Brand nama lengkap (mobile) -->
-                            <div class="flex min-w-0 items-center gap-2.5 lg:hidden">
-                                <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-primary to-indigo-700 text-sm font-bold text-white shadow-sm">
+                    <!-- Sisi Kanan: Quick Menu Profil & Keluar -->
+                    <div class="relative" id="mobileUserDropdown">
+                        <button
+                            @click="toggleMobileMenu"
+                            class="flex h-9 w-9 items-center justify-center rounded-xl border border-border/80 bg-muted/60 text-foreground transition-all hover:bg-muted active:scale-95"
+                            aria-label="Menu akun"
+                        >
+                            <Icon icon="mdi:chevron-down" class="h-5 w-5 transition-transform duration-200" :class="{ 'rotate-180': mobileMenuOpen }" />
+                        </button>
+
+                        <Transition name="dropdown">
+                            <div
+                                v-if="mobileMenuOpen"
+                                class="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-border/80 bg-card p-2 shadow-2xl"
+                            >
+                                <div class="border-b border-border/60 px-3 py-2.5">
+                                    <p class="truncate text-xs font-extrabold text-foreground">{{ fullName }}</p>
+                                    <p class="mt-0.5 truncate text-[11px] text-muted-foreground">{{ user?.email || user?.username }}</p>
+                                </div>
+                                <div class="space-y-1 py-1.5">
+                                    <Link
+                                        :href="safeRoute('user.profile.edit')"
+                                        @click="mobileMenuOpen = false"
+                                        class="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-foreground transition hover:bg-muted"
+                                    >
+                                        <Icon icon="mdi:account-outline" class="h-4 w-4 text-primary" />
+                                        Profil Siswa
+                                    </Link>
+                                    <Link
+                                        :href="safeRoute('user.profile.change-password')"
+                                        @click="mobileMenuOpen = false"
+                                        class="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-foreground transition hover:bg-muted"
+                                    >
+                                        <Icon icon="mdi:lock-reset" class="h-4 w-4 text-muted-foreground" />
+                                        Ubah Password
+                                    </Link>
+                                </div>
+                                <div class="border-t border-border/60 pt-1">
+                                    <Link
+                                        :href="safeRoute('logout')"
+                                        method="post"
+                                        as="button"
+                                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-bold text-rose-600 transition hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                                    >
+                                        <Icon icon="mdi:logout" class="h-4 w-4" />
+                                        Keluar dari Akun
+                                    </Link>
+                                </div>
+                            </div>
+                        </Transition>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ================================================================ -->
+            <!-- HEADER DESKTOP (TAMPIL HANYA DI DESKTOP - lg: ke atas)          -->
+            <!-- Lebar Full, sticky, judul dinamis + tanggal + profile dropdown   -->
+            <!-- ================================================================ -->
+            <header
+                class="hidden lg:block sticky top-0 z-30 w-full border-b border-border/70 bg-card/85 backdrop-blur-xl transition-all duration-300 shadow-xs"
+            >
+                <div class="flex h-16 items-center justify-between px-6 lg:px-8 xl:px-10 2xl:px-12">
+                    <!-- Kiri: Judul Halaman & Subjudul -->
+                    <div class="min-w-0">
+                        <h1 v-if="slots['header-title']" class="truncate text-lg font-extrabold tracking-tight text-foreground">
+                            <slot name="header-title" />
+                        </h1>
+                        <h1 v-else class="truncate text-lg font-extrabold tracking-tight text-foreground">
+                            {{ fallbackTitle }}
+                        </h1>
+                        <p v-if="slots['header-sub']" class="mt-0.5 truncate text-xs text-muted-foreground">
+                            <slot name="header-sub" />
+                        </p>
+                    </div>
+
+                    <!-- Kanan: Tanggal + Status Chip + Profile Dropdown -->
+                    <div class="flex flex-shrink-0 items-center gap-3">
+                        <!-- Tanggal Hari Ini -->
+                        <div class="hidden items-center gap-2 rounded-full border border-border/70 bg-muted/50 px-3.5 py-1.5 text-xs font-semibold text-muted-foreground xl:flex">
+                            <Icon icon="mdi:calendar-month-outline" class="h-3.5 w-3.5 text-primary" />
+                            <span>{{ currentDate }}</span>
+                        </div>
+
+                        <!-- Chip Identitas -->
+                        <div class="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                            <span>{{ userSubtitle }}</span>
+                        </div>
+
+                        <!-- Dropdown Akun Desktop -->
+                        <div class="relative" id="desktopUserDropdown">
+                            <button
+                                @click="toggleUserDropdown"
+                                class="flex items-center gap-2.5 rounded-xl border border-border/70 bg-card p-1.5 pr-3 transition-all hover:border-primary/40 hover:bg-accent/60 shadow-xs"
+                            >
+                                <span class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-primary to-indigo-600 text-xs font-extrabold text-white shadow-2xs">
                                     <img v-if="profilePhotoUrl" :src="profilePhotoUrl" :alt="fullName" class="h-full w-full object-cover" />
                                     <span v-else>{{ fullName.charAt(0).toUpperCase() }}</span>
                                 </span>
-                                <div class="min-w-0">
-                                    <p class="truncate text-sm font-extrabold leading-tight text-foreground">{{ fullName }}</p>
-                                    <p class="truncate text-[11px] font-semibold leading-tight text-primary">{{ userSubtitle }}</p>
-                                </div>
-                            </div>
+                                <span class="text-left">
+                                    <span class="block max-w-[130px] truncate text-xs font-bold leading-tight text-foreground">{{ fullName }}</span>
+                                    <span class="block truncate text-[10px] font-semibold text-muted-foreground">Siswa</span>
+                                </span>
+                                <Icon icon="mdi:chevron-down" class="h-3.5 w-3.5 text-muted-foreground transition-transform duration-200" :class="{ 'rotate-180': userDropdownOpen }" />
+                            </button>
 
-                            <!-- Judul halaman (desktop) -->
-                            <div class="hidden min-w-0 lg:block">
-                                <h1
-                                    v-if="slots['header-title']"
-                                    class="truncate text-lg font-bold tracking-tight text-foreground"
+                            <Transition name="dropdown">
+                                <div
+                                    v-if="userDropdownOpen"
+                                    class="absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-2xl border border-border/80 bg-card py-2 shadow-2xl"
                                 >
-                                    <slot name="header-title" />
-                                </h1>
-                                <h1 v-else class="truncate text-lg font-bold tracking-tight text-foreground">
-                                    {{ fallbackTitle }}
-                                </h1>
-                                <p
-                                    v-if="slots['header-sub']"
-                                    class="mt-0.5 truncate text-xs text-muted-foreground"
-                                >
-                                    <slot name="header-sub" />
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Kanan: Kontrol -->
-                        <div class="flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
-                            <!-- Tanggal (desktop) -->
-                            <div class="hidden items-center gap-2 rounded-full border border-border/60 bg-muted/40 px-3.5 py-1.5 text-xs font-semibold text-muted-foreground xl:flex">
-                                <Icon icon="mdi:calendar-month-outline" class="h-3.5 w-3.5 text-primary" />
-                                <span>{{ currentDate }}</span>
-                            </div>
-
-
-
-                            <!-- Menu Profil -->
-                            <div v-if="user" class="relative" id="userDropdown">
-                                <button
-                                    @click="toggleUserDropdown"
-                                    class="flex items-center gap-2 rounded-xl border border-border/60 bg-card/60 p-1 pr-1.5 transition-all hover:border-primary/30 hover:bg-accent/70 sm:pr-2.5"
-                                >
-                                    <span class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-primary to-indigo-700 text-xs font-bold text-white shadow-2xs">
-                                        <img v-if="profilePhotoUrl" :src="profilePhotoUrl" :alt="fullName" class="h-full w-full object-cover" />
-                                        <span v-else>{{ fullName.charAt(0).toUpperCase() }}</span>
-                                    </span>
-                                    <span class="hidden text-left sm:block">
-                                        <span class="block max-w-[140px] truncate text-xs font-bold leading-tight text-foreground">{{ fullName }}</span>
-                                        <span class="block truncate text-[10px] font-semibold leading-tight text-primary">{{ userSubtitle }}</span>
-                                    </span>
-                                    <Icon icon="mdi:chevron-down" class="hidden h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 sm:block" :class="{ 'rotate-180': userDropdownOpen }" />
-                                </button>
-
-                                <Transition name="dropdown">
-                                    <div v-if="userDropdownOpen" class="absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-2xl border border-border/80 bg-card py-1.5 shadow-xl">
-                                        <div class="border-b border-border/60 px-4 py-3">
-                                            <p class="truncate text-xs font-extrabold text-foreground">{{ fullName }}</p>
-                                            <p class="mt-0.5 truncate text-[11px] text-muted-foreground">{{ user?.email || user?.username }}</p>
-                                            <div class="mt-2 flex flex-wrap items-center gap-1.5">
-                                                <span v-if="user?.bidang" class="chip border border-primary/20 bg-primary/10 text-primary">{{ user.bidang }}</span>
-                                                <span v-if="user?.student_class || user?.kelas" class="chip bg-muted text-muted-foreground">Kelas {{ user.student_class || user.kelas }}</span>
-                                            </div>
-                                        </div>
-                                        <div class="space-y-0.5 p-1.5">
-                                            <Link :href="safeRoute('user.profile.edit')" class="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-foreground transition hover:bg-muted/70">
-                                                <Icon icon="mdi:account-outline" class="h-4 w-4 text-primary" />
-                                                Profil Saya
-                                            </Link>
-                                            <Link :href="safeRoute('user.profile.change-password')" class="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-foreground transition hover:bg-muted/70">
-                                                <Icon icon="mdi:lock-reset" class="h-4 w-4 text-muted-foreground" />
-                                                Ubah Password
-                                            </Link>
-                                        </div>
-                                        <div class="my-1 border-t border-border/60"></div>
-                                        <div class="p-1.5">
-                                            <Link :href="safeRoute('logout')" method="post" as="button" class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-rose-600 transition hover:bg-rose-50">
-                                                <Icon icon="mdi:logout" class="h-4 w-4" />
-                                                Keluar
-                                            </Link>
-                                        </div>
+                                    <div class="border-b border-border/60 px-4 py-2.5">
+                                        <p class="truncate text-xs font-extrabold text-foreground">{{ fullName }}</p>
+                                        <p class="mt-0.5 truncate text-[11px] text-muted-foreground">{{ user?.email || user?.username }}</p>
                                     </div>
-                                </Transition>
-                            </div>
+                                    <div class="space-y-0.5 p-1.5">
+                                        <Link
+                                            :href="safeRoute('user.profile.edit')"
+                                            @click="userDropdownOpen = false"
+                                            class="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-foreground transition hover:bg-muted"
+                                        >
+                                            <Icon icon="mdi:account-outline" class="h-4 w-4 text-primary" />
+                                            Profil Saya
+                                        </Link>
+                                        <Link
+                                            :href="safeRoute('user.profile.change-password')"
+                                            @click="userDropdownOpen = false"
+                                            class="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-foreground transition hover:bg-muted"
+                                        >
+                                            <Icon icon="mdi:lock-reset" class="h-4 w-4 text-muted-foreground" />
+                                            Ubah Password
+                                        </Link>
+                                    </div>
+                                    <div class="my-1 border-t border-border/60"></div>
+                                    <div class="p-1.5">
+                                        <Link
+                                            :href="safeRoute('logout')"
+                                            method="post"
+                                            as="button"
+                                            class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-bold text-rose-600 transition hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                                        >
+                                            <Icon icon="mdi:logout" class="h-4 w-4" />
+                                            Keluar
+                                        </Link>
+                                    </div>
+                                </div>
+                            </Transition>
                         </div>
                     </div>
                 </div>
             </header>
 
-            <!-- ISI KONTEN (tanpa footer) -->
-            <main class="w-full flex-1 pb-24 lg:pb-8">
-                <div class="page-shell py-6 sm:py-8">
-                    <!-- Aksi halaman (disediakan halaman via slot) -->
+            <!-- ================================================================ -->
+            <!-- KONTEN UTAMA SISWA (LEBAR FULL, RESPONSIVE DI SEMUA DEVICE)       -->
+            <!-- ================================================================ -->
+            <main class="w-full flex-1 pb-28 lg:pb-10">
+                <div class="w-full px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 py-5 sm:py-7">
+                    <!-- Aksi header jika ada -->
                     <div v-if="slots['header-actions']" class="mb-5 flex flex-wrap items-center justify-end gap-2.5 sm:mb-6">
                         <slot name="header-actions" />
                     </div>
@@ -417,33 +484,46 @@ onUnmounted(() => {
                 </div>
             </main>
 
-            <!-- ==================================================================== -->
-            <!-- NAVIGASI BAWAH (MOBILE)                                               -->
-            <!-- ==================================================================== -->
-            <nav class="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-card/90 px-3 py-1.5 shadow-lg backdrop-blur-lg lg:hidden" aria-label="Navigasi bawah siswa">
-                <div class="mx-auto flex max-w-md items-center justify-around">
+            <!-- ================================================================ -->
+            <!-- MENU DI BAWAH (HANYA DITAMPILKAN DI HANDPHONE - lg:hidden)       -->
+            <!-- Modern Mobile Bottom Navigation Bar: Beranda, PR, Peringkat, Akun -->
+            <!-- ================================================================ -->
+            <nav
+                class="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-card/95 backdrop-blur-xl px-2 py-1.5 shadow-[0_-8px_25px_rgba(0,0,0,0.06)] lg:hidden"
+                aria-label="Navigasi bawah siswa"
+            >
+                <div class="mx-auto flex max-w-lg items-center justify-around gap-1">
                     <Link
                         v-for="tab in mobileBottomTabs"
                         :key="tab.href"
                         :href="tab.href"
                         :aria-current="isActive(tab.match) ? 'page' : undefined"
-                        class="mobile-nav-item relative"
-                        :class="isActive(tab.match) ? 'active' : ''"
+                        :class="[
+                            'mobile-nav-item relative flex-1 text-center py-2 px-1 transition-all duration-200',
+                            isActive(tab.match) ? 'active' : '',
+                        ]"
                     >
-                        <span v-if="isActive(tab.match)" class="absolute -top-1 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-primary"></span>
-                        <Icon :icon="isActive(tab.match) ? tab.activeIcon : tab.icon" class="h-5 w-5" />
-                        <span class="text-[10px] font-medium leading-none">{{ tab.label }}</span>
+                        <!-- Active Glowing Indicator Pill -->
+                        <span
+                            v-if="isActive(tab.match)"
+                            class="absolute -top-1.5 left-1/2 h-1 w-6 -translate-x-1/2 rounded-full bg-primary shadow-xs"
+                        />
+                        <Icon
+                            :icon="isActive(tab.match) ? tab.activeIcon : tab.icon"
+                            :class="[
+                                'h-5 w-5 transition-transform duration-200',
+                                isActive(tab.match) ? 'scale-110 text-primary' : 'text-muted-foreground',
+                            ]"
+                        />
+                        <span
+                            :class="[
+                                'text-[11px] leading-tight mt-0.5 block truncate',
+                                isActive(tab.match) ? 'font-bold text-primary' : 'font-medium text-muted-foreground',
+                            ]"
+                        >
+                            {{ tab.label }}
+                        </span>
                     </Link>
-
-                    <button
-                        @click="openSidebar"
-                        class="mobile-nav-item relative"
-                        :class="sidebarOpen ? 'active' : ''"
-                        aria-label="Menu lainnya"
-                    >
-                        <Icon icon="mdi:dots-horizontal-circle-outline" class="h-5 w-5" />
-                        <span class="text-[10px] font-medium leading-none">Lainnya</span>
-                    </button>
                 </div>
             </nav>
         </div>
@@ -451,11 +531,18 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.overlay-enter-active, .overlay-leave-active { transition: opacity 0.25s ease; }
-.overlay-enter-from, .overlay-leave-to { opacity: 0; }
-
-.dropdown-enter-active { transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
-.dropdown-leave-active { transition: all 0.15s ease-in; }
-.dropdown-enter-from { opacity: 0; transform: scale(0.96) translateY(-6px); }
-.dropdown-leave-to { opacity: 0; transform: scale(0.96) translateY(-6px); }
+.dropdown-enter-active {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dropdown-leave-active {
+    transition: all 0.15s ease-in;
+}
+.dropdown-enter-from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-6px);
+}
+.dropdown-leave-to {
+    opacity: 0;
+    transform: scale(0.96) translateY(-6px);
+}
 </style>

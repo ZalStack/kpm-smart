@@ -82,13 +82,13 @@
     /*  konsisten, modern, dan responsif di segala ukuran layar.             */
     /* =================================================================== */
 
-    /* --- Kontainer Halaman --- */
+    /* --- Kontainer Halaman (Lebar Full Modern Responsif) --- */
     .page-shell {
-        @apply mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-8 xl:px-10;
+        @apply w-full px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12;
     }
 
     .page-shell-wide {
-        @apply mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-8 xl:px-10;
+        @apply w-full px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12;
     }
 
     /* --- Kartu --- */
@@ -291,7 +291,7 @@
 
     /* ===== Modern Sidebar ===== */
     .sidebar-modern {
-        background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 40%, #0f172a 100%);
+        background: linear-gradient(180deg, #090e1a 0%, #0f172a 45%, #080d19 100%);
     }
 
     .sidebar-modern::before {
@@ -299,8 +299,8 @@
         position: absolute;
         inset: 0;
         background:
-            radial-gradient(circle at 100% 0%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
-            radial-gradient(circle at 0% 100%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
+            radial-gradient(circle at 100% 0%, rgba(99, 102, 241, 0.22) 0%, transparent 55%),
+            radial-gradient(circle at 0% 100%, rgba(37, 99, 235, 0.18) 0%, transparent 55%);
         pointer-events: none;
     }
 
@@ -326,14 +326,14 @@
         background: transparent;
     }
 
-    /* ===== Mobile Navigation ===== */
+    /* ===== Mobile Navigation (Bottom Bar) ===== */
     .mobile-nav-item {
-        @apply flex flex-col items-center justify-center gap-1 py-1 px-2.5 rounded-xl text-muted-foreground
-               transition-all duration-200 active:scale-95;
+        @apply flex flex-col items-center justify-center gap-1 py-1.5 px-3 rounded-2xl text-muted-foreground
+               transition-all duration-200 active:scale-95 select-none;
     }
 
     .mobile-nav-item.active {
-        @apply text-primary font-semibold;
+        @apply text-primary font-bold bg-primary/10 shadow-2xs;
     }
 
     /* ===== Modern Toggle Switch ===== */
