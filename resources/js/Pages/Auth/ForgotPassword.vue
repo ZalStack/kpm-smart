@@ -21,10 +21,10 @@ function submit() {
     <GuestLayout>
         <Head title="Lupa Kata Sandi - PR KK" />
 
-        <div class="auth-card rounded-[1.75rem] p-5 sm:p-9 anim-fade-in-up">
+        <div class="auth-card rounded-3xl sm:rounded-4xl p-7 sm:p-9 anim-fade-in-up">
             <div class="mb-7">
-                <h1 class="text-xl sm:text-[1.8rem] font-bold text-foreground">Lupa kata sandi?</h1>
-                <p class="text-muted-foreground text-sm mt-1.5">Masukkan email Anda dan kami akan mengirimkan tautan reset password.</p>
+                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Lupa kata sandi?</h1>
+                <p class="text-slate-500 text-sm mt-1.5">Masukkan email Anda dan kami akan mengirimkan tautan reset password.</p>
             </div>
 
             <div v-if="form.errors && Object.keys(form.errors).length > 0" class="bg-destructive/10 border border-destructive/20 border-l-4 border-l-destructive text-destructive px-4 py-3 rounded-xl mb-6 text-sm" role="alert">

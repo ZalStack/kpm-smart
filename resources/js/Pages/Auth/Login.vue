@@ -113,13 +113,13 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
     <GuestLayout>
         <Head title="Masuk - PR KK" />
 
-        <div class="auth-card rounded-[2.5rem] p-6 sm:p-10 anim-fade-in-up">
-            <div class="mb-8 text-center sm:text-left">
-                <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 text-primary mb-4">
+        <div class="auth-card rounded-3xl sm:rounded-4xl p-7 sm:p-9 anim-fade-in-up">
+            <div class="mb-7 text-center sm:text-left">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 mb-4 shadow-xs">
                     <Icon icon="mdi:login" class="h-6 w-6" />
                 </div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Selamat datang kembali</h1>
-                <p class="mt-2 text-sm text-muted-foreground">Pilih nama akun dan masukkan kata sandi untuk melanjutkan.</p>
+                <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">Selamat datang kembali</h1>
+                <p class="mt-1.5 text-sm text-slate-500">Pilih nama akun dan masukkan kata sandi untuk melanjutkan.</p>
             </div>
 
             <div v-if="status" class="mb-6">
@@ -170,26 +170,26 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
 
                     <div
                         v-if="isOpen && filteredStudents.length > 0"
-                        class="absolute left-0 right-0 top-full mt-1 bg-card rounded-2xl shadow-xl border border-border max-h-64 overflow-y-auto z-40 divide-y divide-border/50"
+                        class="absolute left-0 right-0 top-full mt-1.5 bg-white rounded-2xl shadow-2xl border border-slate-200 max-h-64 overflow-y-auto z-40 divide-y divide-slate-100"
                     >
                         <button
                             v-for="s in filteredStudents"
                             :key="s.id"
                             type="button"
                             @click="selectStudent(s)"
-                            class="w-full text-left px-3.5 py-3 hover:bg-accent/80 transition flex items-center justify-between gap-3 cursor-pointer"
+                            class="w-full text-left px-3.5 py-3 hover:bg-indigo-50/70 transition flex items-center justify-between gap-3 cursor-pointer"
                         >
                             <div class="min-w-0">
-                                <div class="font-extrabold text-sm text-foreground truncate flex items-center gap-2">
+                                <div class="font-extrabold text-sm text-slate-900 truncate flex items-center gap-2">
                                     <span>{{ s.name }}</span>
                                     <span
                                         v-if="!s.is_admin && s.school"
-                                        class="text-[9px] px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 font-extrabold shrink-0"
+                                        class="text-[9px] px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200/80 font-extrabold shrink-0"
                                     >
                                         🎓 {{ s.school }}
                                     </span>
                                 </div>
-                                <div class="text-[10px] text-muted-foreground mt-0.5">
+                                <div class="text-[11px] text-slate-500 mt-0.5 font-medium">
                                     <template v-if="s.is_admin">
                                         Administrator Sistem • {{ s.role }}
                                     </template>
@@ -218,37 +218,37 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
                 <!-- Auto-Filled Detail Pill -->
                 <div
                     v-if="selectedStudent && !selectedStudent.is_admin && !selectedStudent.is_guru"
-                    class="rounded-2xl border border-border bg-muted/40 p-4 space-y-3 animate-fade-in"
+                    class="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4 space-y-2.5 animate-fade-in"
                 >
                     <div class="flex items-center justify-between text-xs gap-3">
-                        <span class="text-primary font-extrabold flex items-center gap-1.5 text-[11px] shrink-0">
+                        <span class="text-indigo-700 font-extrabold flex items-center gap-1.5 text-[11px] shrink-0">
                             <span>🎓</span> Sekolah
                         </span>
-                        <span class="font-extrabold text-foreground bg-background border border-border px-2.5 py-0.5 rounded-xl text-[11px] text-right break-words min-w-0">
+                        <span class="font-extrabold text-slate-800 bg-white border border-indigo-200/60 px-3 py-1 rounded-xl text-xs text-right break-words min-w-0 shadow-xs">
                             {{ selectedStudent.school || '-' }}
                         </span>
                     </div>
                     <div class="flex items-center justify-between text-xs gap-3">
-                        <span class="text-primary font-extrabold flex items-center gap-1.5 text-[11px]">
+                        <span class="text-indigo-700 font-extrabold flex items-center gap-1.5 text-[11px]">
                             <span>📐</span> Bidang
                         </span>
-                        <span class="font-extrabold text-foreground bg-background border border-border px-2.5 py-0.5 rounded-xl text-[11px]">
+                        <span class="font-extrabold text-slate-800 bg-white border border-indigo-200/60 px-3 py-1 rounded-xl text-xs shadow-xs">
                             {{ selectedStudent.bidang || 'Matematika & IPA' }}
                         </span>
                     </div>
                     <div class="flex items-center justify-between text-xs gap-3">
-                        <span class="text-primary font-extrabold flex items-center gap-1.5 text-[11px]">
+                        <span class="text-indigo-700 font-extrabold flex items-center gap-1.5 text-[11px]">
                             <span>🎯</span> Level
                         </span>
-                        <span class="font-extrabold text-foreground bg-background border border-border px-2.5 py-0.5 rounded-xl text-[11px]">
+                        <span class="font-extrabold text-slate-800 bg-white border border-indigo-200/60 px-3 py-1 rounded-xl text-xs shadow-xs">
                             {{ selectedStudent.level || '1' }}
                         </span>
                     </div>
                     <div class="flex items-center justify-between text-xs gap-3">
-                        <span class="text-primary font-extrabold flex items-center gap-1.5 text-[11px]">
+                        <span class="text-indigo-700 font-extrabold flex items-center gap-1.5 text-[11px]">
                             <span>🏫</span> Kelas
                         </span>
-                        <span class="font-extrabold text-foreground bg-background border border-border px-2.5 py-0.5 rounded-xl text-[11px]">
+                        <span class="font-extrabold text-slate-800 bg-white border border-indigo-200/60 px-3 py-1 rounded-xl text-xs shadow-xs">
                             {{ selectedStudent.kelas || '-' }}
                         </span>
                     </div>

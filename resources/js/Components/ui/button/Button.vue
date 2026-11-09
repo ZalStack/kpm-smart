@@ -10,7 +10,7 @@ const props = defineProps({
 
 const variants = {
     default: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow active:bg-primary/95',
-    brand: 'bg-gradient-to-r from-brand-indigo to-brand-blue text-white hover:from-brand-indigo/90 hover:to-brand-blue/90 shadow-sm hover:shadow-md active:scale-[0.97]',
+    brand: 'bg-gradient-to-r from-indigo-600 via-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/30 active:scale-[0.98]',
     destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm hover:shadow active:bg-destructive/95',
     outline: 'border border-border bg-background hover:bg-accent/80 hover:text-foreground shadow-xs',
     'outline-primary': 'border border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 hover:border-primary/50',

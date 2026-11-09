@@ -14,13 +14,13 @@ const props = defineProps({
     <GuestLayout>
         <Head title="Tautan Terkirim - PR KK" />
 
-        <div class="auth-card rounded-[1.75rem] p-5 sm:p-9 text-center anim-fade-in-up">
-            <div class="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto mb-6 text-brand-emerald shadow-xs">
+        <div class="auth-card rounded-3xl sm:rounded-4xl p-7 sm:p-9 text-center anim-fade-in-up">
+            <div class="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center mx-auto mb-6 text-brand-emerald shadow-xs">
                 <svg class="w-8 h-8 text-brand-emerald" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
             </div>
 
-            <h1 class="text-xl font-bold text-foreground mb-2">Tautan terkirim!</h1>
-            <p class="text-muted-foreground text-sm mb-6">
+            <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mb-2">Tautan terkirim!</h1>
+            <p class="text-slate-500 text-sm mb-6">
                 Kami telah mengirimkan tautan reset password ke <strong>{{ email }}</strong>. Silakan cek inbox atau folder spam Anda.
             </p>
 
