@@ -11,17 +11,17 @@ const props = defineProps({
 });
 
 const colorMap = {
-    'blue': 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/40 dark:text-blue-400',
-    'indigo': 'bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-400',
-    'purple': 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-950/40 dark:text-purple-400',
-    'sky': 'bg-sky-50 text-sky-600 border-sky-100 dark:bg-sky-950/40 dark:text-sky-400',
-    'fern': 'bg-blue-50 text-blue-600 border-blue-100',
-    'dry-sage': 'bg-indigo-50 text-indigo-600 border-indigo-100',
-    'pine-teal': 'bg-sky-50 text-sky-700 border-sky-100',
-    'hunter-green': 'bg-blue-50 text-blue-700 border-blue-100',
-    'emerald': 'bg-blue-50 text-blue-600 border-blue-100',
-    'danger': 'bg-rose-50 text-rose-600 border-rose-100',
-    'warning': 'bg-amber-50 text-amber-600 border-amber-100',
+    'blue': 'bg-blue-50 text-brand-blue border-blue-200',
+    'indigo': 'bg-indigo-50 text-brand-indigo border-indigo-200',
+    'purple': 'bg-brand-violet/10 text-brand-violet border-brand-violet/20',
+    'sky': 'bg-sky-50 text-brand-cyan border-sky-200',
+    'fern': 'bg-blue-50 text-brand-blue border-blue-200',
+    'dry-sage': 'bg-indigo-50 text-brand-indigo border-indigo-200',
+    'pine-teal': 'bg-sky-50 text-brand-cyan border-sky-200',
+    'hunter-green': 'bg-emerald-50 text-brand-emerald border-emerald-200',
+    'emerald': 'bg-brand-emerald/10 text-brand-emerald border-brand-emerald/20',
+    'danger': 'bg-rose-50 text-rose-600 border-rose-200',
+    'warning': 'bg-amber-50 text-amber-600 border-amber-200',
 };
 
 const borderAccentMap = {
@@ -32,8 +32,8 @@ const borderAccentMap = {
     'fern': '#2563eb',
     'dry-sage': '#4f46e5',
     'pine-teal': '#0284c7',
-    'hunter-green': '#1d4ed8',
-    'emerald': '#2563eb',
+    'hunter-green': '#10b981',
+    'emerald': '#10b981',
     'danger': '#f43f5e',
     'warning': '#f59e0b',
 };
@@ -41,26 +41,26 @@ const borderAccentMap = {
 
 <template>
     <div
-        :class="cn('stat-tile p-5 group bg-card transition-all duration-300 hover:shadow-md', props.class)"
+        :class="cn('stat-tile p-5 sm:p-6 group', props.class)"
         :style="{ '--tile-accent': borderAccentMap[color] || '#10b981' }"
     >
         <div class="flex items-center justify-between gap-4">
             <div class="min-w-0 flex-1">
-                <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground truncate">{{ title }}</p>
-                <p class="text-2xl sm:text-3xl font-extrabold mt-1 tracking-tight text-foreground">{{ value }}</p>
-                <p v-if="subtitle" class="text-xs text-muted-foreground mt-1 truncate">{{ subtitle }}</p>
+                <p class="stat-label">{{ title }}</p>
+                <p class="stat-value">{{ value }}</p>
+                <p v-if="subtitle" class="text-xs text-muted-foreground mt-1.5 truncate">{{ subtitle }}</p>
             </div>
             <div
                 v-if="icon"
                 :class="cn(
-                    'w-12 h-12 rounded-2xl border flex items-center justify-center text-xl flex-shrink-0 transition-transform duration-300 group-hover:scale-105 shadow-xs',
+                    'w-12 h-12 rounded-2xl border flex items-center justify-center text-xl flex-shrink-0 transition-transform duration-300 group-hover:scale-110 shadow-xs',
                     colorMap[color] || colorMap.emerald
                 )"
             >
                 <span v-html="icon" class="flex items-center justify-center" />
             </div>
         </div>
-        <div v-if="$slots.footer" class="mt-3 pt-3 border-t border-border/60">
+        <div v-if="$slots.footer" class="mt-4 pt-4 border-t border-border/60">
             <slot name="footer" />
         </div>
     </div>

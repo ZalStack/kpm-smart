@@ -8,13 +8,15 @@ const props = defineProps({
 });
 
 const alertVariants = cva(
-    'relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground',
+    'relative w-full rounded-2xl border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground shadow-sm',
     {
         variants: {
             variant: {
-                default: 'bg-background text-foreground',
-                destructive: 'border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive',
-                success: 'border-green-200 bg-green-50 text-green-800 [&>svg]:text-green-600',
+                default: 'bg-background text-foreground border-border',
+                destructive: 'border-rose-200 bg-rose-50 text-rose-800 [&>svg]:text-rose-500',
+                success: 'border-emerald-200 bg-emerald-50 text-emerald-800 [&>svg]:text-brand-emerald',
+                warning: 'border-amber-200 bg-amber-50 text-amber-800 [&>svg]:text-brand-amber',
+                info: 'border-blue-200 bg-blue-50 text-blue-800 [&>svg]:text-brand-blue',
             },
         },
         defaultVariants: {

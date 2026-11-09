@@ -19,23 +19,23 @@ const DURATION = 5000;
 const meta = {
     success: {
         icon: 'mdi:check-circle',
-        wrap: 'bg-emerald-50/95 border-emerald-200/80 text-emerald-900 shadow-emerald-500/10',
+        wrap: 'bg-emerald-50/95 border-emerald-200/90 text-emerald-900 shadow-emerald-500/10',
         iconWrap: 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/30',
-        bar: 'bg-emerald-500',
+        bar: 'bg-brand-emerald',
         label: 'Berhasil',
     },
     error: {
         icon: 'mdi:alert-circle',
-        wrap: 'bg-rose-50/95 border-rose-200/80 text-rose-900 shadow-rose-500/10',
+        wrap: 'bg-rose-50/95 border-rose-200/90 text-rose-900 shadow-rose-500/10',
         iconWrap: 'bg-rose-500 text-white shadow-sm shadow-rose-500/30',
-        bar: 'bg-rose-500',
+        bar: 'bg-rose-600',
         label: 'Terjadi Kesalahan',
     },
     info: {
         icon: 'mdi:information',
-        wrap: 'bg-sky-50/95 border-sky-200/80 text-sky-900 shadow-sky-500/10',
-        iconWrap: 'bg-sky-500 text-white shadow-sm shadow-sky-500/30',
-        bar: 'bg-sky-500',
+        wrap: 'bg-blue-50/95 border-blue-200/90 text-blue-900 shadow-blue-500/10',
+        iconWrap: 'bg-brand-blue text-white shadow-sm shadow-blue-500/30',
+        bar: 'bg-brand-blue',
         label: 'Informasi',
     },
 };

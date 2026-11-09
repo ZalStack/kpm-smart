@@ -5,6 +5,7 @@ import { Icon } from '@iconify/vue/offline';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import Label from '@/Components/ui/label/Label.vue';
 import Button from '@/Components/ui/button/Button.vue';
+import Input from '@/Components/ui/input/Input.vue';
 import Alert from '@/Components/ui/alert/Alert.vue';
 import AlertTitle from '@/Components/ui/alert/AlertTitle.vue';
 
@@ -28,7 +29,6 @@ const selectedStudent = ref(null);
 
 const studentList = computed(() => props.students || []);
 
-// Filter autocomplete sugesti: HANYA muncul saat search diketik minimal 1 karakter
 const filteredStudents = computed(() => {
     const q = search.value.trim().toLowerCase();
     if (!q) return [];
@@ -46,21 +46,14 @@ const onSearchInput = () => {
         selectedStudent.value = null;
     }
 
-    // Pencocokan eksak
     const exact = studentList.value.find(
-        (s) => s.name.toLowerCase() === q || (s.email && s.email.toLowerCase() === q) || (s.username && s.username.toLowerCase() === q)
+        (s) => s.name.toLowerCase() === q || (s.email && s.email.toLowerCase() === q) || (s.username && s.username.toLowerCase().includes(q))
     );
     if (exact) {
         selectedStudent.value = exact;
         form.email = exact.email || exact.username || exact.name;
     } else {
         form.email = search.value;
-        if (q === 'admin') {
-            const adminMatch = studentList.value.find((s) => s.is_admin || s.name.toLowerCase() === 'admin');
-            if (adminMatch) {
-                selectedStudent.value = adminMatch;
-            }
-        }
     }
 };
 
@@ -120,37 +113,41 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
     <GuestLayout>
         <Head title="Masuk - PR KK" />
 
-        <div class="auth-card rounded-[1.75rem] p-5 sm:p-9 anim-fade-in-up">
-            <div class="mb-7 text-center sm:text-left">
-                <h1 class="text-xl sm:text-[1.8rem] font-bold text-foreground">Selamat datang kembali</h1>
-                <p class="text-muted-foreground text-sm mt-1.5">Pilih nama akun dan masukkan kata sandi untuk melanjutkan.</p>
+        <div class="auth-card rounded-[2.5rem] p-6 sm:p-10 anim-fade-in-up">
+            <div class="mb-8 text-center sm:text-left">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 text-primary mb-4">
+                    <Icon icon="mdi:login" class="h-6 w-6" />
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Selamat datang kembali</h1>
+                <p class="mt-2 text-sm text-muted-foreground">Pilih nama akun dan masukkan kata sandi untuk melanjutkan.</p>
             </div>
 
-            <div v-if="status" class="mb-4">
+            <div v-if="status" class="mb-6">
                 <Alert variant="success">
                     <AlertTitle>{{ status }}</AlertTitle>
                 </Alert>
             </div>
 
-            <div
-                v-if="generalErrors.length > 0"
-                class="bg-destructive/10 border border-destructive/20 border-l-4 border-l-destructive text-destructive px-4 py-3 rounded-xl mb-6 text-sm"
-                role="alert"
-            >
-                <div class="flex items-start gap-2.5">
-                    <Icon icon="mdi:alert-outline" class="w-[18px] h-[18px] mt-0.5 flex-shrink-0" aria-hidden="true" />
-                    <ul class="space-y-1">
-                        <li v-for="(error, i) in generalErrors" :key="i">{{ error }}</li>
-                    </ul>
-                </div>
+            <div v-if="generalErrors.length > 0" class="mb-6">
+                <Alert variant="destructive">
+                    <span class="flex items-start gap-2.5">
+                        <Icon icon="mdi:alert-outline" class="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
+                        <div>
+                            <AlertTitle class="block mb-1">Terjadi Kesalahan</AlertTitle>
+                            <ul class="text-sm space-y-1">
+                                <li v-for="(error, i) in generalErrors" :key="i">{{ error }}</li>
+                            </ul>
+                        </div>
+                    </span>
+                </Alert>
             </div>
 
-            <form @submit.prevent="submit" class="space-y-4" autocomplete="off" novalidate :aria-busy="form.processing">
+            <form @submit.prevent="submit" class="space-y-5" autocomplete="off" novalidate :aria-busy="form.processing">
                 <!-- 1. Input Nama / Username (Autocomplete) -->
-                <div class="space-y-1.5 relative">
+                <div class="space-y-2 relative">
                     <Label for="search-input">Nama Siswa / Username</Label>
                     <div class="relative">
-                        <input
+                        <Input
                             id="search-input"
                             v-model="search"
                             type="text"
@@ -159,49 +156,48 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
                             autofocus
                             @input="onSearchInput"
                             @focus="onFocus"
-                            class="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 pr-8 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            class="pr-12"
                         />
                         <button
                             v-if="search"
                             type="button"
                             @click="clearSelection"
-                            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-base p-1 cursor-pointer"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                         >
                             &times;
                         </button>
                     </div>
 
-                    <!-- Autocomplete Dropdown -->
                     <div
                         v-if="isOpen && filteredStudents.length > 0"
-                        class="absolute left-0 right-0 top-full mt-1 bg-popover text-popover-foreground rounded-xl shadow-xl border border-border max-h-52 overflow-y-auto z-40 divide-y divide-border/50"
+                        class="absolute left-0 right-0 top-full mt-1 bg-card rounded-2xl shadow-xl border border-border max-h-64 overflow-y-auto z-40 divide-y divide-border/50"
                     >
                         <button
                             v-for="s in filteredStudents"
                             :key="s.id"
                             type="button"
                             @click="selectStudent(s)"
-                            class="w-full text-left px-3.5 py-2.5 hover:bg-muted/80 transition flex items-center justify-between gap-2 cursor-pointer"
+                            class="w-full text-left px-3.5 py-3 hover:bg-accent/80 transition flex items-center justify-between gap-3 cursor-pointer"
                         >
                             <div class="min-w-0">
-                                <div class="font-bold text-xs text-foreground truncate flex items-center gap-2">
+                                <div class="font-extrabold text-sm text-foreground truncate flex items-center gap-2">
                                     <span>{{ s.name }}</span>
                                     <span
                                         v-if="!s.is_admin && s.school"
-                                        class="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 font-medium shrink-0"
+                                        class="text-[9px] px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 font-extrabold shrink-0"
                                     >
                                         🎓 {{ s.school }}
                                     </span>
                                 </div>
                                 <div class="text-[10px] text-muted-foreground mt-0.5">
                                     <template v-if="s.is_admin">
-                                        Administrator Sistem &bull; {{ s.role }}
+                                        Administrator Sistem • {{ s.role }}
                                     </template>
                                     <template v-else-if="s.is_guru">
-                                        Pengajar / Guru &bull; {{ s.bidang || 'Pembina' }}
+                                        Pengajar / Guru • {{ s.bidang || 'Pembina' }}
                                     </template>
                                     <template v-else>
-                                        {{ s.bidang || 'Matematika & IPA' }} &bull; Level {{ s.level || '1' }} &bull; {{ s.kelas || '-' }}
+                                        {{ s.bidang || 'Matematika & IPA' }} • Level {{ s.level || '1' }} • {{ s.kelas || '-' }}
                                     </template>
                                 </div>
                             </div>
@@ -212,81 +208,74 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
                     <p
                         v-if="form.errors.email"
                         id="email-error"
-                        class="text-xs font-medium text-destructive flex items-center gap-1.5 mt-1"
+                        class="text-xs font-extrabold text-rose-600 flex items-center gap-1.5 mt-1"
                     >
                         <Icon icon="mdi:alert-circle-outline" class="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                         {{ form.errors.email }}
                     </p>
                 </div>
 
-                <!-- 2. Auto-Filled Detail Pill (Muncul saat siswa dipilih) -->
+                <!-- Auto-Filled Detail Pill -->
                 <div
                     v-if="selectedStudent && !selectedStudent.is_admin && !selectedStudent.is_guru"
-                    class="rounded-xl border border-border/80 bg-muted/40 p-3 space-y-2 animate-fadeIn"
+                    class="rounded-2xl border border-border bg-muted/40 p-4 space-y-3 animate-fade-in"
                 >
-                    <!-- 1. SEKOLAH -->
                     <div class="flex items-center justify-between text-xs gap-3">
-                        <span class="text-primary font-semibold flex items-center gap-1.5 text-[11px] shrink-0">
+                        <span class="text-primary font-extrabold flex items-center gap-1.5 text-[11px] shrink-0">
                             <span>🎓</span> Sekolah
                         </span>
-                        <span class="font-bold text-foreground bg-background border border-border px-2 py-0.5 rounded-md text-[11px] text-right break-words min-w-0">
+                        <span class="font-extrabold text-foreground bg-background border border-border px-2.5 py-0.5 rounded-xl text-[11px] text-right break-words min-w-0">
                             {{ selectedStudent.school || '-' }}
                         </span>
                     </div>
-
-                    <!-- 2. BIDANG -->
-                    <div class="flex items-center justify-between text-xs">
-                        <span class="text-primary font-semibold flex items-center gap-1.5 text-[11px]">
+                    <div class="flex items-center justify-between text-xs gap-3">
+                        <span class="text-primary font-extrabold flex items-center gap-1.5 text-[11px]">
                             <span>📐</span> Bidang
                         </span>
-                        <span class="font-bold text-foreground bg-background border border-border px-2 py-0.5 rounded-md text-[11px]">
+                        <span class="font-extrabold text-foreground bg-background border border-border px-2.5 py-0.5 rounded-xl text-[11px]">
                             {{ selectedStudent.bidang || 'Matematika & IPA' }}
                         </span>
                     </div>
-
-                    <!-- 3. LEVEL -->
-                    <div class="flex items-center justify-between text-xs">
-                        <span class="text-primary font-semibold flex items-center gap-1.5 text-[11px]">
+                    <div class="flex items-center justify-between text-xs gap-3">
+                        <span class="text-primary font-extrabold flex items-center gap-1.5 text-[11px]">
                             <span>🎯</span> Level
                         </span>
-                        <span class="font-bold text-foreground bg-background border border-border px-2 py-0.5 rounded-md text-[11px]">
+                        <span class="font-extrabold text-foreground bg-background border border-border px-2.5 py-0.5 rounded-xl text-[11px]">
                             {{ selectedStudent.level || '1' }}
                         </span>
                     </div>
-
-                    <!-- 4. KELAS -->
-                    <div class="flex items-center justify-between text-xs">
-                        <span class="text-primary font-semibold flex items-center gap-1.5 text-[11px]">
+                    <div class="flex items-center justify-between text-xs gap-3">
+                        <span class="text-primary font-extrabold flex items-center gap-1.5 text-[11px]">
                             <span>🏫</span> Kelas
                         </span>
-                        <span class="font-bold text-foreground bg-background border border-border px-2 py-0.5 rounded-md text-[11px]">
+                        <span class="font-extrabold text-foreground bg-background border border-border px-2.5 py-0.5 rounded-xl text-[11px]">
                             {{ selectedStudent.kelas || '-' }}
                         </span>
                     </div>
                 </div>
 
                 <!-- 3. Password Input -->
-                <div class="space-y-1.5">
+                <div class="space-y-2">
                     <Label for="password">Kata Sandi</Label>
                     <div class="relative">
-                        <input
+                        <Input
                             id="password"
                             v-model="form.password"
                             :type="showPassword ? 'text' : 'password'"
                             placeholder="Masukkan kata sandi"
                             required
                             autocomplete="current-password"
-                            class="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 pr-12 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            class="pr-12"
                         />
                         <button
                             type="button"
                             @click="showPassword = !showPassword"
                             :aria-label="showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'"
-                            class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                         >
                             <Icon
                                 :icon="showPassword ? 'mdi:eye-off-outline' : 'mdi:eye-outline'"
-                                class="w-[18px] h-[18px]"
+                                class="w-4 h-4"
                                 aria-hidden="true"
                             />
                         </button>
@@ -294,7 +283,7 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
                     <p
                         v-if="form.errors.password"
                         id="password-error"
-                        class="text-xs font-medium text-destructive flex items-center gap-1.5 mt-1"
+                        class="text-xs font-extrabold text-rose-600 flex items-center gap-1.5 mt-1"
                     >
                         <Icon icon="mdi:alert-circle-outline" class="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                         {{ form.errors.password }}
@@ -310,14 +299,15 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
                         </span>
                         <span class="text-sm text-muted-foreground peer-focus-visible:text-foreground transition-colors">Ingat saya</span>
                     </label>
-                    <Link :href="route('password.request')" class="text-sm text-primary hover:text-primary/80 font-semibold transition">Lupa kata sandi?</Link>
+                    <Link :href="route('password.request')" class="text-sm text-brand-blue hover:text-brand-blue/80 font-extrabold transition">Lupa kata sandi?</Link>
                 </div>
 
                 <!-- Submit Button -->
                 <Button
                     type="submit"
                     :loading="form.processing"
-                    class="btn-auth w-full min-h-12 text-[15px] font-semibold mt-2 cursor-pointer"
+                    variant="brand"
+                    class="w-full min-h-12 text-[15px] font-extrabold mt-1"
                 >
                     <span v-if="!form.processing" class="flex items-center justify-center gap-2">
                         <Icon icon="mdi:login" class="w-4 h-4" />
@@ -339,7 +329,7 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
     from { opacity: 0; transform: translateY(-4px); }
     to { opacity: 1; transform: translateY(0); }
 }
-.animate-fadeIn {
-    animation: fadeIn 0.2s ease-out;
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
 }
 </style>

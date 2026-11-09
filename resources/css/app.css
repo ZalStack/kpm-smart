@@ -4,7 +4,7 @@
 
 @layer base {
     :root {
-        --background: 210 20% 98%;
+        --background: 0 0% 100%;
         --foreground: 222 47% 11%;
         --card: 0 0% 100%;
         --card-foreground: 222 47% 11%;
@@ -12,24 +12,24 @@
         --popover-foreground: 222 47% 11%;
         --primary: 224 76% 48%;
         --primary-foreground: 0 0% 100%;
-        --secondary: 220 50% 95%;
-        --secondary-foreground: 224 76% 35%;
-        --muted: 215 25% 94%;
+        --secondary: 210 40% 96%;
+        --secondary-foreground: 222 47% 11%;
+        --muted: 210 40% 96.1%;
         --muted-foreground: 215 16% 47%;
-        --accent: 224 60% 95%;
-        --accent-foreground: 224 76% 30%;
-        --destructive: 0 84% 60%;
+        --accent: 210 40% 96.1%;
+        --accent-foreground: 222 47% 11%;
+        --destructive: 0 84.2% 60.2%;
         --destructive-foreground: 0 0% 100%;
-        --border: 215 28% 90%;
-        --input: 215 28% 90%;
+        --border: 214 32% 91%;
+        --input: 214 32% 91%;
         --ring: 224 76% 48%;
-        --radius: 0.75rem;
+        --radius: 1rem;
 
         --chart-1: 224 76% 48%;
         --chart-2: 262 83% 58%;
         --chart-3: 199 89% 48%;
         --chart-4: 38 92% 50%;
-        --chart-5: 0 84% 60%;
+        --chart-5: 0 84.2% 60.2%;
     }
 
     *,
@@ -77,12 +77,11 @@
 
 @layer components {
     /* =================================================================== */
-    /*  PR KK — SISTEM DESAIN MODERN (untuk UI SISWA & KOMPONEN BERSAMA)     */
-    /*  Semua kelas di bawah dipakai lintas halaman supaya tampilan          */
-    /*  konsisten, modern, dan responsif di segala ukuran layar.             */
+    /*  PR KK — DESIGN SYSTEM MODERN (LIGHT MODE ONLY)                     */
+    /*  Konsisten, modern, user-friendly, dan responsif di semua device.   */
     /* =================================================================== */
 
-    /* --- Kontainer Halaman (Lebar Full Modern Responsif) --- */
+    /* --- Kontainer Halaman --- */
     .page-shell {
         @apply w-full px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12;
     }
@@ -93,20 +92,24 @@
 
     /* --- Kartu --- */
     .ui-card {
-        @apply bg-card border border-border/70 rounded-2xl shadow;
+        @apply bg-card border border-border/80 rounded-3xl shadow-sm;
     }
 
     .ui-card-flat {
-        @apply bg-card border border-border/70 rounded-2xl;
+        @apply bg-card border border-border/80 rounded-3xl;
     }
 
     .ui-card-hover {
-        @apply transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-card-hover hover:border-primary/30;
+        @apply transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-card-hover hover:border-primary/40;
     }
 
-    /* --- Header Halaman (judul + subjudul + aksi) --- */
+    .ui-card-elevated {
+        @apply bg-card border border-border/60 rounded-3xl shadow-card-lg;
+    }
+
+    /* --- Header Halaman --- */
     .page-heading {
-        @apply text-2xl sm:text-[1.7rem] font-extrabold tracking-tight text-foreground leading-tight;
+        @apply text-2xl sm:text-[1.75rem] font-extrabold tracking-tight text-foreground leading-tight;
     }
 
     .page-subheading {
@@ -115,7 +118,7 @@
 
     /* --- Judul Seksi --- */
     .section-eyebrow {
-        @apply text-[11px] font-bold uppercase tracking-[0.14em] text-primary;
+        @apply text-[11px] font-extrabold uppercase tracking-[0.16em] text-primary;
     }
 
     .section-title {
@@ -124,189 +127,173 @@
 
     /* --- Label Status / Chip --- */
     .chip {
-        @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold leading-none;
+        @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-extrabold leading-none;
     }
 
     /* --- Ikon di dalam kotak berlatar --- */
     .icon-box {
-        @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl;
+        @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl;
     }
 
     .icon-box-sm {
-        @apply inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg;
+        @apply inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl;
+    }
+
+    .icon-box-lg {
+        @apply inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl;
     }
 
     /* --- Tombol --- */
     .btn {
-        @apply inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold tracking-tight
+        @apply inline-flex items-center justify-center gap-2 rounded-2xl text-sm font-extrabold tracking-tight
                transition-all duration-200 ease-out select-none
                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background
-               active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
+               active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
     }
 
     .btn-primary {
-        @apply btn bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25;
+        @apply btn bg-primary text-primary-foreground shadow-sm shadow-primary/25 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/30;
+    }
+
+    .btn-secondary {
+        @apply btn bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm;
     }
 
     .btn-ghost {
-        @apply btn text-muted-foreground hover:bg-muted/70 hover:text-foreground;
+        @apply btn text-muted-foreground hover:bg-muted/80 hover:text-foreground;
     }
 
     .btn-outline {
-        @apply btn border border-border/80 bg-card text-foreground hover:border-primary/40 hover:bg-accent/60 shadow;
+        @apply btn border border-border bg-card text-foreground hover:border-primary/50 hover:bg-accent/80 shadow-sm;
     }
 
-    /* --- Baris Statistik Ringkas --- */
+    .btn-destructive {
+        @apply btn bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 hover:shadow-md;
+    }
+
+    .btn-success {
+        @apply btn bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 hover:shadow-md;
+    }
+
+    /* --- Baris Statistik --- */
     .stat-tile-v2 {
-        @apply ui-card p-4 sm:p-5 transition-all duration-300 hover:shadow-card-hover;
+        @apply ui-card-elevated p-4 sm:p-6 transition-all duration-300 hover:shadow-card-hover border-0;
     }
 
     .stat-label {
-        @apply text-[11px] font-bold uppercase tracking-wider text-muted-foreground;
+        @apply text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground;
     }
 
     .stat-value {
-        @apply text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground;
+        @apply text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground mt-1;
     }
 
     /* --- Bilah Progres --- */
     .progress-track {
-        @apply h-2 w-full overflow-hidden rounded-full bg-muted;
+        @apply h-2.5 w-full overflow-hidden rounded-full bg-muted;
     }
 
     .progress-fill {
-        @apply h-full rounded-full bg-gradient-to-r from-primary to-indigo-500 transition-all duration-700 ease-out;
+        @apply h-full rounded-full bg-gradient-to-r from-primary to-brand-blue transition-all duration-700 ease-out;
     }
 
     /* --- Keadaan Kosong --- */
     .empty-state {
-        @apply flex flex-col items-center justify-center px-6 py-16 sm:py-20 text-center ui-card;
+        @apply flex flex-col items-center justify-center px-6 py-16 sm:py-24 text-center ui-card;
     }
 
     .empty-state-icon {
-        @apply mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-muted to-muted/40 text-muted-foreground/70 shadow-inner;
+        @apply mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-muted/50 text-muted-foreground/50 shadow-inner;
     }
 
     /* --- Bilah Tab Tersegmentasi --- */
     .seg-tabs {
-        @apply inline-flex w-fit items-center gap-1 rounded-xl border border-border/60 bg-muted/50 p-1;
+        @apply inline-flex w-fit items-center gap-1 rounded-2xl border border-border bg-muted/40 p-1;
     }
 
     .seg-tab {
-        @apply rounded-lg px-3.5 py-1.5 text-xs font-semibold text-muted-foreground transition-all duration-200
-               hover:text-foreground;
+        @apply rounded-xl px-3.5 py-1.5 text-xs font-extrabold text-muted-foreground transition-all duration-200 hover:text-foreground;
     }
 
     .seg-tab-active {
-        @apply bg-card text-foreground shadow;
+        @apply bg-card text-foreground shadow-sm;
     }
 
-    /* --- Tautan "kembali" --- */
+    /* --- Tautan kembali --- */
     .back-link {
-        @apply inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground;
+        @apply inline-flex items-center gap-1.5 text-sm font-extrabold text-muted-foreground transition-colors hover:text-primary;
     }
 
     /* --- Lencana Nilai --- */
     .score-pill {
-        @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold;
+        @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-extrabold;
     }
 
-    /* --- Pembungkus Grid responsif yang sering dipakai --- */
+    /* --- Grid Statistik Responsif --- */
     .grid-stats {
-        @apply grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4;
+        @apply grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4;
     }
 
-    /* --- Panel Hero (gradasi lembut) --- */
+    .grid-stats-3 {
+        @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5;
+    }
+
+    /* --- Panel Hero --- */
     .hero-panel {
-        @apply relative overflow-hidden rounded-3xl border border-primary/10
-               bg-gradient-to-br from-primary via-indigo-600 to-violet-700 text-white shadow-lg shadow-primary/10;
+        @apply relative overflow-hidden rounded-4xl border border-primary/20 text-white shadow-lg shadow-primary/20;
     }
 
     .hero-glass {
-        @apply rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md;
+        @apply rounded-3xl border border-white/25 bg-white/15 backdrop-blur-md;
     }
 
-    /* ===== Gradient Text (lama) ===== */
+    /* --- Gradient Text --- */
     .gradient-text {
-        @apply bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 bg-clip-text text-transparent;
+        @apply bg-gradient-to-r from-brand-indigo via-brand-blue to-brand-violet bg-clip-text text-transparent;
     }
 
     .gradient-brand {
-        @apply bg-gradient-to-r from-blue-600 to-indigo-600;
+        @apply bg-gradient-to-r from-brand-indigo to-brand-blue;
     }
 
-    /* ===== Brand Panel (Auth) ===== */
+    /* --- Brand Panel (Auth / Public) --- */
     .brand-panel {
         background:
-            radial-gradient(85% 65% at 90% 10%, rgba(99, 102, 241, 0.35), transparent 60%),
-            radial-gradient(75% 55% at 5% 90%, rgba(59, 130, 246, 0.25), transparent 60%),
-            radial-gradient(60% 50% at 70% 95%, rgba(139, 92, 246, 0.2), transparent 60%),
-            linear-gradient(145deg, #0f172a 0%, #1e1b4b 35%, #1e293b 70%, #0f172a 100%);
+            radial-gradient(85% 65% at 90% 10%, rgba(79, 70, 229, 0.15), transparent 60%),
+            radial-gradient(75% 55% at 5% 90%, rgba(37, 99, 235, 0.1), transparent 60%),
+            radial-gradient(60% 50% at 70% 95%, rgba(124, 58, 237, 0.08), transparent 60%),
+            hsl(var(--background));
     }
 
     .grid-dots {
-        background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+        background-image: radial-gradient(rgba(79, 70, 229, 0.08) 1px, transparent 1px);
         background-size: 24px 24px;
     }
 
     .right-bg {
         background:
-            radial-gradient(45% 40% at 5% 0%, rgba(37, 99, 235, 0.06), transparent 60%),
-            radial-gradient(40% 35% at 95% 95%, rgba(99, 102, 241, 0.05), transparent 60%),
+            radial-gradient(45% 40% at 5% 0%, rgba(37, 99, 235, 0.05), transparent 60%),
+            radial-gradient(40% 35% at 95% 95%, rgba(79, 70, 229, 0.04), transparent 60%),
             hsl(var(--background));
     }
 
-    /* ===== Auth Card ===== */
+    /* --- Auth Card --- */
     .auth-card {
         background: hsl(var(--card));
         border: 1px solid hsl(var(--border));
-        box-shadow: 0 20px 45px -15px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+        box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.06);
     }
 
-    .btn-auth {
-        position: relative;
-        overflow: hidden;
-        background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
-        color: #ffffff;
-        box-shadow: 0 10px 25px -8px rgba(37, 99, 235, 0.5);
-        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    /* --- Sidebar Light Mode --- */
+    .sidebar-light {
+        background: hsl(var(--card));
+        border-right: 1px solid hsl(var(--border));
+        box-shadow: var(--shadow-sidebar);
     }
 
-    .btn-auth:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 16px 32px -10px rgba(37, 99, 235, 0.6);
-        background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
-    }
-
-    .btn-auth:active {
-        transform: translateY(0);
-    }
-
-    .btn-auth[disabled] {
-        opacity: 0.7;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-    }
-
-    /* ===== Modern Sidebar ===== */
-    .sidebar-modern {
-        background: linear-gradient(180deg, #090e1a 0%, #0f172a 45%, #080d19 100%);
-    }
-
-    .sidebar-modern::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background:
-            radial-gradient(circle at 100% 0%, rgba(99, 102, 241, 0.22) 0%, transparent 55%),
-            radial-gradient(circle at 0% 100%, rgba(37, 99, 235, 0.18) 0%, transparent 55%);
-        pointer-events: none;
-    }
-
-    /* ===== Navigation ===== */
+    /* --- Navigation --- */
     .nav-active {
-        @apply bg-white/15 text-white font-semibold;
+        @apply bg-primary/60 text-white font-extrabold shadow-sm;
     }
 
     .sidebar-scroll::-webkit-scrollbar {
@@ -314,29 +301,29 @@
     }
 
     .sidebar-scroll::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.2);
+        background: hsl(var(--muted-foreground) / 0.2);
         border-radius: 4px;
     }
 
     .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 255, 255, 0.35);
+        background: hsl(var(--muted-foreground) / 0.35);
     }
 
     .sidebar-scroll::-webkit-scrollbar-track {
         background: transparent;
     }
 
-    /* ===== Mobile Navigation (Bottom Bar) ===== */
+    /* --- Mobile Navigation Bottom Bar --- */
     .mobile-nav-item {
-        @apply flex flex-col items-center justify-center gap-1 py-1.5 px-3 rounded-2xl text-muted-foreground
+        @apply flex flex-col items-center justify-center gap-1 py-1.5 px-2 rounded-3xl text-muted-foreground
                transition-all duration-200 active:scale-95 select-none;
     }
 
     .mobile-nav-item.active {
-        @apply text-primary font-bold bg-primary/10 shadow-2xs;
+        @apply text-primary font-extrabold bg-primary/10 shadow-sm;
     }
 
-    /* ===== Modern Toggle Switch ===== */
+    /* --- Modern Toggle Switch --- */
     .toggle-switch {
         @apply relative inline-flex items-center cursor-pointer flex-shrink-0;
     }
@@ -346,7 +333,7 @@
     }
 
     .toggle-switch .toggle-track {
-        @apply relative h-6 w-11 rounded-full bg-slate-200 transition-colors duration-200;
+        @apply relative h-6 w-11 rounded-full bg-muted transition-colors duration-200;
     }
 
     .toggle-switch input:checked ~ .toggle-track {
@@ -354,37 +341,44 @@
     }
 
     .toggle-switch .toggle-thumb {
-        @apply absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-md
-               transition-transform duration-200;
+        @apply absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-200;
     }
 
     .toggle-switch input:checked ~ .toggle-track .toggle-thumb {
         transform: translateX(1.25rem);
     }
 
-    /* ===== Glass Effects ===== */
+    /* --- Glass Effects --- */
     .glass-card {
-        @apply bg-card/90 backdrop-blur-xl border border-border shadow-sm rounded-2xl;
+        @apply bg-card/80 backdrop-blur-xl border border-border shadow-sm rounded-3xl;
     }
 
     .nav-glass {
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
     }
 
-    /* ===== Skeleton ===== */
+    /* --- Skeleton --- */
     .skeleton {
-        @apply bg-muted rounded-lg animate-pulse;
+        @apply bg-muted rounded-2xl animate-pulse;
     }
 
-    /* ===== Stat Tile ===== */
+    .skeleton-text {
+        @apply bg-muted rounded-lg animate-pulse h-4;
+    }
+
+    .skeleton-text-lg {
+        @apply bg-muted rounded-lg animate-pulse h-6;
+    }
+
+    /* --- Stat Tile --- */
     .stat-tile {
         position: relative;
         background: hsl(var(--card));
-        border-radius: 1rem;
+        border-radius: 1.5rem;
         border: 1px solid hsl(var(--border));
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s, border-color 0.25s;
         overflow: hidden;
     }
@@ -401,7 +395,7 @@
 
     .stat-tile:hover {
         transform: translateY(-3px);
-        box-shadow: 0 12px 28px -8px rgba(15, 23, 42, 0.08);
+        box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.08);
         border-color: var(--tile-accent, hsl(var(--primary)));
     }
 
@@ -417,18 +411,18 @@
         transform: translateY(-3px);
     }
 
-    /* ===== Separator ===== */
+    /* --- Separator --- */
     .separator {
         @apply shrink-0 bg-border h-[1px] w-full;
     }
 
-    /* ===== Spinner ===== */
+    /* --- Spinner --- */
     .spinner {
         width: 18px;
         height: 18px;
         border-radius: 9999px;
-        border: 2.5px solid rgba(255, 255, 255, 0.35);
-        border-top-color: #fff;
+        border: 2.5px solid rgba(0, 0, 0, 0.1);
+        border-top-color: hsl(var(--primary));
         animation: spin 0.7s linear infinite;
     }
 }

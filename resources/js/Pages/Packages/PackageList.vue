@@ -19,7 +19,6 @@ const props = defineProps({
     filters: { type: Object, default: () => ({}) },
 });
 
-/* ── Status pengerjaan ── */
 const startingId = ref(null);
 
 function attemptInfo(pkg) {
@@ -70,37 +69,34 @@ function ctaIcon(pkg) {
 }
 
 function ctaClass(pkg) {
-    if (isLocked(pkg)) return 'bg-muted text-muted-foreground cursor-not-allowed';
+    if (isLocked(pkg)) return 'bg-muted text-muted-foreground cursor-not-allowed border border-border';
     const s = attemptStatus(pkg);
     if (s === 'completed') return 'bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100';
-    if (s === 'in_progress') return 'bg-sky-50 border border-sky-200 text-sky-700 hover:bg-sky-100';
-    return 'bg-primary text-primary-foreground hover:bg-primary/90';
+    if (s === 'in_progress') return 'bg-blue-50 border border-blue-200 text-brand-blue hover:bg-blue-100';
+    return 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-primary/25';
 }
 
-/* ── Status jadwal badge ── */
 const statusMeta = {
-    active:   { label: 'Aktif',        cls: 'bg-emerald-100 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500 animate-pulse' },
-    upcoming: { label: 'Akan Datang',  cls: 'bg-amber-100 text-amber-700 border-amber-200',       dot: 'bg-amber-500' },
-    expired:  { label: 'Berakhir',     cls: 'bg-slate-100 text-slate-600 border-slate-200',        dot: 'bg-slate-400' },
-    no_limit: { label: 'Tanpa Batas',  cls: 'bg-indigo-100 text-indigo-700 border-indigo-200',     dot: 'bg-indigo-500' },
+    active:   { label: 'Aktif',        cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500 animate-pulse' },
+    upcoming: { label: 'Akan Datang',  cls: 'bg-amber-50 text-amber-700 border-amber-200',       dot: 'bg-amber-500' },
+    expired:  { label: 'Berakhir',     cls: 'bg-slate-50 text-slate-600 border-slate-200',        dot: 'bg-slate-400' },
+    no_limit: { label: 'Tanpa Batas',  cls: 'bg-indigo-50 text-indigo-700 border-indigo-200',     dot: 'bg-indigo-500' },
 };
 
-/* ── Attempt status badge ── */
 function attemptBadge(pkg) {
     const s = attemptStatus(pkg);
-    if (s === 'completed')   return { label: 'Selesai',  cls: 'bg-emerald-100 text-emerald-700 border-emerald-200', icon: 'mdi:check-circle' };
-    if (s === 'in_progress') return { label: 'Berjalan', cls: 'bg-sky-100 text-sky-700 border-sky-200',             icon: 'mdi:clock-outline' };
+    if (s === 'completed')   return { label: 'Selesai',  cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: 'mdi:check-circle' };
+    if (s === 'in_progress') return { label: 'Berjalan', cls: 'bg-blue-50 text-brand-blue border-blue-200',             icon: 'mdi:clock-outline' };
     return null;
 }
 
-/* ── Folder warna bidang ── */
 const bidangColors = {
-    'MTK':      { bg: 'bg-blue-500', light: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', icon: 'mdi:math-compass' },
-    'IPA':      { bg: 'bg-emerald-500', light: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', icon: 'mdi:flask-outline' },
-    'IPS':      { bg: 'bg-amber-500', light: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', icon: 'mdi:earth' },
-    'B.IND':    { bg: 'bg-rose-500', light: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', icon: 'mdi:book-alphabet' },
-    'B.ING':    { bg: 'bg-purple-500', light: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200', icon: 'mdi:translate' },
-    'default':  { bg: 'bg-slate-500', light: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200', icon: 'mdi:folder-outline' },
+    'MTK':      { bg: 'bg-brand-blue/10', light: 'bg-blue-50', text: 'text-brand-blue', border: 'border-blue-200', icon: 'mdi:math-compass' },
+    'IPA':      { bg: 'bg-brand-emerald/10', light: 'bg-emerald-50', text: 'text-brand-emerald', border: 'border-emerald-200', icon: 'mdi:flask-outline' },
+    'IPS':      { bg: 'bg-brand-amber/10', light: 'bg-amber-50', text: 'text-brand-amber', border: 'border-amber-200', icon: 'mdi:earth' },
+    'B.IND':    { bg: 'bg-rose-50', light: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', icon: 'mdi:book-alphabet' },
+    'B.ING':    { bg: 'bg-brand-violet/10', light: 'bg-brand-violet/10', text: 'text-brand-violet', border: 'border-brand-violet/200', icon: 'mdi:translate' },
+    'default':  { bg: 'bg-slate-50', light: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200', icon: 'mdi:folder-outline' },
 };
 
 function getBidangColor(bidang) {
@@ -109,7 +105,6 @@ function getBidangColor(bidang) {
     return bidangColors[key] || bidangColors['default'];
 }
 
-/* ── Folder state ── */
 const openFolders = ref({});
 
 function toggleFolder(key) {
@@ -117,14 +112,11 @@ function toggleFolder(key) {
 }
 
 function isFolderOpen(key) {
-    return openFolders.value[key] !== false; // default terbuka
+    return openFolders.value[key] !== false;
 }
 
-/* ── Grup: Kelas → Bidang → Packages ── */
 const grouped = computed(() => {
     const all = props.packages?.data || [];
-
-    // Group by kelas
     const byKelas = {};
     for (const pkg of all) {
         const kelas = pkg.kelas || 'Tanpa Kelas';
@@ -133,8 +125,6 @@ const grouped = computed(() => {
         if (!byKelas[kelas][bidang]) byKelas[kelas][bidang] = [];
         byKelas[kelas][bidang].push(pkg);
     }
-
-    // Urutkan kelas secara ascending, bidang secara ascending
     return Object.entries(byKelas)
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([kelas, bidangMap]) => ({
@@ -159,49 +149,49 @@ const totalActive = computed(() =>
         <template #header-sub>Pilih folder kelas dan bidang untuk melihat tugas PR yang tersedia.</template>
 
         <template #header-actions>
-            <div class="flex items-center gap-2">
-                <span class="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-card px-3.5 py-2 text-xs font-semibold text-foreground shadow-sm">
-                    <Icon icon="mdi:book-open-variant" class="h-3.5 w-3.5 text-primary" />
-                    <span class="font-extrabold text-primary">{{ totalPackages }}</span>
-                    <span class="text-muted-foreground">PR Tersedia</span>
+            <div class="flex items-center gap-3">
+                <span class="inline-flex items-center gap-2 rounded-xl border border-brand-blue/20 bg-blue-50 px-3.5 py-2 text-xs font-extrabold text-brand-blue shadow-sm">
+                    <Icon icon="mdi:book-open-variant" class="h-3.5 w-3.5" />
+                    <span class="font-extrabold text-brand-blue">{{ totalPackages }}</span>
+                    <span class="text-muted-foreground/80">PR Tersedia</span>
                 </span>
-                <span v-if="totalActive > 0" class="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-semibold text-emerald-700">
-                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span v-if="totalActive > 0" class="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-extrabold text-emerald-700">
+                    <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     {{ totalActive }} Sedang Aktif
                 </span>
             </div>
         </template>
 
-        <!-- Banner Jadwal PR Istirahat (Sabtu 19:00 - Jumat 19:00 WIB) -->
+        <!-- Banner Jadwal PR Istirahat -->
         <div
             v-if="!isHomeworkWindowOpen"
-            class="anim-fade-in-up mb-6 flex flex-col gap-3 rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-500/15 via-amber-400/10 to-transparent p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
+            class="anim-fade-in-up mb-6 flex flex-col gap-3 rounded-3xl border border-amber-200 bg-gradient-to-r from-amber-100/80 via-amber-50/60 to-transparent p-5 sm:flex-row sm:items-center sm:justify-between"
         >
             <div class="flex items-start gap-3 sm:items-center">
-                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs">
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-sm">
                     <Icon icon="mdi:clock-alert-outline" class="h-5 w-5" />
                 </span>
                 <div>
-                    <p class="text-sm font-bold text-amber-900 dark:text-amber-200">
+                    <p class="text-sm font-extrabold text-amber-900 dark:text-amber-200">
                         Jadwal Pengerjaan PR Sedang Istirahat
                     </p>
-                    <p class="mt-0.5 text-xs leading-relaxed text-amber-800/80 dark:text-amber-300/80">
+                    <p class="mt-0.5 text-xs leading-relaxed text-amber-800/90 dark:text-amber-300/90">
                         Tugas PR dibuka setiap hari <strong>Sabtu pukul 19:00 WIB</strong> hingga <strong>Jumat pukul 19:00 WIB</strong>. Pengerjaan baru dapat dimulai saat jam aktif dibuka kembali.
                     </p>
                 </div>
             </div>
-            <span class="shrink-0 self-start rounded-full border border-amber-400/40 bg-amber-100/80 px-3 py-1 text-xs font-bold text-amber-900 sm:self-auto">
+            <span class="shrink-0 self-start rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-extrabold text-amber-900 sm:self-auto">
                 Sedang Ditutup
             </span>
         </div>
 
         <!-- Empty state -->
-        <div v-if="grouped.length === 0" class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card px-6 py-20 text-center">
-            <span class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/60 text-muted-foreground/50">
-                <Icon icon="mdi:folder-open-outline" class="h-8 w-8" />
+        <div v-if="grouped.length === 0" class="flex flex-col items-center justify-center rounded-4xl border-2 border-dashed border-border bg-card px-8 py-24 text-center">
+            <span class="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-muted/40 text-muted-foreground/40">
+                <Icon icon="mdi:folder-open-outline" class="h-10 w-10" />
             </span>
-            <h3 class="text-base font-bold text-foreground">Belum Ada PR Tersedia</h3>
-            <p class="mt-1.5 max-w-sm text-sm text-muted-foreground">
+            <h3 class="text-base font-extrabold text-foreground">Belum Ada PR Tersedia</h3>
+            <p class="mt-2 max-w-sm text-sm text-muted-foreground leading-relaxed">
                 <template v-if="userBidangGroup">
                     Saat ini belum ada tugas PR {{ userBidangGroup }} yang tersedia untukmu.
                 </template>
@@ -209,32 +199,31 @@ const totalActive = computed(() =>
                     Saat ini belum ada tugas PR yang tersedia. Silakan kembali sesuai jadwal.
                 </template>
             </p>
-            <Link :href="route('user.dashboard')" class="mt-6 inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-xs font-semibold text-foreground transition hover:bg-muted">
+            <Link :href="route('user.dashboard')" class="mt-7 inline-flex items-center gap-2 rounded-xl border border-border px-6 py-3 text-xs font-extrabold text-foreground transition hover:bg-muted">
                 <Icon icon="mdi:arrow-left" class="h-4 w-4" />
                 Kembali ke Beranda
             </Link>
         </div>
 
         <!-- Foldering view: Kelas → Bidang → Packages -->
-        <div v-else class="space-y-6">
-            <!-- Kelas folder -->
+        <div v-else class="space-y-7">
             <section
                 v-for="kelasGroup in grouped"
                 :key="kelasGroup.kelas"
-                class="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm"
+                class="overflow-hidden rounded-3xl border border-border bg-card shadow-sm"
             >
                 <!-- Kelas header -->
                 <button
                     type="button"
-                    class="flex w-full items-center justify-between gap-3 bg-gradient-to-r from-slate-800 to-slate-700 px-5 py-4 text-left transition hover:from-slate-700 hover:to-slate-600"
+                    class="flex w-full items-center justify-between gap-3 bg-gradient-to-r from-slate-900 to-slate-800 px-5 py-4 text-left transition hover:from-slate-800 hover:to-slate-700"
                     @click="toggleFolder('kelas-' + kelasGroup.kelas)"
                 >
                     <div class="flex items-center gap-3">
-                        <span class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white/15 text-white">
+                        <span class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-white/10 text-white">
                             <Icon icon="mdi:school-outline" class="h-5 w-5" />
                         </span>
                         <div>
-                            <p class="text-base font-bold text-white">{{ kelasGroup.kelas }}</p>
+                            <p class="text-base font-extrabold text-white">{{ kelasGroup.kelas }}</p>
                             <p class="text-xs text-white/60">
                                 {{ kelasGroup.bidangs.length }} Bidang ·
                                 {{ kelasGroup.bidangs.reduce((acc, b) => acc + b.pkgs.length, 0) }} PR
@@ -248,46 +237,45 @@ const totalActive = computed(() =>
                 </button>
 
                 <!-- Bidang folders inside kelas -->
-                <div v-if="isFolderOpen('kelas-' + kelasGroup.kelas)" class="divide-y divide-border/50 p-4 space-y-3">
+                <div v-if="isFolderOpen('kelas-' + kelasGroup.kelas)" class="divide-y divide-border/50 p-5 space-y-4">
                     <div
                         v-for="bidangGroup in kelasGroup.bidangs"
                         :key="bidangGroup.bidang"
-                        class="overflow-hidden rounded-xl border border-border/50"
+                        class="overflow-hidden rounded-2xl border border-border/50"
                     >
                         <!-- Bidang header -->
                         <button
                             type="button"
-                            class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition"
-                            :class="[getBidangColor(bidangGroup.bidang).light, 'hover:opacity-90']"
+                            class="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition"
+                            :class="[getBidangColor(bidangGroup.bidang).bg, 'hover:opacity-90']"
                             @click="toggleFolder('bidang-' + kelasGroup.kelas + '-' + bidangGroup.bidang)"
                         >
                             <div class="flex items-center gap-2.5">
                                 <span
-                                    class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-white"
-                                    :class="getBidangColor(bidangGroup.bidang).bg"
+                                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl text-white"
+                                    :class="getBidangColor(bidangGroup.bidang).bg.replace('/10', '')"
                                 >
                                     <Icon :icon="getBidangColor(bidangGroup.bidang).icon" class="h-4 w-4" />
                                 </span>
                                 <div>
                                     <p
-                                        class="text-sm font-bold"
+                                        class="text-sm font-extrabold"
                                         :class="getBidangColor(bidangGroup.bidang).text"
                                     >{{ bidangGroup.bidang }}</p>
                                     <p class="text-[11px] text-muted-foreground">{{ bidangGroup.pkgs.length }} tugas PR</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
-                                <!-- Badge aktif -->
                                 <span
                                     v-if="bidangGroup.pkgs.some(p => p.schedule_status === 'active')"
-                                    class="hidden sm:inline-flex items-center gap-1 rounded-full border bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border-emerald-200"
+                                    class="hidden sm:inline-flex items-center gap-1.5 rounded-full border bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-700 border-emerald-200"
                                 >
-                                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
                                     Ada yang Aktif
                                 </span>
                                 <Icon
                                     :icon="isFolderOpen('bidang-' + kelasGroup.kelas + '-' + bidangGroup.bidang) ? 'mdi:folder-open-outline' : 'mdi:folder-outline'"
-                                    class="h-4.5 w-4.5"
+                                    class="h-5 w-5"
                                     :class="getBidangColor(bidangGroup.bidang).text"
                                 />
                                 <Icon
@@ -305,63 +293,56 @@ const totalActive = computed(() =>
                             <div
                                 v-for="pkg in bidangGroup.pkgs"
                                 :key="pkg.id"
-                                class="group flex items-center justify-between gap-4 px-4 py-3.5 transition-colors hover:bg-muted/40"
-                                :class="{ 'opacity-70': isLocked(pkg) }"
+                                class="group flex items-center justify-between gap-4 px-4 py-4 transition-colors hover:bg-muted/50 rounded-xl"
+                                :class="{ 'opacity-60': isLocked(pkg), 'ring-2 ring-primary/20': pkg.id === startingId }"
                             >
-                                <!-- Kiri: info PR -->
-                                <div class="flex min-w-0 flex-1 items-center gap-3">
-                                    <!-- Icon PR -->
+                                <div class="flex min-w-0 flex-1 items-center gap-3.5">
                                     <div
-                                        class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border"
+                                        class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl border"
                                         :class="[getBidangColor(pkg.bidang).light, getBidangColor(pkg.bidang).border]"
                                     >
                                         <img
                                             v-if="pkg.thumbnail"
                                             :src="'/storage/' + pkg.thumbnail"
                                             :alt="pkg.title"
-                                            class="h-full w-full rounded-xl object-cover"
+                                            class="h-full w-full rounded-2xl object-cover"
                                         />
                                         <Icon
                                             v-else
                                             :icon="getBidangColor(pkg.bidang).icon"
-                                            class="h-4.5 w-4.5"
+                                            class="h-5 w-5"
                                             :class="getBidangColor(pkg.bidang).text"
                                         />
                                     </div>
 
-                                    <!-- Info teks -->
                                     <div class="min-w-0 flex-1">
-                                        <p class="truncate text-sm font-bold text-foreground transition-colors group-hover:text-primary">
+                                        <p class="truncate text-sm font-extrabold text-foreground transition-colors group-hover:text-primary">
                                             {{ pkg.title }}
                                         </p>
-                                        <div class="mt-1 flex flex-wrap items-center gap-2">
-                                            <!-- Status jadwal badge -->
+                                        <div class="mt-1.5 flex flex-wrap items-center gap-2">
                                             <span
                                                 v-if="statusMeta[pkg.schedule_status]"
-                                                class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold"
+                                                class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-extrabold"
                                                 :class="statusMeta[pkg.schedule_status].cls"
                                             >
                                                 <span class="h-1.5 w-1.5 rounded-full" :class="statusMeta[pkg.schedule_status].dot"></span>
                                                 {{ statusMeta[pkg.schedule_status].label }}
                                             </span>
 
-                                            <!-- Attempt badge -->
                                             <span
                                                 v-if="attemptBadge(pkg)"
-                                                class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold"
+                                                class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-extrabold"
                                                 :class="attemptBadge(pkg).cls"
                                             >
-                                                <Icon :icon="attemptBadge(pkg).icon" class="h-2.5 w-2.5" />
+                                                <Icon :icon="attemptBadge(pkg).icon" class="h-3 w-3" />
                                                 {{ attemptBadge(pkg).label }}
                                             </span>
 
-                                            <!-- Jumlah soal -->
                                             <span class="text-[11px] text-muted-foreground">
                                                 <Icon icon="mdi:help-circle-outline" class="inline h-3 w-3" />
                                                 {{ pkg.total_questions }} Soal
                                             </span>
 
-                                            <!-- Jadwal -->
                                             <span v-if="pkg.schedule_label" class="hidden sm:inline text-[11px] text-muted-foreground">
                                                 · {{ pkg.schedule_label }}
                                             </span>
@@ -369,17 +350,16 @@ const totalActive = computed(() =>
                                     </div>
                                 </div>
 
-                                <!-- Kanan: tombol aksi -->
                                 <button
                                     type="button"
-                                    class="flex-shrink-0 inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all duration-200"
+                                    class="flex-shrink-0 inline-flex items-center gap-1.5 rounded-2xl px-4 py-2.5 text-xs font-extrabold transition-all duration-200"
                                     :class="ctaClass(pkg)"
                                     :disabled="isLocked(pkg) || startingId === pkg.id"
                                     @click="openPackage(pkg)"
                                 >
                                     <Icon
                                         :icon="ctaIcon(pkg)"
-                                        class="h-3.5 w-3.5"
+                                        class="h-4 w-4"
                                         :class="{ 'animate-spin': startingId === pkg.id }"
                                     />
                                     <span class="hidden sm:inline">{{ ctaLabel(pkg) }}</span>
@@ -392,3 +372,20 @@ const totalActive = computed(() =>
         </div>
     </UserLayout>
 </template>
+
+<style scoped>
+.dropdown-enter-active {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dropdown-leave-active {
+    transition: all 0.15s ease-in;
+}
+.dropdown-enter-from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-6px);
+}
+.dropdown-leave-to {
+    opacity: 0;
+    transform: scale(0.96) translateY(-6px);
+}
+</style>

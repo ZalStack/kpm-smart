@@ -3,6 +3,7 @@ import { inject, computed } from 'vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Icon } from '@iconify/vue/offline';
 import UserLayout from '@/Layouts/UserLayout.vue';
+import StatCard from '@/Components/shared/StatCard.vue';
 
 const route = inject('route');
 const page = usePage();
@@ -27,7 +28,6 @@ const greetingTime = computed(() => {
 
 const firstName = computed(() => (user.value?.name || 'Siswa').split(' ')[0]);
 
-/** Isi catatan guru: utamakan teks notes, fallback ke teks message. */
 const noteText = (note) => note.notes || note.message || '';
 </script>
 
@@ -37,41 +37,34 @@ const noteText = (note) => note.notes || note.message || '';
         <template #header-title>Beranda</template>
         <template #header-sub>Ringkasan belajar dan catatan guru terbarumu.</template>
 
-        <!-- ====================== HERO SELAMAT DATANG ====================== -->
-        <section class="hero-panel anim-fade-in-up p-6 sm:p-8 lg:p-10">
-            <!-- Ornamen latar -->
-            <div class="pointer-events-none absolute inset-0" aria-hidden="true">
-                <div class="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-white/15 blur-3xl"></div>
-                <div class="absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-cyan-400/25 blur-3xl"></div>
-                <div class="grid-dots absolute inset-0 opacity-40"></div>
-            </div>
-
+        <!-- HERO SELAMAT DATANG -->
+        <section class="hero-panel anim-fade-in-up p-6 sm:p-8 lg:p-10 mb-6 sm:mb-8">
             <div class="relative z-10 max-w-2xl">
-                <div class="mb-4 inline-flex flex-wrap items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-[11px] font-bold text-blue-50 backdrop-blur">
+                <div class="mb-4 inline-flex flex-wrap items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3.5 py-1.5 text-[11px] font-extrabold text-blue-100 backdrop-blur-sm">
                     <Icon icon="mdi:school-outline" class="h-3.5 w-3.5 text-cyan-200" />
                     <span>{{ user?.student_class ? 'Kelas ' + user.student_class : (user?.kelas ? 'Kelas ' + user.kelas : 'Siswa PR KK') }}</span>
-                    <span v-if="user?.bidang" class="text-white/70">· {{ user.bidang }}</span>
-                    <span v-if="user?.level" class="text-white/60">· Level {{ user.level }}</span>
+                    <span v-if="user?.bidang" class="text-white/80">· {{ user.bidang }}</span>
+                    <span v-if="user?.level" class="text-white/80">· Level {{ user.level }}</span>
                 </div>
 
-                <h2 class="text-[1.6rem] font-extrabold leading-tight tracking-tight text-white sm:text-3xl lg:text-4xl">
+                <h2 class="text-[1.75rem] font-extrabold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
                     {{ greetingTime }}, {{ firstName }}! <span class="inline-block">👋</span>
                 </h2>
-                <p class="mt-2.5 max-w-md text-sm leading-relaxed text-blue-100/90">
+                <p class="mt-3 max-w-md text-sm leading-relaxed text-blue-100/90">
                     Lanjutkan latihanmu hari ini. Kerjakan PR pekanan terstruktur dan pahami setiap konsep lebih dalam.
                 </p>
 
-                <div class="mt-6 flex flex-wrap items-center gap-3">
+                <div class="mt-7 flex flex-wrap items-center gap-3">
                     <Link
                         :href="route('user.packages.index')"
-                        class="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-indigo-900 shadow-lg shadow-indigo-950/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-50 active:translate-y-0"
+                        class="inline-flex items-center gap-2 rounded-2xl bg-white px-6 py-3.5 text-sm font-extrabold text-brand-indigo shadow-lg shadow-indigo-200/40 transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-50 active:translate-y-0"
                     >
-                        <Icon icon="mdi:book-open-page-variant" class="h-4 w-4 text-indigo-700" />
-                        Mulai Kerjakan PR Siswa Kelas Khusus
+                        <Icon icon="mdi:book-open-page-variant" class="h-4 w-4 text-brand-indigo" />
+                        Mulai Kerjakan PR
                     </Link>
                     <Link
                         :href="route('user.leaderboard')"
-                        class="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 py-3 text-sm font-semibold text-white backdrop-blur transition-all duration-200 hover:bg-white/20"
+                        class="inline-flex items-center gap-2 rounded-2xl border border-white/25 bg-white/10 px-5 py-3.5 text-sm font-extrabold text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/20"
                     >
                         <Icon icon="mdi:trophy-outline" class="h-4 w-4 text-amber-300" />
                         Lihat Peringkat
@@ -80,85 +73,97 @@ const noteText = (note) => note.notes || note.message || '';
             </div>
         </section>
 
-        <!-- ====================== RINGKASAN BELAJAR ====================== -->
-        <section class="anim-fade-in-up anim-delay-1 mt-5 sm:mt-6">
-            <div class="mb-3">
-                <h3 class="section-title">Ringkasan Belajar</h3>
+        <!-- RINGKASAN BELAJAR -->
+        <section class="anim-fade-in-up anim-delay-1 mt-4">
+            <div class="mb-3 flex items-center justify-between gap-3">
+                <div>
+                    <h3 class="section-title">Ringkasan Belajar</h3>
+                    <p class="text-xs text-muted-foreground">Ketercapaian latihan dan performa nilai</p>
+                </div>
+                <Link
+                    :href="route('user.practice.history')"
+                    class="back-link"
+                >
+                    Lihat Semua Riwayat <Icon icon="mdi:arrow-right" class="h-3 w-3 ml-0.5" />
+                </Link>
             </div>
 
-            <div class="grid-stats">
+            <div class="grid-stats mb-8">
                 <!-- Total Percobaan -->
                 <div class="stat-tile-v2">
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between mb-4">
                         <span class="stat-label">Percobaan</span>
-                        <span class="icon-box-sm bg-primary/10 text-primary">
+                        <span class="icon-box-sm bg-blue-50 text-brand-blue">
                             <Icon icon="mdi:check-circle-outline" class="h-5 w-5" />
                         </span>
                     </div>
-                    <p class="stat-value mt-3">{{ totalAttempts }}</p>
-                    <p class="mt-1 text-xs text-muted-foreground">kali mengerjakan</p>
+                    <p class="stat-value">{{ totalAttempts }}</p>
+                    <p class="text-xs text-muted-foreground">kali mengerjakan</p>
                 </div>
 
                 <!-- Skor Tertinggi -->
                 <div class="stat-tile-v2">
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between mb-4">
                         <span class="stat-label">Tertinggi</span>
-                        <span class="icon-box-sm bg-amber-50 text-amber-600">
+                        <span class="icon-box-sm bg-amber-50 text-brand-amber">
                             <Icon icon="mdi:trophy-outline" class="h-5 w-5" />
                         </span>
                     </div>
-                    <p class="stat-value mt-3 text-amber-600">{{ bestScore }}%</p>
-                    <p class="mt-1 text-xs text-muted-foreground">rekor pribadi</p>
+                    <p class="stat-value text-brand-amber">{{ bestScore }}%</p>
+                    <p class="text-xs text-muted-foreground">rekor pribadi</p>
                 </div>
 
                 <!-- Rata-rata -->
                 <div class="stat-tile-v2">
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between mb-4">
                         <span class="stat-label">Rata-rata</span>
-                        <span class="icon-box-sm bg-indigo-50 text-indigo-600">
+                        <span class="icon-box-sm bg-indigo-50 text-brand-indigo">
                             <Icon icon="mdi:chart-bar" class="h-5 w-5" />
                         </span>
                     </div>
-                    <p class="stat-value mt-3 text-indigo-600">{{ averageScore }}%</p>
-                    <p class="mt-1 text-xs text-muted-foreground">nilai rata-rata</p>
+                    <p class="stat-value text-brand-indigo">{{ averageScore }}%</p>
+                    <p class="text-xs text-muted-foreground">nilai rata-rata</p>
                 </div>
 
                 <!-- PR Tersedia -->
                 <div class="stat-tile-v2">
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between mb-4">
                         <span class="stat-label">Tersedia</span>
-                        <span class="icon-box-sm bg-emerald-50 text-emerald-600">
+                        <span class="icon-box-sm bg-emerald-50 text-brand-emerald">
                             <Icon icon="mdi:book-open-variant" class="h-5 w-5" />
                         </span>
                     </div>
-                    <p class="stat-value mt-3 text-emerald-600">{{ packages.length }}</p>
-                    <p class="mt-1 text-xs text-muted-foreground">paket PR pekanan</p>
+                    <p class="stat-value text-brand-emerald">{{ packages.length }}</p>
+                    <p class="text-xs text-muted-foreground">paket PR pekanan</p>
                 </div>
             </div>
         </section>
 
-        <!-- ====================== CATATAN GURU ====================== -->
-        <section class="anim-fade-in-up anim-delay-2 mt-6 sm:mt-8">
-            <div class="mb-3 flex items-center justify-between gap-3">
-                <h3 class="section-title">Catatan Guru</h3>
+        <!-- CATATAN GURU -->
+        <section class="anim-fade-in-up anim-delay-2 mt-4">
+            <div class="mb-4 flex items-center justify-between gap-3">
+                <div>
+                    <h3 class="section-title">Catatan Guru</h3>
+                    <p class="text-xs text-muted-foreground">Pesan dari pembimbing belajarmu</p>
+                </div>
                 <span class="chip bg-muted text-muted-foreground">{{ teacherNotes.length }} catatan</span>
             </div>
 
-            <div v-if="teacherNotes.length > 0" class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div v-if="teacherNotes.length > 0" class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 <article
                     v-for="(note, i) in teacherNotes"
                     :key="note.id"
-                    class="ui-card p-5"
-                    :style="{ animationDelay: (i * 60) + 'ms' }"
+                    class="ui-card-hover p-5 sm:p-6"
+                    :style="{ animationDelay: (i * 80) + 'ms' }"
                 >
-                    <div class="mb-3 flex items-start justify-between gap-3">
+                    <div class="mb-4 flex items-start justify-between gap-3">
                         <div class="flex min-w-0 items-start gap-3">
                             <span class="icon-box shrink-0 border border-amber-100 bg-amber-50 text-amber-600">
                                 <Icon icon="mdi:notebook-edit-outline" class="h-5 w-5" />
                             </span>
                             <div class="min-w-0">
-                                <p class="truncate text-sm font-bold text-foreground">{{ note.title }}</p>
-                                <p class="mt-0.5 text-xs font-semibold text-muted-foreground">
+                                <p class="truncate text-sm font-extrabold text-foreground">{{ note.title }}</p>
+                                <p class="mt-0.5 text-xs font-extrabold text-muted-foreground">
                                     {{ note.teacher_name || 'Guru Pembimbing' }}
                                     <span v-if="note.week_number"> · Pekan {{ note.week_number }}</span>
                                 </p>
@@ -172,25 +177,42 @@ const noteText = (note) => note.notes || note.message || '';
                         </span>
                     </div>
 
-                    <p class="text-sm leading-relaxed text-muted-foreground">{{ noteText(note) }}</p>
+                    <p class="text-sm leading-relaxed text-muted-foreground mb-5">{{ noteText(note) }}</p>
 
-                    <p class="mt-3 flex items-center gap-1.5 border-t border-border/60 pt-3 text-[11px] font-semibold text-muted-foreground/70">
+                    <div class="flex items-center gap-1.5 border-t border-border/60 pt-4 text-[11px] font-extrabold text-muted-foreground/70">
                         <Icon icon="mdi:clock-outline" class="h-3.5 w-3.5" />
-                        {{ note.created_at }}
-                    </p>
+                        <span>{{ note.created_at }}</span>
+                    </div>
                 </article>
             </div>
 
             <!-- Empty state -->
-            <div v-else class="ui-card flex flex-col items-center px-6 py-10 text-center">
-                <span class="icon-box mb-3 bg-muted/60 text-muted-foreground/60">
-                    <Icon icon="mdi:notebook-outline" class="h-6 w-6" />
+            <div v-else class="empty-state">
+                <span class="empty-state-icon">
+                    <Icon icon="mdi:notebook-outline" class="h-8 w-8" />
                 </span>
-                <p class="text-sm font-bold text-foreground">Belum ada catatan guru</p>
-                <p class="mt-1 max-w-sm text-xs leading-relaxed text-muted-foreground">
+                <p class="text-sm font-extrabold text-foreground">Belum ada catatan guru</p>
+                <p class="mt-2 max-w-sm text-xs leading-relaxed text-muted-foreground">
                     Catatan dari guru pembimbing akan muncul di sini setiap kali dikirimkan untukmu.
                 </p>
             </div>
         </section>
     </UserLayout>
 </template>
+
+<style scoped>
+.dropdown-enter-active {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dropdown-leave-active {
+    transition: all 0.15s ease-in;
+}
+.dropdown-enter-from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-6px);
+}
+.dropdown-leave-to {
+    opacity: 0;
+    transform: scale(0.96) translateY(-6px);
+}
+</style>
