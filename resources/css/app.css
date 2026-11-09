@@ -4,7 +4,7 @@
 
 @layer base {
     :root {
-        --background: 0 0% 100%;
+        --background: 214 32% 98%;
         --foreground: 222 47% 11%;
         --card: 0 0% 100%;
         --card-foreground: 222 47% 11%;
@@ -100,7 +100,7 @@
     }
 
     .ui-card-hover {
-        @apply transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-card-hover hover:border-primary/40;
+        @apply bg-card border border-border/80 rounded-3xl shadow-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-card-hover hover:border-primary/40;
     }
 
     .ui-card-elevated {
@@ -240,7 +240,20 @@
 
     /* --- Panel Hero --- */
     .hero-panel {
-        @apply relative overflow-hidden rounded-4xl border border-primary/20 text-white shadow-lg shadow-primary/20;
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #4f46e5 100%);
+        @apply relative overflow-hidden rounded-3xl sm:rounded-4xl border border-blue-400/20 text-white shadow-xl shadow-blue-500/15;
+    }
+
+    .hero-panel::before {
+        content: '';
+        position: absolute;
+        top: -40px;
+        right: -40px;
+        width: 280px;
+        height: 280px;
+        border-radius: 9999px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+        pointer-events: none;
     }
 
     .hero-glass {
@@ -293,7 +306,12 @@
 
     /* --- Navigation --- */
     .nav-active {
-        @apply bg-primary/60 text-white font-extrabold shadow-sm;
+        @apply bg-primary text-primary-foreground font-extrabold shadow-sm shadow-primary/25;
+    }
+
+    /* --- Auth Button --- */
+    .btn-auth {
+        @apply inline-flex items-center justify-center gap-2 rounded-2xl font-extrabold text-white bg-gradient-to-r from-brand-indigo to-brand-blue shadow-md shadow-indigo-500/20 hover:from-brand-indigo/95 hover:to-brand-blue/95 hover:shadow-lg hover:shadow-indigo-500/30 active:scale-[0.98] transition-all duration-200 select-none;
     }
 
     .sidebar-scroll::-webkit-scrollbar {

@@ -168,7 +168,7 @@ onUnmounted(() => {
             <!-- Navigasi Menu Admin -->
             <nav class="relative px-4 py-5 flex-1 min-h-0 overflow-y-auto sidebar-scroll space-y-4">
                 <div v-for="group in navItems" :key="group.label" class="space-y-1">
-                    <p class="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-extrabold px-3">{{ group.label }}</p>
+                    <p class="text-[10px] uppercase tracking-widest text-muted-foreground font-extrabold px-3">{{ group.label }}</p>
                     <Link
                         v-for="item in group.items"
                         :key="item.href"
@@ -177,22 +177,22 @@ onUnmounted(() => {
                         :class="[
                             'flex items-center gap-3.5 px-3.5 py-2.5 rounded-2xl transition-all duration-200 group text-sm',
                             isCurrentRoute(item.route)
-                                ? 'bg-primary/60 text-white font-extrabold shadow-sm border border-primary/40'
-                                : 'text-foreground/75 hover:bg-muted/60 hover:text-primary'
+                                ? 'bg-primary text-white font-extrabold shadow-sm shadow-primary/25'
+                                : 'text-slate-600 hover:bg-muted/80 hover:text-primary font-semibold'
                         ]"
                     >
                         <div
                             :class="[
                                 'w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-all duration-200',
                                 isCurrentRoute(item.route)
-                                    ? 'bg-white text-brand-indigo shadow-md scale-105'
-                                    : 'bg-muted/40 text-foreground/60 group-hover:bg-muted/80 group-hover:text-primary'
+                                    ? 'bg-white text-primary shadow-xs scale-105'
+                                    : 'bg-muted/60 text-slate-500 group-hover:bg-primary/10 group-hover:text-primary'
                             ]"
                         >
                             <Icon :icon="isCurrentRoute(item.route) ? item.activeIcon : item.icon" class="w-4 h-4" />
                         </div>
                         <span class="truncate">{{ item.label }}</span>
-                        <span v-if="isCurrentRoute(item.route)" class="ml-auto h-2 w-2 rounded-full bg-brand-amber"></span>
+                        <span v-if="isCurrentRoute(item.route)" class="ml-auto h-2 w-2 rounded-full bg-amber-300 shadow-xs"></span>
                     </Link>
                 </div>
             </nav>

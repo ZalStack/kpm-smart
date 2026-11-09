@@ -13,15 +13,15 @@ const props = defineProps({
 const colorMap = {
     'blue': 'bg-blue-50 text-brand-blue border-blue-200',
     'indigo': 'bg-indigo-50 text-brand-indigo border-indigo-200',
-    'purple': 'bg-brand-violet/10 text-brand-violet border-brand-violet/20',
+    'purple': 'bg-violet-50 text-brand-violet border-violet-200',
     'sky': 'bg-sky-50 text-brand-cyan border-sky-200',
+    'emerald': 'bg-emerald-50 text-brand-emerald border-emerald-200',
+    'danger': 'bg-rose-50 text-rose-600 border-rose-200',
+    'warning': 'bg-amber-50 text-amber-600 border-amber-200',
     'fern': 'bg-blue-50 text-brand-blue border-blue-200',
     'dry-sage': 'bg-indigo-50 text-brand-indigo border-indigo-200',
     'pine-teal': 'bg-sky-50 text-brand-cyan border-sky-200',
     'hunter-green': 'bg-emerald-50 text-brand-emerald border-emerald-200',
-    'emerald': 'bg-brand-emerald/10 text-brand-emerald border-brand-emerald/20',
-    'danger': 'bg-rose-50 text-rose-600 border-rose-200',
-    'warning': 'bg-amber-50 text-amber-600 border-amber-200',
 };
 
 const borderAccentMap = {
@@ -29,13 +29,13 @@ const borderAccentMap = {
     'indigo': '#4f46e5',
     'purple': '#7c3aed',
     'sky': '#0284c7',
+    'emerald': '#10b981',
+    'danger': '#f43f5e',
+    'warning': '#f59e0b',
     'fern': '#2563eb',
     'dry-sage': '#4f46e5',
     'pine-teal': '#0284c7',
     'hunter-green': '#10b981',
-    'emerald': '#10b981',
-    'danger': '#f43f5e',
-    'warning': '#f59e0b',
 };
 </script>
 

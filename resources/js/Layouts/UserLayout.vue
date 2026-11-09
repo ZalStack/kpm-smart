@@ -234,7 +234,7 @@ onUnmounted(() => {
             <!-- Navigasi Sidebar Desktop -->
             <nav class="sidebar-scroll relative min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-5">
                 <div v-for="section in desktopNavItems" :key="section.section" class="space-y-1">
-                    <p class="px-3 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/60">{{ section.section }}</p>
+                    <p class="px-3 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">{{ section.section }}</p>
                     <Link
                         v-for="item in section.items"
                         :key="item.href"
@@ -242,22 +242,22 @@ onUnmounted(() => {
                         :class="[
                             'group flex items-center gap-3.5 rounded-2xl px-3.5 py-2.5 text-sm transition-all duration-200',
                             isActive(item.match)
-                                ? 'bg-primary/60 text-white font-extrabold shadow-sm border border-primary/40'
-                                : 'text-foreground/75 hover:bg-muted/60 hover:text-primary',
+                                ? 'bg-primary text-white font-extrabold shadow-sm shadow-primary/25'
+                                : 'text-slate-600 hover:bg-muted/80 hover:text-primary font-semibold',
                         ]"
                     >
                         <span
                             :class="[
                                 'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl transition-all duration-200',
                                 isActive(item.match)
-                                    ? 'bg-white text-brand-indigo shadow-md scale-105'
-                                    : 'bg-muted/40 text-foreground/60 group-hover:bg-muted/80 group-hover:text-primary',
+                                    ? 'bg-white text-primary shadow-xs scale-105'
+                                    : 'bg-muted/60 text-slate-500 group-hover:bg-primary/10 group-hover:text-primary',
                             ]"
                         >
                             <Icon :icon="isActive(item.match) ? item.activeIcon : item.icon" class="h-4 w-4" />
                         </span>
                         <span class="truncate">{{ item.label }}</span>
-                        <span v-if="isActive(item.match)" class="ml-auto h-2 w-2 rounded-full bg-brand-amber"></span>
+                        <span v-if="isActive(item.match)" class="ml-auto h-2 w-2 rounded-full bg-amber-300 shadow-xs"></span>
                     </Link>
                 </div>
             </nav>

@@ -91,12 +91,12 @@ function attemptBadge(pkg) {
 }
 
 const bidangColors = {
-    'MTK':      { bg: 'bg-brand-blue/10', light: 'bg-blue-50', text: 'text-brand-blue', border: 'border-blue-200', icon: 'mdi:math-compass' },
-    'IPA':      { bg: 'bg-brand-emerald/10', light: 'bg-emerald-50', text: 'text-brand-emerald', border: 'border-emerald-200', icon: 'mdi:flask-outline' },
-    'IPS':      { bg: 'bg-brand-amber/10', light: 'bg-amber-50', text: 'text-brand-amber', border: 'border-amber-200', icon: 'mdi:earth' },
-    'B.IND':    { bg: 'bg-rose-50', light: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', icon: 'mdi:book-alphabet' },
-    'B.ING':    { bg: 'bg-brand-violet/10', light: 'bg-brand-violet/10', text: 'text-brand-violet', border: 'border-brand-violet/200', icon: 'mdi:translate' },
-    'default':  { bg: 'bg-slate-50', light: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200', icon: 'mdi:folder-outline' },
+    'MTK':      { bg: 'bg-blue-50', solid: 'bg-brand-blue text-white shadow-xs', light: 'bg-blue-50', text: 'text-brand-blue', border: 'border-blue-200', icon: 'mdi:math-compass' },
+    'IPA':      { bg: 'bg-emerald-50', solid: 'bg-brand-emerald text-white shadow-xs', light: 'bg-emerald-50', text: 'text-brand-emerald', border: 'border-emerald-200', icon: 'mdi:flask-outline' },
+    'IPS':      { bg: 'bg-amber-50', solid: 'bg-brand-amber text-white shadow-xs', light: 'bg-amber-50', text: 'text-brand-amber', border: 'border-amber-200', icon: 'mdi:earth' },
+    'B.IND':    { bg: 'bg-rose-50', solid: 'bg-rose-600 text-white shadow-xs', light: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', icon: 'mdi:book-alphabet' },
+    'B.ING':    { bg: 'bg-violet-50', solid: 'bg-brand-violet text-white shadow-xs', light: 'bg-violet-50', text: 'text-brand-violet', border: 'border-violet-200', icon: 'mdi:translate' },
+    'default':  { bg: 'bg-slate-50', solid: 'bg-slate-700 text-white shadow-xs', light: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200', icon: 'mdi:folder-outline' },
 };
 
 function getBidangColor(bidang) {
@@ -215,7 +215,7 @@ const totalActive = computed(() =>
                 <!-- Kelas header -->
                 <button
                     type="button"
-                    class="flex w-full items-center justify-between gap-3 bg-gradient-to-r from-slate-900 to-slate-800 px-5 py-4 text-left transition hover:from-slate-800 hover:to-slate-700"
+                    class="flex w-full items-center justify-between gap-3 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 px-5 py-4 text-left transition hover:from-slate-850 hover:to-slate-800"
                     @click="toggleFolder('kelas-' + kelasGroup.kelas)"
                 >
                     <div class="flex items-center gap-3">
@@ -252,8 +252,8 @@ const totalActive = computed(() =>
                         >
                             <div class="flex items-center gap-2.5">
                                 <span
-                                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl text-white"
-                                    :class="getBidangColor(bidangGroup.bidang).bg.replace('/10', '')"
+                                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl"
+                                    :class="getBidangColor(bidangGroup.bidang).solid"
                                 >
                                     <Icon :icon="getBidangColor(bidangGroup.bidang).icon" class="h-4 w-4" />
                                 </span>

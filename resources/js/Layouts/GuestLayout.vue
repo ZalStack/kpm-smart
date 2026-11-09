@@ -15,7 +15,7 @@ const year = new Date().getFullYear();
             <!-- Top Brand Header -->
             <div class="relative z-10">
                 <div class="flex items-center gap-3.5">
-                    <div class="w-12 h-12 shrink-0 rounded-3xl bg-white backdrop-blur border border-border flex items-center justify-center text-white font-black text-xl shadow-lg shadow-black/10">
+                    <div class="w-12 h-12 shrink-0 rounded-3xl bg-gradient-to-r from-brand-indigo to-brand-blue flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-300/40">
                         PR
                     </div>
                     <div class="leading-tight">

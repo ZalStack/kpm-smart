@@ -68,7 +68,7 @@ function toggleItem(groupIdx, itemIdx) {
             </div>
             <div class="relative z-10 px-5 sm:px-8 py-12 sm:py-16 md:py-20 text-center max-w-3xl mx-auto">
                 <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur border border-white/15 text-xs font-semibold text-white/85 mb-5"><Icon icon="mdi:help-circle-outline" class="w-4 h-4 inline-block align-middle" /> Pusat Bantuan</span>
-                <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight">Pertanyaan yang <span class="text-dry-sage">Sering Diajukan</span></h1>
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight">Pertanyaan yang <span class="text-amber-300">Sering Diajukan</span></h1>
                 <p class="mt-4 text-sm sm:text-base text-white/70 leading-relaxed">Temukan jawaban cepat seputar penggunaan platform dan latihan soal.</p>
             </div>
         </div>
@@ -111,7 +111,7 @@ function toggleItem(groupIdx, itemIdx) {
                 <h2 class="text-xl sm:text-2xl font-extrabold">Tidak Menemukan Jawabannya?</h2>
                 <p class="mt-3 text-white/70 text-sm sm:text-base max-w-lg mx-auto">Tim kami siap membantu lewat live chat di pojok kanan bawah — klik saja ikon <Icon icon="mdi:chat-outline" class="w-4 h-4 inline-block align-middle" />.</p>
                 <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-                    <Link :href="route('pages.guide')" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-dry-sage text-foreground px-8 py-3.5 rounded-xl font-bold text-sm hover:bg-dry-sage/80 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all duration-300"><Icon icon="mdi:book-open-page-variant" class="w-4 h-4" /> Baca Panduan</Link>
+                    <Link :href="route('pages.guide')" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-primary px-8 py-3.5 rounded-xl font-extrabold text-sm hover:bg-blue-50 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all duration-300 shadow-sm"><Icon icon="mdi:book-open-page-variant" class="w-4 h-4" /> Baca Panduan</Link>
                     <Link :href="route('pages.features')" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur border border-white/15 text-white px-8 py-3.5 rounded-xl font-semibold text-sm hover:bg-white/15 hover:shadow-md active:scale-95 transition-all duration-300"><Icon icon="mdi:sparkles" class="w-4 h-4" /> Lihat Fitur</Link>
                 </div>
             </div>
