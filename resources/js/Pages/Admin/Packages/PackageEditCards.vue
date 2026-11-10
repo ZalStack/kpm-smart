@@ -78,7 +78,7 @@ function getCardQuestionCount(cardId) {
         </template>
         <template #header-sub>{{ package.title }}</template>
 
-        <div class="max-w-5xl mx-auto space-y-6">
+        <div class="w-full space-y-6">
             <!-- Navigation Tab Pills -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <Link :href="route('admin.packages.index')"

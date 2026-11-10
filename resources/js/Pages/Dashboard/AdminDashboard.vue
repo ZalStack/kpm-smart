@@ -33,7 +33,7 @@ const props = defineProps({
 
         <div class="space-y-8">
             <!-- Stats Grid -->
-            <div class="grid-stats">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 <StatCard
                     title="Total Siswa Terdaftar"
                     :value="totalUsers"

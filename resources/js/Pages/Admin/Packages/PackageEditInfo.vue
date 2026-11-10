@@ -79,7 +79,7 @@ function submit() {
         </template>
         <template #header-sub>{{ package.title }}</template>
 
-        <div class="max-w-4xl mx-auto space-y-6">
+        <div class="w-full space-y-6">
             <!-- Navigation Tab Pills -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <Link :href="route('admin.packages.index')"
@@ -175,7 +175,7 @@ function submit() {
                         <h3 class="font-bold text-base text-foreground">Jadwal Pengerjaan (Opsional)</h3>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="space-y-2">
                             <Label for="start_date">Tanggal Mulai</Label>
                             <Input id="start_date" type="date" v-model="form.start_date" class="rounded-xl" />

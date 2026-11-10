@@ -78,7 +78,7 @@ function submit() {
         </template>
         <template #header-sub>Buat akun dan data profil siswa baru</template>
 
-        <div class="max-w-4xl mx-auto space-y-6">
+        <div class="w-full space-y-6">
             <Link :href="route('admin.users.index')" class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition group">
                 <Icon icon="mdi:arrow-left" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
                 Kembali ke Daftar Siswa
@@ -118,14 +118,14 @@ function submit() {
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">
-                        <div class="space-y-1.5 sm:col-span-2">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                        <div class="space-y-1.5">
                             <Label class="text-xs font-semibold text-foreground">Nama Lengkap <span class="text-destructive">*</span></Label>
                             <Input v-model="form.name" required placeholder="Contoh: Budi Santoso" class="h-11 rounded-xl bg-background" />
                             <p v-if="form.errors.name" class="text-xs text-destructive">{{ form.errors.name }}</p>
                         </div>
 
-                        <div class="space-y-1.5 sm:col-span-2">
+                        <div class="space-y-1.5">
                             <Label class="text-xs font-semibold text-foreground">Email <span class="text-destructive">*</span></Label>
                             <Input v-model="form.email" type="email" required placeholder="budi@example.com" class="h-11 rounded-xl bg-background" />
                             <p v-if="form.errors.email" class="text-xs text-destructive">{{ form.errors.email }}</p>
@@ -151,7 +151,7 @@ function submit() {
                         <h3 class="font-bold text-base tracking-tight text-foreground">Data Akademis Siswa</h3>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                         <div class="space-y-1.5">
                             <Label class="text-xs font-semibold text-foreground">Tingkat Kelas</Label>
                             <Input v-model="form.student_class" placeholder="Contoh: VII-B atau 7" class="h-11 rounded-xl bg-background" />
@@ -181,7 +181,7 @@ function submit() {
                         <h3 class="font-bold text-base tracking-tight text-foreground">Kontak & Informasi Pribadi</h3>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                         <div class="space-y-1.5">
                             <Label class="text-xs font-semibold text-foreground">No. WhatsApp / HP</Label>
                             <Input v-model="form.phone" placeholder="08xxxxxxxxxx" class="h-11 rounded-xl bg-background" />
@@ -196,7 +196,7 @@ function submit() {
                             </Select>
                         </div>
 
-                        <div class="space-y-1.5 sm:col-span-2">
+                        <div class="space-y-1.5">
                             <Label class="text-xs font-semibold text-foreground">Agama</Label>
                             <Select v-model="form.religion" class="h-11 rounded-xl bg-background">
                                 <option value="">Pilih Agama</option>
@@ -209,7 +209,7 @@ function submit() {
                             </Select>
                         </div>
 
-                        <div class="space-y-1.5 sm:col-span-2">
+                        <div class="space-y-1.5 sm:col-span-2 lg:col-span-3">
                             <Label class="text-xs font-semibold text-foreground">Alamat Domisili</Label>
                             <Textarea v-model="form.address" rows="3" placeholder="Alamat lengkap tempat tinggal siswa..." class="rounded-2xl bg-background p-4 border-border/60" />
                         </div>
@@ -223,7 +223,7 @@ function submit() {
                         <h3 class="font-bold text-base tracking-tight text-foreground">Data Pribadi & Orang Tua</h3>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                         <div class="space-y-1.5">
                             <Label class="text-xs font-semibold text-foreground">Tempat Lahir</Label>
                             <Input v-model="form.place_of_birth" placeholder="Contoh: Jakarta" class="h-11 rounded-xl bg-background" />

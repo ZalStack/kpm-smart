@@ -222,7 +222,7 @@ onUnmounted(() => {
         <div class="lg:pl-[280px] min-h-screen flex flex-col flex-1">
             <!-- Top Header Admin -->
             <header class="sticky top-0 z-30 w-full border-b border-border/80 bg-card/85 backdrop-blur-xl shadow-sm transition-all duration-300">
-                <div class="flex items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 h-16">
+                <div class="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16">
                     <div class="flex items-center gap-3.5 min-w-0">
                         <button
                             @click="openSidebar"
@@ -298,7 +298,7 @@ onUnmounted(() => {
             </header>
 
             <!-- ISI KONTEN ADMIN -->
-            <main class="flex-1 w-full px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 py-6 sm:py-8 pb-28 lg:pb-10">
+            <main class="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 lg:pb-10">
                 <FlashMessage />
                 <div class="w-full anim-fade-in">
                     <slot />

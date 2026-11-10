@@ -97,7 +97,7 @@ function submit() {
         </template>
         <template #header-sub>{{ package.title }}</template>
 
-        <div class="max-w-4xl mx-auto space-y-6">
+        <div class="w-full space-y-6">
             <Link :href="route('admin.packages.edit.questions', package.id)"
                   class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition group">
                 <Icon icon="mdi:arrow-left" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
@@ -112,7 +112,7 @@ function submit() {
                         <h3 class="font-bold text-base tracking-tight text-foreground">Panduan Format Dokumen</h3>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-muted-foreground">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs text-muted-foreground">
                         <div class="p-3.5 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
                             <p class="font-bold text-foreground flex items-center gap-1.5">
                                 <Icon icon="mdi:format-list-numbered" class="w-4 h-4 text-primary" /> Penomoran Soal

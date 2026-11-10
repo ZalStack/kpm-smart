@@ -39,7 +39,7 @@ function deleteUser() {
         </template>
         <template #header-sub>{{ user.name }}</template>
 
-        <div class="max-w-5xl mx-auto space-y-6">
+        <div class="w-full space-y-6">
             <Link :href="route('admin.users.index')" class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition group">
                 <Icon icon="mdi:arrow-left" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
                 Kembali ke Daftar Siswa
@@ -170,7 +170,7 @@ function deleteUser() {
                             <span class="text-muted-foreground flex items-center gap-2 shrink-0">
                                 <Icon icon="mdi:map-marker-outline" class="w-4 h-4 text-primary" /> Alamat
                             </span>
-                            <span class="font-medium text-foreground text-right max-w-[220px]">{{ user.address || '-' }}</span>
+                            <span class="font-medium text-foreground text-right max-w-md sm:max-w-lg">{{ user.address || '-' }}</span>
                         </div>
                     </div>
                 </div>

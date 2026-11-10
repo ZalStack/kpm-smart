@@ -76,7 +76,7 @@ function submit() {
             Lengkapi detail paket PR Pekanan tugas evaluasi untuk siswa kelas khusus
         </template>
 
-        <div class="max-w-4xl mx-auto space-y-5">
+        <div class="w-full space-y-6">
             <!-- Back navigation -->
             <Link :href="route('admin.packages.index')"
                   class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition group">
@@ -153,7 +153,7 @@ function submit() {
 
                     <p class="text-xs text-muted-foreground">Kosongkan bila paket soal dapat dikerjakan kapan saja tanpa batasan tanggal.</p>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="space-y-2">
                             <Label for="start_date">Tanggal Mulai</Label>
                             <Input id="start_date" type="date" v-model="form.start_date" class="rounded-xl" />

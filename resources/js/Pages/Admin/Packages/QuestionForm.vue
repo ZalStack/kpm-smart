@@ -172,7 +172,7 @@ function submit() {
         </template>
         <template #header-sub>{{ package.title }}</template>
 
-        <div class="max-w-4xl mx-auto space-y-6">
+        <div class="w-full space-y-6">
             <Link :href="route('admin.packages.edit.questions', package.id)"
                   class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition group">
                 <Icon icon="mdi:arrow-left" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />

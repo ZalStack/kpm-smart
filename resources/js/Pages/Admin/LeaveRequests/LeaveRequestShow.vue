@@ -59,119 +59,177 @@ function getStatusConfig(s) {
         <template #header-title>Detail Pengajuan Izin</template>
         <template #header-sub>Pengajuan dari {{ leaveRequest.user?.name }}</template>
 
-        <div class="w-full max-w-3xl mx-auto space-y-5">
+        <div class="w-full space-y-5">
             <!-- Back Link -->
             <Button variant="ghost" @click="router.visit(route('admin.leave-requests.index'))"
                     class="gap-2 rounded-xl font-semibold text-sm anim-fade-in-up">
                 <Icon icon="mdi:arrow-left" class="w-4 h-4" /> Kembali ke Daftar
             </Button>
 
-            <!-- Detail Card -->
-            <div class="bg-card border border-border/60 rounded-2xl shadow-sm overflow-hidden anim-fade-in-up anim-delay-1">
-                <!-- Card Header -->
-                <div class="p-5 sm:p-6 border-b border-border/60 bg-gradient-to-r from-primary/5 to-transparent flex items-center justify-between flex-wrap gap-3">
-                    <div class="flex items-center gap-3">
-                        <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
-                            <Icon icon="mdi:file-document-outline" class="w-5 h-5" />
-                        </div>
-                        <div>
-                            <p class="text-xs text-muted-foreground font-medium">Pengajuan Izin #{{ leaveRequest.id }}</p>
-                            <p class="text-sm font-bold text-foreground">{{ formatDate(leaveRequest.created_at) }}</p>
-                        </div>
-                    </div>
-                    <span :class="['inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold', getStatusConfig(leaveRequest.status).color]">
-                        <Icon :icon="getStatusConfig(leaveRequest.status).icon" class="w-3.5 h-3.5" />
-                        {{ getStatusConfig(leaveRequest.status).label }}
-                    </span>
-                </div>
+            <!-- Main 2-Column Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
-                <!-- User Info -->
-                <div class="p-5 sm:p-6 border-b border-border/60">
-                    <div class="flex items-center gap-4">
-                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center text-xl font-black text-primary flex-shrink-0 ring-2 ring-background shadow-sm">
-                            {{ (leaveRequest.user?.name || 'U').charAt(0).toUpperCase() }}
+                <!-- Left: Detail Card (2/3 width) -->
+                <div class="lg:col-span-2 space-y-5">
+                    <!-- Detail Card -->
+                    <div class="bg-card border border-border/60 rounded-2xl shadow-sm overflow-hidden anim-fade-in-up anim-delay-1">
+                        <!-- Card Header -->
+                        <div class="p-5 sm:p-6 border-b border-border/60 bg-gradient-to-r from-primary/5 to-transparent flex items-center justify-between flex-wrap gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                                    <Icon icon="mdi:file-document-outline" class="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p class="text-xs text-muted-foreground font-medium">Pengajuan Izin #{{ leaveRequest.id }}</p>
+                                    <p class="text-sm font-bold text-foreground">{{ formatDate(leaveRequest.created_at) }}</p>
+                                </div>
+                            </div>
+                            <span :class="['inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold', getStatusConfig(leaveRequest.status).color]">
+                                <Icon :icon="getStatusConfig(leaveRequest.status).icon" class="w-3.5 h-3.5" />
+                                {{ getStatusConfig(leaveRequest.status).label }}
+                            </span>
                         </div>
-                        <div>
-                            <p class="font-bold text-base text-foreground">{{ leaveRequest.user?.name || '-' }}</p>
-                            <p class="text-sm text-muted-foreground">{{ leaveRequest.user?.email || '-' }}</p>
-                            <p v-if="leaveRequest.user?.kelas || leaveRequest.user?.bidang" class="text-xs text-muted-foreground mt-0.5">
-                                {{ [leaveRequest.user?.kelas, leaveRequest.user?.bidang].filter(Boolean).join(' · ') }}
-                            </p>
+
+                        <!-- User Info -->
+                        <div class="p-5 sm:p-6 border-b border-border/60">
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center text-xl font-black text-primary flex-shrink-0 ring-2 ring-background shadow-sm">
+                                    {{ (leaveRequest.user?.name || 'U').charAt(0).toUpperCase() }}
+                                </div>
+                                <div>
+                                    <p class="font-bold text-base text-foreground">{{ leaveRequest.user?.name || '-' }}</p>
+                                    <p class="text-sm text-muted-foreground">{{ leaveRequest.user?.email || '-' }}</p>
+                                    <p v-if="leaveRequest.user?.kelas || leaveRequest.user?.bidang" class="text-xs text-muted-foreground mt-0.5">
+                                        {{ [leaveRequest.user?.kelas, leaveRequest.user?.bidang].filter(Boolean).join(' · ') }}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Details Body -->
-                <div class="p-5 sm:p-6 space-y-5">
-                    <!-- Reason -->
-                    <div class="space-y-2">
-                        <p class="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                            <Icon icon="mdi:text-box-outline" class="w-4 h-4" /> Alasan Pengajuan Izin
-                        </p>
-                        <div class="bg-muted/40 border border-border/50 rounded-xl p-4">
-                            <p class="text-sm text-foreground leading-relaxed">{{ leaveRequest.reason || 'Tidak ada keterangan.' }}</p>
+                        <!-- Details Body -->
+                        <div class="p-5 sm:p-6 space-y-5">
+                            <!-- Reason -->
+                            <div class="space-y-2">
+                                <p class="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                                    <Icon icon="mdi:text-box-outline" class="w-4 h-4" /> Alasan Pengajuan Izin
+                                </p>
+                                <div class="bg-muted/40 border border-border/50 rounded-xl p-4">
+                                    <p class="text-sm text-foreground leading-relaxed">{{ leaveRequest.reason || 'Tidak ada keterangan.' }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Attachment -->
+                            <div v-if="leaveRequest.proof_file" class="space-y-2">
+                                <p class="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                                    <Icon icon="mdi:paperclip" class="w-4 h-4" /> Lampiran / Bukti
+                                </p>
+                                <a :href="'/storage/' + leaveRequest.proof_file" target="_blank"
+                                   class="inline-flex items-center gap-2 px-4 py-2.5 bg-card border border-border/60 rounded-xl text-sm font-semibold text-primary hover:bg-primary/5 hover:border-primary/30 transition-colors">
+                                    <Icon icon="mdi:file-eye-outline" class="w-4 h-4" /> Lihat Lampiran
+                                </a>
+                            </div>
+
+                            <!-- Admin Note (if already processed) -->
+                            <div v-if="leaveRequest.admin_note && leaveRequest.status !== 'pending'" class="space-y-2">
+                                <p class="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                                    <Icon icon="mdi:shield-account-outline" class="w-4 h-4" /> Catatan Admin
+                                </p>
+                                <div class="bg-blue-50/60 border border-blue-200/60 rounded-xl p-4">
+                                    <p class="text-sm text-blue-900 leading-relaxed">{{ leaveRequest.admin_note }}</p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- Attachment -->
-                    <div v-if="leaveRequest.proof_file" class="space-y-2">
-                        <p class="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                            <Icon icon="mdi:paperclip" class="w-4 h-4" /> Lampiran / Bukti
-                        </p>
-                        <a :href="'/storage/' + leaveRequest.proof_file" target="_blank"
-                           class="inline-flex items-center gap-2 px-4 py-2.5 bg-card border border-border/60 rounded-xl text-sm font-semibold text-primary hover:bg-primary/5 hover:border-primary/30 transition-colors">
-                            <Icon icon="mdi:file-eye-outline" class="w-4 h-4" /> Lihat Lampiran
-                        </a>
-                    </div>
-
-                    <!-- Admin Note (if already processed) -->
-                    <div v-if="leaveRequest.admin_note && leaveRequest.status !== 'pending'" class="space-y-2">
-                        <p class="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                            <Icon icon="mdi:shield-account-outline" class="w-4 h-4" /> Catatan Admin
-                        </p>
-                        <div class="bg-blue-50/60 border border-blue-200/60 rounded-xl p-4">
-                            <p class="text-sm text-blue-900 leading-relaxed">{{ leaveRequest.admin_note }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Action Panel (only for pending requests) -->
-            <div v-if="leaveRequest.status === 'pending'"
-                 class="bg-card border border-border/60 rounded-2xl shadow-sm overflow-hidden anim-fade-in-up anim-delay-2">
-                <div class="p-5 sm:p-6 border-b border-border/60 bg-gradient-to-r from-amber-500/5 to-transparent flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600">
-                        <Icon icon="mdi:gavel" class="w-4 h-4" />
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-bold text-foreground">Keputusan Admin</h3>
-                        <p class="text-xs text-muted-foreground">Setujui atau tolak pengajuan izin ini</p>
                     </div>
                 </div>
 
-                <div class="p-5 sm:p-6 space-y-4">
-                    <div class="space-y-1.5">
-                        <label class="text-sm font-semibold text-foreground block">
-                            Catatan Admin
-                            <span class="text-muted-foreground font-normal text-xs ml-1">(Opsional)</span>
-                        </label>
-                        <textarea v-model="form.admin_note" rows="3"
-                                  class="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
-                                  placeholder="Tulis catatan untuk pengguna... (opsional)"></textarea>
+                <!-- Right: Action / Info Sidebar (1/3 width) -->
+                <div class="space-y-5">
+                    <!-- Status Info Card -->
+                    <div class="bg-card border border-border/60 rounded-2xl shadow-sm overflow-hidden anim-fade-in-up anim-delay-1">
+                        <div class="p-5 border-b border-border/60 bg-gradient-to-r from-muted/50 to-transparent flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                <Icon icon="mdi:information-outline" class="w-4 h-4" />
+                            </div>
+                            <h3 class="text-sm font-bold text-foreground">Info Pengajuan</h3>
+                        </div>
+                        <div class="p-5 space-y-3 text-xs">
+                            <div class="flex justify-between items-center py-1.5 border-b border-border/40">
+                                <span class="text-muted-foreground">ID Pengajuan</span>
+                                <span class="font-bold text-foreground">#{{ leaveRequest.id }}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1.5 border-b border-border/40">
+                                <span class="text-muted-foreground">Status</span>
+                                <span :class="['font-bold', leaveRequest.status === 'approved' ? 'text-emerald-600' : leaveRequest.status === 'rejected' ? 'text-rose-600' : 'text-amber-600']">
+                                    {{ getStatusConfig(leaveRequest.status).label }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center py-1.5 border-b border-border/40">
+                                <span class="text-muted-foreground">Tanggal Ajuan</span>
+                                <span class="font-semibold text-foreground">{{ formatDate(leaveRequest.created_at) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1.5">
+                                <span class="text-muted-foreground">Pemohon</span>
+                                <span class="font-semibold text-foreground">{{ leaveRequest.user?.name || '-' }}</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                        <Button @click="triggerAction('approved')" :disabled="submitting"
-                                class="flex-1 gap-2 py-2.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 hover:shadow-md text-white">
-                            <Icon icon="mdi:check-circle-outline" class="w-4 h-4" />
-                            Setujui Pengajuan
-                        </Button>
-                        <Button @click="triggerAction('rejected')" :disabled="submitting"
-                                variant="destructive"
-                                class="flex-1 gap-2 py-2.5 rounded-xl font-bold hover:shadow-md">
-                            <Icon icon="mdi:close-circle-outline" class="w-4 h-4" />
-                            Tolak Pengajuan
-                        </Button>
+                    <!-- Action Panel (only for pending requests) -->
+                    <div v-if="leaveRequest.status === 'pending'"
+                         class="bg-card border border-border/60 rounded-2xl shadow-sm overflow-hidden anim-fade-in-up anim-delay-2">
+                        <div class="p-5 border-b border-border/60 bg-gradient-to-r from-amber-500/5 to-transparent flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600">
+                                <Icon icon="mdi:gavel" class="w-4 h-4" />
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-foreground">Keputusan Admin</h3>
+                                <p class="text-xs text-muted-foreground">Setujui atau tolak pengajuan izin ini</p>
+                            </div>
+                        </div>
+
+                        <div class="p-5 space-y-4">
+                            <div class="space-y-1.5">
+                                <label class="text-sm font-semibold text-foreground block">
+                                    Catatan Admin
+                                    <span class="text-muted-foreground font-normal text-xs ml-1">(Opsional)</span>
+                                </label>
+                                <textarea v-model="form.admin_note" rows="3"
+                                          class="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
+                                          placeholder="Tulis catatan untuk pengguna... (opsional)"></textarea>
+                            </div>
+
+                            <div class="flex flex-col gap-2.5">
+                                <Button @click="triggerAction('approved')" :disabled="submitting"
+                                        class="w-full gap-2 py-2.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 hover:shadow-md text-white">
+                                    <Icon icon="mdi:check-circle-outline" class="w-4 h-4" />
+                                    Setujui Pengajuan
+                                </Button>
+                                <Button @click="triggerAction('rejected')" :disabled="submitting"
+                                        variant="destructive"
+                                        class="w-full gap-2 py-2.5 rounded-xl font-bold hover:shadow-md">
+                                    <Icon icon="mdi:close-circle-outline" class="w-4 h-4" />
+                                    Tolak Pengajuan
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Already Processed Info -->
+                    <div v-else class="bg-card border border-border/60 rounded-2xl shadow-sm p-5 anim-fade-in-up anim-delay-2">
+                        <div class="flex items-start gap-3">
+                            <div :class="['w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0',
+                                leaveRequest.status === 'approved' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600']">
+                                <Icon :icon="leaveRequest.status === 'approved' ? 'mdi:check-circle-outline' : 'mdi:close-circle-outline'" class="w-4 h-4" />
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-foreground">
+                                    {{ leaveRequest.status === 'approved' ? 'Pengajuan Disetujui' : 'Pengajuan Ditolak' }}
+                                </p>
+                                <p class="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                                    Pengajuan ini telah diproses oleh admin. Pengguna telah menerima notifikasi hasilnya.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
