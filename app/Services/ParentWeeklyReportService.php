@@ -46,9 +46,22 @@ class ParentWeeklyReportService
             // API gagal, lanjut ke fallback DB langsung
         }
 
-        // 2. Fallback: gunakan database path dari config
-        $dbPath = config('database.connections.sqlite.database', database_path('database.sqlite'));
-        if (! file_exists($dbPath)) {
+        // 2. Fallback: gunakan database path dari config atau direktori lokal kpm-student-smart
+        $dbCandidates = [
+            env('PARENT_DB_PATH'),
+            dirname(base_path()).'/kpm-student-smart/database/database.sqlite',
+            'C:/laragon/www/kpm-student-smart/database/database.sqlite',
+            '/home/hanywalll/Desktop/Project/php/kpm-student-smart/database/database.sqlite',
+            config('database.connections.sqlite.database', database_path('database.sqlite')),
+        ];
+        $dbPath = null;
+        foreach ($dbCandidates as $candidate) {
+            if ($candidate && file_exists($candidate)) {
+                $dbPath = $candidate;
+                break;
+            }
+        }
+        if (! $dbPath) {
             return false;
         }
 
@@ -56,14 +69,15 @@ class ParentWeeklyReportService
             $pdo = new PDO("sqlite:{$dbPath}");
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-            // Cari student_id dari email user
+            // Cari student_id dari email user atau normalisasi @adikkakak.com
+            $emailNorm = str_ends_with(strtolower($email), '@adikkakak.com') ? $email : (explode('@', $email)[0].'@adikkakak.com');
             $stmt = $pdo->prepare('
                 SELECT s.id FROM students s
                 JOIN users u ON u.id = s.user_id
-                WHERE u.email = :email
+                WHERE u.email = :email OR u.email = :email_norm
                 LIMIT 1
             ');
-            $stmt->execute([':email' => $email]);
+            $stmt->execute([':email' => $email, ':email_norm' => $emailNorm]);
             $studentId = $stmt->fetchColumn();
 
             if (! $studentId) {
