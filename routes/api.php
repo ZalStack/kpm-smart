@@ -63,6 +63,10 @@ Route::prefix('satellite')->name('api.satellite.')->middleware('api.key')->group
         ->name('users.delete');
     Route::post('/users/clean-orphans', [SatelliteApiController::class, 'cleanOrphans'])
         ->name('users.clean-orphans');
+    Route::post('/setup-november-packages', [SatelliteApiController::class, 'setupNovemberPackages'])
+        ->name('setup-november-packages');
+    Route::post('/submit-sample-practice', [SatelliteApiController::class, 'submitSamplePractice'])
+        ->name('submit-sample-practice');
 });
 
 // ==========================================

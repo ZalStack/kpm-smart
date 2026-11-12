@@ -404,4 +404,173 @@ class SatelliteApiController extends Controller
             'deleted_count' => $deletedCount,
         ]);
     }
+
+    /**
+     * Siapkan paket PR untuk 3 pekan tersisa di bulan November 2026:
+     * - Pekan 2 (Aktif: 14 Nov 2026 - Deadline: 20 Nov 2026 23:59)
+     * - Pekan 3 (Terkunci/Upcoming: Buka 21 Nov 2026 - Deadline: 27 Nov 2026 23:59)
+     * - Pekan 4 (Terkunci/Upcoming: Buka 28 Nov 2026 - Deadline: 04 Des 2026 23:59)
+     */
+    public function setupNovemberPackages(Request $request): JsonResponse
+    {
+        $packagesConfig = [
+            [
+                'title' => 'PR Pekan 2 (Nov 2026) - Eksplorasi Teori Bilangan & Sains Terpadu',
+                'description' => 'Tugas PR Pekan 2 Matematika & IPA Berbakat Kelas 5 SD.',
+                'kelas' => '5 SD',
+                'bidang' => 'Matematika & IPA',
+                'level' => 'Berbakat A',
+                'start_date' => '2026-11-08',
+                'end_date' => '2026-11-20',
+                'start_time' => '00:00:00',
+                'end_time' => '23:59:59',
+                'is_active' => true,
+                'cards' => [
+                    ['id' => 'card-p2-1', 'title' => 'Teori Bilangan', 'description' => 'FPB, KPK, dan Karakteristik Bilangan Prima'],
+                    ['id' => 'card-p2-2', 'title' => 'Sains Fisik & Hayati', 'description' => 'Energi, Gaya, dan Klasifikasi Makhluk Hidup'],
+                ],
+                'questions' => [
+                    [
+                        'id' => 'q-p2-1',
+                        'card_id' => 'card-p2-1',
+                        'question' => 'Tentukan FPB dan KPK dari bilangan 72 dan 120.',
+                        'options' => ['A. 24 dan 360', 'B. 12 dan 240', 'C. 24 dan 720', 'D. 36 dan 360'],
+                        'correct_answer' => 'A. 24 dan 360',
+                        'explanation' => 'Faktorisasi prima: 72 = 2^3 x 3^2, 120 = 2^3 x 3 x 5. FPB = 2^3 x 3 = 24. KPK = 2^3 x 3^2 x 5 = 360.',
+                    ],
+                    [
+                        'id' => 'q-p2-2',
+                        'card_id' => 'card-p2-2',
+                        'question' => 'Manakah di bawah ini yang merupakan perpindahan kalor secara konveksi?',
+                        'options' => ['A. Panas api unggun yang terasa di wajah', 'B. Air mendidih saat dimasak dalam panci', 'C. Sendok logam menjadi panas di air teh', 'D. Panas sinar matahari sampai ke bumi'],
+                        'correct_answer' => 'B. Air mendidih saat dimasak dalam panci',
+                        'explanation' => 'Konveksi adalah perpindahan kalor yang disertai perpindahan zat perantara seperti partikel zat cair.',
+                    ],
+                ],
+            ],
+            [
+                'title' => 'PR Pekan 3 (Nov 2026) - Geometri & Dinamika Makhluk Hidup',
+                'description' => 'Tugas PR Pekan 3 Matematika & IPA Berbakat Kelas 5 SD.',
+                'kelas' => '5 SD',
+                'bidang' => 'Matematika & IPA',
+                'level' => 'Berbakat A',
+                'start_date' => '2026-11-21',
+                'end_date' => '2026-11-27',
+                'start_time' => '00:00:00',
+                'end_time' => '23:59:59',
+                'is_active' => true,
+                'cards' => [
+                    ['id' => 'card-p3-1', 'title' => 'Geometri Bangun Datar', 'description' => 'Keliling & Luas Bangun Datar Tak Beraturan'],
+                    ['id' => 'card-p3-2', 'title' => 'Adaptasi & Ekologi', 'description' => 'Rantai Makanan & Simbiosis'],
+                ],
+                'questions' => [
+                    [
+                        'id' => 'q-p3-1',
+                        'card_id' => 'card-p3-1',
+                        'question' => 'Sebuah persegi panjang memiliki keliling 48 cm. Jika panjangnya 4 cm lebih dari lebarnya, hitung luasnya.',
+                        'options' => ['A. 140 cm²', 'B. 144 cm²', 'C. 128 cm²', 'D. 156 cm²'],
+                        'correct_answer' => 'A. 140 cm²',
+                        'explanation' => '2(p + l) = 48 -> p + l = 24. Karena p = l + 4 -> 2l = 20 -> l = 10, p = 14. Luas = 14 x 10 = 140 cm².',
+                    ],
+                ],
+            ],
+            [
+                'title' => 'PR Pekan 4 (Nov 2026) - Kombinatorika & Sistem Tata Surya',
+                'description' => 'Tugas PR Pekan 4 Matematika & IPA Berbakat Kelas 5 SD.',
+                'kelas' => '5 SD',
+                'bidang' => 'Matematika & IPA',
+                'level' => 'Berbakat A',
+                'start_date' => '2026-11-28',
+                'end_date' => '2026-12-04',
+                'start_time' => '00:00:00',
+                'end_time' => '23:59:59',
+                'is_active' => true,
+                'cards' => [
+                    ['id' => 'card-p4-1', 'title' => 'Kombinatorika Dasar', 'description' => 'Pencacahan dan Pola Kemungkinan'],
+                    ['id' => 'card-p4-2', 'title' => 'Sistem Tata Surya', 'description' => 'Rotasi, Revolusi Bumi dan Fase Bulan'],
+                ],
+                'questions' => [
+                    [
+                        'id' => 'q-p4-1',
+                        'card_id' => 'card-p4-1',
+                        'question' => 'Berapa banyak bilangan genap 3 angka yang dapat dibentuk dari angka 1, 2, 3, 4 tanpa pengulangan?',
+                        'options' => ['A. 12', 'B. 24', 'C. 6', 'D. 18'],
+                        'correct_answer' => 'A. 12',
+                        'explanation' => 'Digit satuan harus 2 atau 4 (2 pilihan). Digit ratusan ada 3 pilihan, puluhan ada 2 pilihan. Total = 2 x 3 x 2 = 12 bilangan.',
+                    ],
+                ],
+            ],
+        ];
+
+        $created = [];
+        foreach ($packagesConfig as $cfg) {
+            $pkg = Package::updateOrCreate(
+                ['title' => $cfg['title']],
+                $cfg
+            );
+            $created[] = $pkg;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Paket PR November (Pekan 2, 3, 4) berhasil disiapkan.',
+            'packages' => $created,
+        ]);
+    }
+
+    /**
+     * Catat practice session untuk 5 siswa ganjil (nilai 95) untuk sinkronisasi KPM Smart
+     */
+    public function submitSamplePractice(Request $request): JsonResponse
+    {
+        $pkg = Package::where('title', 'like', '%PR Pekan 2 (Nov 2026)%')->first();
+        if (! $pkg) {
+            $pkg = Package::first();
+        }
+
+        $emails = [
+            'siswa01@adikkakak.com',
+            'siswa03@adikkakak.com',
+            'siswa05@adikkakak.com',
+            'siswa07@adikkakak.com',
+            'siswa09@adikkakak.com',
+        ];
+
+        $sessionsCreated = 0;
+        foreach ($emails as $email) {
+            $u = User::where('email', $email)->first();
+            if (! $u) {
+                continue;
+            }
+
+            PracticeSession::updateOrCreate(
+                [
+                    'user_id' => $u->id,
+                    'package_id' => $pkg->id,
+                ],
+                [
+                    'card_id' => 'card-p2-1',
+                    'total_question' => 2,
+                    'correct_answer' => 2,
+                    'wrong_answer' => 0,
+                    'unanswered' => 0,
+                    'total_score' => 95.00,
+                    'duration_seconds' => 450,
+                    'started_at' => Carbon::parse('2026-11-14 08:30:00'),
+                    'finished_at' => Carbon::parse('2026-11-14 08:37:30'),
+                    'status' => 'completed',
+                    'answers' => [
+                        'q-p2-1' => 'A. 24 dan 360',
+                        'q-p2-2' => 'B. Air mendidih saat dimasak dalam panci',
+                    ],
+                ]
+            );
+            $sessionsCreated++;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$sessionsCreated} practice session sampel berhasil dicatat untuk 5 siswa aktif.",
+        ]);
+    }
 }

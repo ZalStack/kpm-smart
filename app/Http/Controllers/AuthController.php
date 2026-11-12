@@ -144,6 +144,12 @@ class AuthController extends Controller
                 $fotoProfil = $master['foto_profil'] ?? "{$parentUrl}/api/foto/".urlencode($master['email']);
                 $username = $master['nis'] ?: explode('@', $master['email'])[0];
 
+                $bidangMaster = $master['bidang'] ?? 'Matematika & IPA';
+                $combinedMaster = $bidangMaster.' '.($master['level'] ?? '');
+                if (preg_match('/(mtk|matematika|math)/i', $combinedMaster) && preg_match('/(ipa|sains|science)/i', $combinedMaster)) {
+                    $bidangMaster = 'Matematika & IPA';
+                }
+
                 $userUpdateData = [
                     'name' => $master['name'],
                     'username' => $username,
@@ -152,7 +158,7 @@ class AuthController extends Controller
                     'student_class' => $master['class_name'] ?: ($master['kelas'] ?: 'VII-A'),
                     'profile_photo' => $fotoProfil,
                     'school_name' => $master['asal_sekolah'] ?? 'KPM Academy',
-                    'bidang' => $master['bidang'] ?? 'Matematika & IPA',
+                    'bidang' => $bidangMaster,
                     'level' => $master['level'] ?? '1',
                 ];
                 foreach (['phone', 'address', 'place_of_birth', 'date_of_birth', 'parent_name', 'parent_phone', 'parent_profession', 'parent_education'] as $f) {

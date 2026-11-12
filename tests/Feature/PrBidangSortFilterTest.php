@@ -144,4 +144,32 @@ class PrBidangSortFilterTest extends TestCase
             ->where('packages.data.1.title', 'PR Matematika Pekan 1')
         );
     }
+
+    public function test_dual_bidang_student_can_view_and_start_both_mtk_and_ipa_packages(): void
+    {
+        $dualStudent = User::factory()->create([
+            'role' => 'user',
+            'bidang' => 'Matematika & IPA',
+            'is_active' => true,
+        ]);
+
+        $ipaPackage = Package::where('bidang', 'IPA')->first();
+        $mtkPackage = Package::where('bidang', 'MTK')->first();
+
+        // Bisa buka detail paket IPA
+        $resShowIpa = $this->actingAs($dualStudent)->get(route('user.packages.show', $ipaPackage->id));
+        $resShowIpa->assertOk();
+
+        // Bisa buka detail paket MTK
+        $resShowMtk = $this->actingAs($dualStudent)->get(route('user.packages.show', $mtkPackage->id));
+        $resShowMtk->assertOk();
+
+        // Bisa lihat daftar paket yang berisi keduanya
+        $resList = $this->actingAs($dualStudent)->get(route('user.packages.index'));
+        $resList->assertOk();
+        $resList->assertInertia(fn (Assert $page) => $page
+            ->component('Packages/PackageList')
+            ->has('packages.data', 2)
+        );
+    }
 }
