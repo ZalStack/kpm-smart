@@ -56,20 +56,23 @@ class PracticeController extends Controller
             $studentBidang = trim((string) $user->bidang);
             $isStudentMtk = (bool) preg_match('/(mtk|matematika|math)/i', $studentBidang);
             $isStudentIpa = (bool) preg_match('/(ipa|sains|science)/i', $studentBidang);
+            $isStudentDual = $isStudentMtk && $isStudentIpa;
 
             $pkgBidang = (string) ($package->bidang ?? '');
             $pkgTitle = (string) ($package->title ?? '');
             $pkgIsIpa = (bool) (preg_match('/(ipa|sains)/i', $pkgBidang) || preg_match('/(ipa|sains)/i', $pkgTitle));
             $pkgIsMtk = (bool) (preg_match('/(mtk|matematika|math)/i', $pkgBidang) || preg_match('/(mtk|matematika|math)/i', $pkgTitle));
 
-            if ($isStudentMtk && $pkgIsIpa) {
-                return redirect()->route('user.packages.index')
-                    ->with('error', 'Maaf, tugas ini khusus untuk bidang studi IPA. Anda terdaftar pada bidang Matematika.');
-            }
+            if (! $isStudentDual) {
+                if ($isStudentMtk && $pkgIsIpa) {
+                    return redirect()->route('user.packages.index')
+                        ->with('error', 'Maaf, tugas ini khusus untuk bidang studi IPA. Anda terdaftar pada bidang Matematika.');
+                }
 
-            if ($isStudentIpa && $pkgIsMtk) {
-                return redirect()->route('user.packages.index')
-                    ->with('error', 'Maaf, tugas ini khusus untuk bidang studi Matematika. Anda terdaftar pada bidang IPA.');
+                if ($isStudentIpa && $pkgIsMtk) {
+                    return redirect()->route('user.packages.index')
+                        ->with('error', 'Maaf, tugas ini khusus untuk bidang studi Matematika. Anda terdaftar pada bidang IPA.');
+                }
             }
         }
 
