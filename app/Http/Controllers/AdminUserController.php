@@ -615,13 +615,19 @@ class AdminUserController extends Controller
                 $username = $pu['nis'] ?? ($pu['username'] ?? explode('@', $pu['email'])[0]);
                 $avatar = ! empty($pu['foto_profil']) ? $pu['foto_profil'] : "{$parentUrl}/api/foto/".urlencode($pu['email']);
 
+                $bSync = $pu['bidang'] ?? 'Matematika & IPA';
+                $cSync = $bSync.' '.($pu['level'] ?? '');
+                if (preg_match('/(mtk|matematika|math)/i', $cSync) && preg_match('/(ipa|sains|science)/i', $cSync)) {
+                    $bSync = 'Matematika & IPA';
+                }
+
                 $existingUser = User::where('email', $pu['email'])->first();
                 $userData = [
                     'name' => $pu['name'] ?? 'User',
                     'username' => $username,
                     'student_name' => $pu['name'] ?? 'User',
                     'student_class' => $pu['kelas'] ?? ($pu['class_name'] ?? 'VII-A'),
-                    'bidang' => $pu['bidang'] ?? 'Matematika & IPA',
+                    'bidang' => $bSync,
                     'level' => $pu['level'] ?? '1',
                     'school_name' => $pu['asal_sekolah'] ?? 'KPM Academy',
                     'phone' => $pu['phone'] ?? null,

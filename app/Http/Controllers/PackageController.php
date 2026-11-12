@@ -25,12 +25,17 @@ class PackageController extends Controller
 
         $user = auth()->user();
         $studentBidang = $user ? trim((string) $user->bidang) : '';
+        $studentLevel = $user ? trim((string) $user->level) : '';
+        $combinedInfo = $studentBidang . ' ' . $studentLevel;
         $isStudent = $user && $user->role === 'user';
 
-        // Deteksi bidang siswa dari data akun siswa
-        $isStudentMtk = (bool) preg_match('/(mtk|matematika|math)/i', $studentBidang);
-        $isStudentIpa = (bool) preg_match('/(ipa|sains|science)/i', $studentBidang);
-        $isStudentDual = $isStudentMtk && $isStudentIpa;
+        // Deteksi bidang siswa dari data akun siswa (bidang dan level)
+        $isStudentMtk = (bool) preg_match('/(mtk|matematika|math)/i', $combinedInfo);
+        $isStudentIpa = (bool) preg_match('/(ipa|sains|science)/i', $combinedInfo);
+        $isStudentDual = ($isStudentMtk && $isStudentIpa)
+            || preg_match('/(&|,|dan|\/)/i', $studentBidang)
+            || str_contains(strtolower($studentBidang), 'dual')
+            || str_contains(strtolower($studentBidang), 'semua');
 
         $query = Package::where('is_active', true);
 
@@ -38,31 +43,31 @@ class PackageController extends Controller
         // Kalo siswa bidangnya Matematika saja: DAPAT SOAL MATEMATIKA, TIDAK ADA SOAL IPA
         // Kalo siswa bidangnya IPA saja: DAPAT SOAL IPA, TIDAK ADA SOAL MATEMATIKA
         if ($isStudent && $isStudentDual) {
+            // Siswa dual berhak mengakses seluruh tugas PR MTK, IPA, maupun umum
+        } elseif ($isStudent && $isStudentMtk && ! $isStudentIpa) {
             $query->where(function ($q) {
-                $q->whereIn('bidang', ['MTK', 'MATEMATIKA', 'Matematika', 'IPA', 'Ipa', 'Sains', 'SAINS'])
-                    ->orWhere('title', 'like', '%Matematika%')
-                    ->orWhere('title', 'like', '%MTK%')
-                    ->orWhere('title', 'like', '%IPA%')
-                    ->orWhere('title', 'like', '%Sains%');
-            });
-        } elseif ($isStudent && $isStudentMtk) {
-            $query->where(function ($q) {
-                $q->whereIn('bidang', ['MTK', 'MATEMATIKA', 'Matematika'])
-                    ->orWhere('title', 'like', '%Matematika%')
-                    ->orWhere('title', 'like', '%MTK%');
-            })->where(function ($q) {
                 $q->where(function ($sub) {
+                    $sub->where('bidang', 'like', '%MTK%')
+                        ->orWhere('bidang', 'like', '%Matematika%')
+                        ->orWhere('bidang', 'like', '%Math%')
+                        ->orWhere('title', 'like', '%MTK%')
+                        ->orWhere('title', 'like', '%Matematika%')
+                        ->orWhere('title', 'like', '%Math%');
+                })->where(function ($sub) {
                     $sub->whereNull('bidang')
                         ->orWhere('bidang', 'not like', '%IPA%');
                 })->where('title', 'not like', '%IPA%');
             });
-        } elseif ($isStudent && $isStudentIpa) {
+        } elseif ($isStudent && $isStudentIpa && ! $isStudentMtk) {
             $query->where(function ($q) {
-                $q->whereIn('bidang', ['IPA', 'Ipa', 'Sains', 'SAINS'])
-                    ->orWhere('title', 'like', '%IPA%')
-                    ->orWhere('title', 'like', '%Sains%');
-            })->where(function ($q) {
                 $q->where(function ($sub) {
+                    $sub->where('bidang', 'like', '%IPA%')
+                        ->orWhere('bidang', 'like', '%Sains%')
+                        ->orWhere('bidang', 'like', '%Science%')
+                        ->orWhere('title', 'like', '%IPA%')
+                        ->orWhere('title', 'like', '%Sains%')
+                        ->orWhere('title', 'like', '%Science%');
+                })->where(function ($sub) {
                     $sub->whereNull('bidang')
                         ->orWhere(function ($s2) {
                             $s2->where('bidang', 'not like', '%MTK%')
@@ -112,7 +117,7 @@ class PackageController extends Controller
                 break;
         }
 
-        $packages = $query->paginate(12)->withQueryString();
+        $packages = $query->paginate(100)->withQueryString();
 
         // Status pengerjaan PR milik siswa yang login untuk tiap paket di halaman ini.
         // Dipakai daftar PR agar klik kartu langsung masuk ke bagian soal:
@@ -325,7 +330,7 @@ class PackageController extends Controller
             'kelas' => $request->kelas ?: null,
             'bidang' => $request->bidang ?: null,
             'level' => $request->level ?: null,
-            'is_active' => $request->is_active ?? true,
+            'is_active' => $request->has('is_active') ? $request->boolean('is_active') : true,
             'start_date' => $request->start_date ?: null,
             'end_date' => $request->end_date ?: null,
             'start_time' => $request->start_time ?: null,
@@ -563,22 +568,27 @@ class PackageController extends Controller
         $user = auth()->user();
         if ($user && $user->role === 'user') {
             $studentBidang = trim((string) $user->bidang);
-            $isStudentMtk = (bool) preg_match('/(mtk|matematika|math)/i', $studentBidang);
-            $isStudentIpa = (bool) preg_match('/(ipa|sains|science)/i', $studentBidang);
-            $isStudentDual = $isStudentMtk && $isStudentIpa;
+            $studentLevel = trim((string) $user->level);
+            $combinedInfo = $studentBidang . ' ' . $studentLevel;
+            $isStudentMtk = (bool) preg_match('/(mtk|matematika|math)/i', $combinedInfo);
+            $isStudentIpa = (bool) preg_match('/(ipa|sains|science)/i', $combinedInfo);
+            $isStudentDual = ($isStudentMtk && $isStudentIpa)
+                || preg_match('/(&|,|dan|\/)/i', $studentBidang)
+                || str_contains(strtolower($studentBidang), 'dual')
+                || str_contains(strtolower($studentBidang), 'semua');
 
             $pkgBidang = (string) ($package->bidang ?? '');
             $pkgTitle = (string) ($package->title ?? '');
-            $pkgIsIpa = (bool) (preg_match('/(ipa|sains)/i', $pkgBidang) || preg_match('/(ipa|sains)/i', $pkgTitle));
+            $pkgIsIpa = (bool) (preg_match('/(ipa|sains|science)/i', $pkgBidang) || preg_match('/(ipa|sains|science)/i', $pkgTitle));
             $pkgIsMtk = (bool) (preg_match('/(mtk|matematika|math)/i', $pkgBidang) || preg_match('/(mtk|matematika|math)/i', $pkgTitle));
 
             if (! $isStudentDual) {
-                if ($isStudentMtk && $pkgIsIpa) {
+                if ($isStudentMtk && ! $isStudentIpa && $pkgIsIpa && ! $pkgIsMtk) {
                     return redirect()->route('user.packages.index')
                         ->with('error', 'Maaf, tugas ini khusus untuk bidang studi IPA. Anda terdaftar pada bidang Matematika.');
                 }
 
-                if ($isStudentIpa && $pkgIsMtk) {
+                if ($isStudentIpa && ! $isStudentMtk && $pkgIsMtk && ! $pkgIsIpa) {
                     return redirect()->route('user.packages.index')
                         ->with('error', 'Maaf, tugas ini khusus untuk bidang studi Matematika. Anda terdaftar pada bidang IPA.');
                 }
