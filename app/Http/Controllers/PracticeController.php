@@ -58,18 +58,19 @@ class PracticeController extends Controller
             $isStudentIpa = (bool) preg_match('/(ipa|sains|science)/i', $studentBidang);
 
             $pkgBidang = (string) ($package->bidang ?? '');
-            $pkgTitle = (string) ($package->title ?? '');
-            $pkgIsIpa = (bool) (preg_match('/(ipa|sains)/i', $pkgBidang) || preg_match('/(ipa|sains)/i', $pkgTitle));
-            $pkgIsMtk = (bool) (preg_match('/(mtk|matematika|math)/i', $pkgBidang) || preg_match('/(mtk|matematika|math)/i', $pkgTitle));
+            $pkgIsIpa  = (bool) preg_match('/(ipa|sains)/i', $pkgBidang);
+            $pkgIsMtk  = (bool) preg_match('/(mtk|matematika|math)/i', $pkgBidang);
 
-            if ($isStudentMtk && $pkgIsIpa) {
+            // Hanya blokir jika paket adalah satu bidang tertentu dan siswa tidak mengikuti bidang itu.
+            // Siswa yang mengikuti KEDUA bidang (MTK & IPA) boleh mengerjakan soal dari bidang mana pun.
+            if ($pkgIsIpa && !$pkgIsMtk && !$isStudentIpa) {
                 return redirect()->route('user.packages.index')
-                    ->with('error', 'Maaf, tugas ini khusus untuk bidang studi IPA. Anda terdaftar pada bidang Matematika.');
+                    ->with('error', 'Maaf, tugas ini khusus untuk bidang studi IPA. Bidang studi Anda tidak mencakup IPA.');
             }
 
-            if ($isStudentIpa && $pkgIsMtk) {
+            if ($pkgIsMtk && !$pkgIsIpa && !$isStudentMtk) {
                 return redirect()->route('user.packages.index')
-                    ->with('error', 'Maaf, tugas ini khusus untuk bidang studi Matematika. Anda terdaftar pada bidang IPA.');
+                    ->with('error', 'Maaf, tugas ini khusus untuk bidang studi Matematika. Bidang studi Anda tidak mencakup Matematika.');
             }
         }
 

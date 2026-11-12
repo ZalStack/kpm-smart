@@ -7,12 +7,16 @@ import Input from '@/Components/ui/input/Input.vue';
 import Label from '@/Components/ui/label/Label.vue';
 import Textarea from '@/Components/ui/textarea/Textarea.vue';
 import Switch from '@/Components/ui/switch/Switch.vue';
+import Select from '@/Components/ui/select/Select.vue';
 import { Icon } from '@iconify/vue/offline';
 
 const route = inject('route');
 
 const props = defineProps({
-    package: { type: Object, required: true },
+    package:       { type: Object, required: true },
+    bidangOptions: { type: Array, default: () => ['MTK', 'IPA'] },
+    kelasOptions:  { type: Array, default: () => [] },
+    levelOptions:  { type: Array, default: () => [] },
 });
 
 const form = useForm({
@@ -130,17 +134,37 @@ function submit() {
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <!-- Kelas Target -->
                             <div class="space-y-2">
                                 <Label for="kelas">Kelas</Label>
-                                <Input id="kelas" v-model="form.kelas" placeholder="Contoh: 10" class="rounded-xl" />
+                                <Select id="kelas" v-model="form.kelas" class="rounded-xl h-10">
+                                    <option value="">— Semua Kelas —</option>
+                                    <option v-for="k in kelasOptions" :key="k" :value="k">
+                                        Kelas {{ k }}
+                                    </option>
+                                </Select>
                             </div>
+
+                            <!-- Bidang Studi -->
                             <div class="space-y-2">
                                 <Label for="bidang">Bidang</Label>
-                                <Input id="bidang" v-model="form.bidang" placeholder="Contoh: Matematika" class="rounded-xl" />
+                                <Select id="bidang" v-model="form.bidang" class="rounded-xl h-10">
+                                    <option value="">— Semua Bidang —</option>
+                                    <option v-for="b in bidangOptions" :key="b" :value="b">
+                                        {{ b }}
+                                    </option>
+                                </Select>
                             </div>
+
+                            <!-- Level Berbakat -->
                             <div class="space-y-2">
-                                <Label for="level">Level</Label>
-                                <Input id="level" v-model="form.level" placeholder="Contoh: A1" class="rounded-xl" />
+                                <Label for="level">Level Berbakat</Label>
+                                <Select id="level" v-model="form.level" class="rounded-xl h-10">
+                                    <option value="">— Semua Level —</option>
+                                    <option v-for="l in levelOptions" :key="l" :value="l">
+                                        {{ l }}
+                                    </option>
+                                </Select>
                             </div>
                         </div>
 

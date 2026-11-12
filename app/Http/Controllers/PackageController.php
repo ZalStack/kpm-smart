@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Package;
 use App\Models\PracticeSession;
+use App\Models\User;
 use App\Support\QuestionFormatter;
 use App\Support\SearchHelper;
 use Illuminate\Http\Request;
@@ -33,36 +34,61 @@ class PackageController extends Controller
 
         $query = Package::where('is_active', true);
 
-        // Kalo siswa bidangnya Matematika: DAPAT SOAL MATEMATIKA, TIDAK ADA SOAL IPA
-        // Kalo siswa bidangnya IPA: DAPAT SOAL IPA, TIDAK ADA SOAL MATEMATIKA
-        if ($isStudent && $isStudentMtk) {
-            $query->where(function ($q) {
-                $q->whereIn('bidang', ['MTK', 'MATEMATIKA', 'Matematika'])
-                    ->orWhere('title', 'like', '%Matematika%')
-                    ->orWhere('title', 'like', '%MTK%');
-            })->where(function ($q) {
-                $q->where(function ($sub) {
-                    $sub->whereNull('bidang')
-                        ->orWhere('bidang', 'not like', '%IPA%');
-                })->where('title', 'not like', '%IPA%');
+        // ===================== FILTER BIDANG SISWA =====================
+        // Mendukung siswa yang mengikuti 1 bidang (MTK atau IPA) maupun
+        // 2 bidang sekaligus (MTK+IPA, misal bidang='MTK,IPA' atau 'IPA,MTK').
+        if ($isStudent && ($isStudentMtk || $isStudentIpa)) {
+            $query->where(function ($q) use ($isStudentMtk, $isStudentIpa) {
+                if ($isStudentMtk) {
+                    // Tampilkan paket bidang MTK / Matematika
+                    $q->orWhere(function ($sub) {
+                        $sub->whereIn('bidang', ['MTK', 'MATEMATIKA', 'Matematika', 'mtk', 'matematika'])
+                            ->orWhere('bidang', 'like', '%MTK%')
+                            ->orWhere('bidang', 'like', '%Matematika%');
+                    });
+                }
+                if ($isStudentIpa) {
+                    // Tampilkan paket bidang IPA / Sains
+                    $q->orWhere(function ($sub) {
+                        $sub->whereIn('bidang', ['IPA', 'Ipa', 'SAINS', 'Sains', 'ipa', 'sains'])
+                            ->orWhere('bidang', 'like', '%IPA%')
+                            ->orWhere('bidang', 'like', '%Sains%');
+                    });
+                }
             });
-        } elseif ($isStudent && $isStudentIpa) {
+        } elseif ($isStudent) {
+            // Siswa dengan bidang selain MTK/IPA: hanya paket tanpa ketetapan bidang
             $query->where(function ($q) {
-                $q->whereIn('bidang', ['IPA', 'Ipa', 'Sains', 'SAINS'])
-                    ->orWhere('title', 'like', '%IPA%')
-                    ->orWhere('title', 'like', '%Sains%');
-            })->where(function ($q) {
-                $q->where(function ($sub) {
-                    $sub->whereNull('bidang')
-                        ->orWhere(function ($s2) {
-                            $s2->where('bidang', 'not like', '%MTK%')
-                                ->where('bidang', 'not like', '%Matematika%');
-                        });
-                })->where('title', 'not like', '%Matematika%')
-                    ->where('title', 'not like', '%MTK%');
+                $q->whereNull('bidang')->orWhere('bidang', '');
             });
         } elseif (request('bidang')) {
             $query->where('bidang', request('bidang'));
+        }
+
+        // ===================== FILTER KELAS SISWA =====================
+        // Paket ditampilkan jika kelas paket = kelas siswa ATAU paket tidak punya kelas tertentu
+        if ($isStudent && !empty($user->student_class)) {
+            $studentClass = trim((string) $user->student_class);
+            $query->where(function ($q) use ($studentClass) {
+                $q->whereNull('kelas')
+                  ->orWhere('kelas', '')
+                  ->orWhere('kelas', $studentClass);
+            });
+        } elseif (!$isStudent && request('kelas')) {
+            $query->where('kelas', request('kelas'));
+        }
+
+        // ===================== FILTER LEVEL SISWA =====================
+        // Paket ditampilkan jika level paket = level siswa ATAU paket tidak punya level tertentu
+        if ($isStudent && !empty($user->level)) {
+            $studentLevel = trim((string) $user->level);
+            $query->where(function ($q) use ($studentLevel) {
+                $q->whereNull('level')
+                  ->orWhere('level', '')
+                  ->orWhere('level', $studentLevel);
+            });
+        } elseif (!$isStudent && request('level')) {
+            $query->where('level', request('level'));
         }
 
         if (request('search')) {
@@ -74,12 +100,6 @@ class PackageController extends Controller
             });
         }
 
-        if (request('kelas')) {
-            $query->where('kelas', request('kelas'));
-        }
-        if (request('level')) {
-            $query->where('level', request('level'));
-        }
 
         // Fitur sortir PR Pekanan
         $sortBy = request('sort', 'latest');
@@ -145,13 +165,18 @@ class PackageController extends Controller
             'end_date' => $pkg->end_date,
         ]));
 
-        // Opsi filter bidang yang dinamis sesuai hak siswa
+        // Opsi filter bidang yang dinamis sesuai hak siswa (mendukung multi-bidang)
+        $userBidangGroups = [];
         if ($isStudent && $isStudentMtk) {
-            $allBidang = collect(['Matematika']);
-            $userBidangGroup = 'Matematika';
-        } elseif ($isStudent && $isStudentIpa) {
-            $allBidang = collect(['IPA']);
-            $userBidangGroup = 'IPA';
+            $userBidangGroups[] = 'Matematika';
+        }
+        if ($isStudent && $isStudentIpa) {
+            $userBidangGroups[] = 'IPA';
+        }
+
+        if ($isStudent && count($userBidangGroups) > 0) {
+            $allBidang = collect($userBidangGroups)->values();
+            $userBidangGroup = count($userBidangGroups) === 1 ? $userBidangGroups[0] : implode(', ', $userBidangGroups);
         } else {
             $allBidang = Package::where('is_active', true)->whereNotNull('bidang')->where('bidang', '!=', '')->distinct()->pluck('bidang')->sort()->values();
             $userBidangGroup = null;
@@ -273,10 +298,28 @@ class PackageController extends Controller
     {
         $this->ensureNotGuru();
 
+        // Opsi dropdown diambil dari data yang sudah ada di sistem
+        $bidangOptions = collect(['MTK', 'IPA'])
+            ->merge(Package::whereNotNull('bidang')->where('bidang', '!=', '')->distinct()->pluck('bidang'))
+            ->unique()->sort()->values();
+
+        $kelasOptions = User::where('role', 'user')
+            ->whereNotNull('student_class')->where('student_class', '!=', '')
+            ->distinct()->pluck('student_class')
+            ->sortBy(fn($v) => (int) ltrim((string) $v, "'"))
+            ->values();
+
+        $levelOptions = User::where('role', 'user')
+            ->whereNotNull('level')->where('level', '!=', '')
+            ->distinct()->pluck('level')->sort()->values();
+
         return Inertia::render('Admin/Packages/PackageCreate', [
-            'initialKelas' => $request->query('kelas', ''),
+            'initialKelas'  => $request->query('kelas', ''),
             'initialBidang' => $request->query('bidang', ''),
-            'initialLevel' => $request->query('level', ''),
+            'initialLevel'  => $request->query('level', ''),
+            'bidangOptions' => $bidangOptions,
+            'kelasOptions'  => $kelasOptions,
+            'levelOptions'  => $levelOptions,
         ]);
     }
 
@@ -346,8 +389,26 @@ class PackageController extends Controller
     {
         $this->ensureNotGuru();
 
+        // Opsi dropdown diambil dari data yang sudah ada di sistem
+        $bidangOptions = collect(['MTK', 'IPA'])
+            ->merge(Package::whereNotNull('bidang')->where('bidang', '!=', '')->distinct()->pluck('bidang'))
+            ->unique()->sort()->values();
+
+        $kelasOptions = User::where('role', 'user')
+            ->whereNotNull('student_class')->where('student_class', '!=', '')
+            ->distinct()->pluck('student_class')
+            ->sortBy(fn($v) => (int) ltrim((string) $v, "'"))
+            ->values();
+
+        $levelOptions = User::where('role', 'user')
+            ->whereNotNull('level')->where('level', '!=', '')
+            ->distinct()->pluck('level')->sort()->values();
+
         return Inertia::render('Admin/Packages/PackageEditInfo', [
-            'package' => $package,
+            'package'       => $package,
+            'bidangOptions' => $bidangOptions,
+            'kelasOptions'  => $kelasOptions,
+            'levelOptions'  => $levelOptions,
         ]);
     }
 
@@ -554,18 +615,19 @@ class PackageController extends Controller
             $isStudentIpa = (bool) preg_match('/(ipa|sains|science)/i', $studentBidang);
 
             $pkgBidang = (string) ($package->bidang ?? '');
-            $pkgTitle = (string) ($package->title ?? '');
-            $pkgIsIpa = (bool) (preg_match('/(ipa|sains)/i', $pkgBidang) || preg_match('/(ipa|sains)/i', $pkgTitle));
-            $pkgIsMtk = (bool) (preg_match('/(mtk|matematika|math)/i', $pkgBidang) || preg_match('/(mtk|matematika|math)/i', $pkgTitle));
+            $pkgIsIpa  = (bool) preg_match('/(ipa|sains)/i', $pkgBidang);
+            $pkgIsMtk  = (bool) preg_match('/(mtk|matematika|math)/i', $pkgBidang);
 
-            if ($isStudentMtk && $pkgIsIpa) {
+            // Hanya blokir akses jika paket adalah bidang lain yang TIDAK diikuti siswa.
+            // Siswa yang ikut KEDUA bidang (MTK & IPA) boleh akses semua soal.
+            if ($pkgIsIpa && !$pkgIsMtk && !$isStudentIpa) {
                 return redirect()->route('user.packages.index')
-                    ->with('error', 'Maaf, tugas ini khusus untuk bidang studi IPA. Anda terdaftar pada bidang Matematika.');
+                    ->with('error', 'Maaf, tugas ini khusus untuk bidang studi IPA. Bidang studi Anda tidak mencakup IPA.');
             }
 
-            if ($isStudentIpa && $pkgIsMtk) {
+            if ($pkgIsMtk && !$pkgIsIpa && !$isStudentMtk) {
                 return redirect()->route('user.packages.index')
-                    ->with('error', 'Maaf, tugas ini khusus untuk bidang studi Matematika. Anda terdaftar pada bidang IPA.');
+                    ->with('error', 'Maaf, tugas ini khusus untuk bidang studi Matematika. Bidang studi Anda tidak mencakup Matematika.');
             }
         }
 

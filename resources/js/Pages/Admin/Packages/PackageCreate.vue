@@ -7,14 +7,18 @@ import Input from '@/Components/ui/input/Input.vue';
 import Label from '@/Components/ui/label/Label.vue';
 import Textarea from '@/Components/ui/textarea/Textarea.vue';
 import Switch from '@/Components/ui/switch/Switch.vue';
+import Select from '@/Components/ui/select/Select.vue';
 import { Icon } from '@iconify/vue/offline';
 
 const route = inject('route');
 
 const props = defineProps({
-    initialKelas: { type: String, default: '' },
+    initialKelas:  { type: String, default: '' },
     initialBidang: { type: String, default: '' },
-    initialLevel: { type: String, default: '' },
+    initialLevel:  { type: String, default: '' },
+    bidangOptions: { type: Array, default: () => ['MTK', 'IPA'] },
+    kelasOptions:  { type: Array, default: () => [] },
+    levelOptions:  { type: Array, default: () => [] },
 });
 
 const form = useForm({
@@ -105,18 +109,42 @@ function submit() {
                             <p v-if="form.errors.description" class="text-xs text-destructive">{{ form.errors.description }}</p>
                         </div>
 
+                        <!-- Bidang / Kelas / Level — semua pakai dropdown sesuai data sistem -->
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <!-- Kelas Target -->
                             <div class="space-y-2">
                                 <Label for="kelas">Kelas Target</Label>
-                                <Input id="kelas" v-model="form.kelas" placeholder="Contoh: 10 atau Semua" class="rounded-xl" />
+                                <Select id="kelas" v-model="form.kelas" class="rounded-xl h-10">
+                                    <option value="">— Semua Kelas —</option>
+                                    <option v-for="k in kelasOptions" :key="k" :value="k">
+                                        Kelas {{ k }}
+                                    </option>
+                                </Select>
+                                <p v-if="form.errors.kelas" class="text-xs text-destructive">{{ form.errors.kelas }}</p>
                             </div>
+
+                            <!-- Bidang Studi -->
                             <div class="space-y-2">
                                 <Label for="bidang">Bidang Studi</Label>
-                                <Input id="bidang" v-model="form.bidang" placeholder="Contoh: Matematika, IPA" class="rounded-xl" />
+                                <Select id="bidang" v-model="form.bidang" class="rounded-xl h-10">
+                                    <option value="">— Semua Bidang —</option>
+                                    <option v-for="b in bidangOptions" :key="b" :value="b">
+                                        {{ b }}
+                                    </option>
+                                </Select>
+                                <p v-if="form.errors.bidang" class="text-xs text-destructive">{{ form.errors.bidang }}</p>
                             </div>
+
+                            <!-- Level Berbakat -->
                             <div class="space-y-2">
-                                <Label for="level">Tingkat / Level</Label>
-                                <Input id="level" v-model="form.level" placeholder="Contoh: A1, B1, C2" class="rounded-xl" />
+                                <Label for="level">Tingkat / Level Berbakat</Label>
+                                <Select id="level" v-model="form.level" class="rounded-xl h-10">
+                                    <option value="">— Semua Level —</option>
+                                    <option v-for="l in levelOptions" :key="l" :value="l">
+                                        {{ l }}
+                                    </option>
+                                </Select>
+                                <p v-if="form.errors.level" class="text-xs text-destructive">{{ form.errors.level }}</p>
                             </div>
                         </div>
 
@@ -148,7 +176,7 @@ function submit() {
                 <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm space-y-5">
                     <div class="flex items-center gap-2 pb-4 border-b border-border/50">
                         <Icon icon="mdi:calendar-clock" class="w-5 h-5 text-primary" />
-                        <h3 class="font-bold text-base text-foreground">Jadwal & Batas Pengerjaan (Opsional)</h3>
+                        <h3 class="font-bold text-base text-foreground">Jadwal &amp; Batas Pengerjaan (Opsional)</h3>
                     </div>
 
                     <p class="text-xs text-muted-foreground">Kosongkan bila paket soal dapat dikerjakan kapan saja tanpa batasan tanggal.</p>
@@ -177,7 +205,7 @@ function submit() {
                 <div class="bg-card rounded-3xl border border-border/60 p-6 sm:p-7 shadow-sm space-y-5">
                     <div class="flex items-center gap-2 pb-4 border-b border-border/50">
                         <Icon icon="mdi:cog-outline" class="w-5 h-5 text-primary" />
-                        <h3 class="font-bold text-base text-foreground">Pengaturan Hasil & Evaluasi Siswa</h3>
+                        <h3 class="font-bold text-base text-foreground">Pengaturan Hasil &amp; Evaluasi Siswa</h3>
                     </div>
 
                     <div class="space-y-3">
