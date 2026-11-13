@@ -33,7 +33,11 @@ const availableKelas = computed(() => {
     const list = [...standardKelas];
     (props.kelasOptions || []).forEach((k) => {
         if (!k) return;
-        const clean = String(k).replace(/['"]/g, '').trim();
+        let clean = String(k).replace(/['"]/g, '').trim();
+        // Pastikan format "Kelas X" (tidak ada "Kelas Kelas X")
+        if (!clean.toLowerCase().startsWith('kelas')) {
+            clean = 'Kelas ' + clean;
+        }
         if (clean && !list.some((x) => x.toLowerCase() === clean.toLowerCase())) {
             list.push(clean);
         }
@@ -45,29 +49,11 @@ const availableKelas = computed(() => {
     });
 });
 
-const availableLevel = computed(() => {
-    const list = [...standardLevel];
-    (props.levelOptions || []).forEach((l) => {
-        if (!l) return;
-        const clean = String(l).trim();
-        if (clean && !list.includes(clean)) {
-            list.push(clean);
-        }
-    });
-    return list;
-});
+// Level hanya dari daftar standar — hindari composite values dari DB seperti "Berbakat A(IPA),Berbakat B(MTK)"
+const availableLevel = computed(() => [...standardLevel]);
 
-const availableBidang = computed(() => {
-    const list = [...standardBidang];
-    (props.bidangOptions || []).forEach((b) => {
-        if (!b) return;
-        const clean = String(b).trim();
-        if (clean && !list.includes(clean)) {
-            list.push(clean);
-        }
-    });
-    return list;
-});
+// Bidang hanya dari daftar standar — hindari "Matematika" atau varian lain dari DB
+const availableBidang = computed(() => [...standardBidang]);
 
 const form = useForm({
     title: '',
@@ -177,9 +163,7 @@ function submit() {
                                 </div>
                                 <Select id="kelas" v-model="form.kelas" class="rounded-xl h-10">
                                     <option value="">— Semua Kelas —</option>
-                                    <option v-for="k in availableKelas" :key="k" :value="k">
-                                        {{ String(k).toLowerCase().startsWith('kelas') ? k : 'Kelas ' + k }}
-                                    </option>
+                                    <option v-for="k in availableKelas" :key="k" :value="k">{{ k }}</option>
                                 </Select>
                                 <p v-if="form.errors.kelas" class="text-xs text-destructive">{{ form.errors.kelas }}</p>
                             </div>

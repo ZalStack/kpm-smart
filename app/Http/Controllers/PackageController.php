@@ -250,15 +250,41 @@ class PackageController extends Controller
         }
 
         if ($request->filled('kelas')) {
-            $query->where('kelas', $request->kelas);
+            $val = $request->kelas;
+            $num = preg_replace('/[^0-9]/', '', (string) $val);
+            $query->where(function ($q) use ($val, $num) {
+                $q->where('kelas', $val);
+                if ($num !== '') {
+                    $q->orWhere('kelas', $num)
+                      ->orWhere('kelas', 'Kelas ' . $num)
+                      ->orWhere('kelas', "'{$num}'")
+                      ->orWhere('kelas', '"' . $num . '"');
+                }
+            });
         }
 
         if ($request->filled('bidang')) {
-            $query->where('bidang', $request->bidang);
+            $val = $request->bidang;
+            $query->where(function ($q) use ($val) {
+                $q->where('bidang', $val);
+                if (strtoupper($val) === 'MTK') {
+                    $q->orWhere('bidang', 'like', '%matematika%');
+                } elseif (strtoupper($val) === 'IPA') {
+                    $q->orWhere('bidang', 'like', '%ipa%')
+                      ->orWhere('bidang', 'like', '%sains%');
+                }
+            });
         }
 
         if ($request->filled('level')) {
-            $query->where('level', $request->level);
+            $val = $request->level;
+            $query->where(function ($q) use ($val) {
+                $q->where('level', $val);
+                if (preg_match('/Berbakat\s*([A-C][0-9]?)/i', $val, $m)) {
+                    $lvl = $m[1];
+                    $q->orWhere('level', 'like', "%Berbakat {$lvl}%");
+                }
+            });
         }
 
         $packages = $query->latest()->paginate(10)->withQueryString();
@@ -328,100 +354,36 @@ class PackageController extends Controller
     }
 
     /**
-     * Mengambil daftar opsi Kelas yang sinkron dengan kpm-student-smart (Kelas 1 - 12)
-     * dan digabung dengan kelas unik yang ada di database.
+     * Mengambil daftar opsi Kelas yang bersih dan terstandarisasi (Kelas 1 - 12).
      */
     public function getKelasOptions(): array
     {
-        $defaultKelas = collect([
+        return [
             'Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6',
             'Kelas 7', 'Kelas 8', 'Kelas 9', 'Kelas 10', 'Kelas 11', 'Kelas 12',
-        ]);
-
-        try {
-            $fromUsers = User::whereNotNull('student_class')
-                ->where('student_class', '!=', '')
-                ->distinct()
-                ->pluck('student_class')
-                ->map(fn($v) => trim(str_replace(["'", '"'], '', (string) $v)))
-                ->filter();
-
-            $fromPackages = Package::whereNotNull('kelas')
-                ->where('kelas', '!=', '')
-                ->distinct()
-                ->pluck('kelas')
-                ->map(fn($v) => trim(str_replace(["'", '"'], '', (string) $v)))
-                ->filter();
-
-            return $defaultKelas->merge($fromUsers)->merge($fromPackages)
-                ->unique()
-                ->sortBy(function ($v) {
-                    $num = preg_replace('/[^0-9]/', '', (string) $v);
-                    return $num !== '' ? (int) $num : 999;
-                })
-                ->values()
-                ->all();
-        } catch (\Throwable $e) {
-            return $defaultKelas->all();
-        }
+        ];
     }
 
     /**
-     * Mengambil daftar opsi Level Berbakat yang sinkron dengan kpm-student-smart
-     * (Berbakat A, Berbakat B, Berbakat C, dst).
+     * Mengambil daftar opsi Level Berbakat yang bersih dan terstandarisasi.
      */
     public function getLevelOptions(): array
     {
-        $defaultLevel = collect(['Berbakat A', 'Berbakat B', 'Berbakat B1', 'Berbakat B2', 'Berbakat C']);
-
-        try {
-            $fromUsers = User::whereNotNull('level')
-                ->where('level', '!=', '')
-                ->distinct()
-                ->pluck('level')
-                ->map(fn($v) => trim((string) $v))
-                ->filter();
-
-            $fromPackages = Package::whereNotNull('level')
-                ->where('level', '!=', '')
-                ->distinct()
-                ->pluck('level')
-                ->map(fn($v) => trim((string) $v))
-                ->filter();
-
-            return $defaultLevel->merge($fromUsers)->merge($fromPackages)
-                ->unique()
-                ->sort()
-                ->values()
-                ->all();
-        } catch (\Throwable $e) {
-            return $defaultLevel->all();
-        }
+        return [
+            'Berbakat A',
+            'Berbakat B',
+            'Berbakat B1',
+            'Berbakat B2',
+            'Berbakat C',
+        ];
     }
 
     /**
-     * Mengambil daftar opsi Bidang Studi yang sinkron dengan kpm-student-smart (MTK & IPA).
+     * Mengambil daftar opsi Bidang Studi yang terstandarisasi (MTK & IPA).
      */
     public function getBidangOptions(): array
     {
-        $defaultBidang = collect(['MTK', 'IPA']);
-
-        try {
-            $fromPackages = Package::whereNotNull('bidang')
-                ->where('bidang', '!=', '')
-                ->distinct()
-                ->pluck('bidang')
-                ->map(fn($v) => trim((string) $v))
-                ->filter();
-
-            return $defaultBidang->merge($fromPackages)
-                ->unique()
-                ->sort()
-                ->values()
-                ->all();
-        } catch (\Throwable $e) {
-            return $defaultBidang->all();
-        }
+        return ['MTK', 'IPA'];
     }
 
     public function create(Request $request)

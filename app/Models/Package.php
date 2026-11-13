@@ -40,23 +40,46 @@ class Package extends Model
      */
     public function isWithinSchedule(): bool
     {
-        $now = now();
+        $tz = config('app.timezone', 'Asia/Jakarta');
+        $now = now($tz);
 
         if ($this->start_date) {
-            $startDateTime = $this->start_time
-                ? $this->start_date->copy()->setTimeFromTimeString($this->start_time)
-                : $this->start_date->copy()->startOfDay();
-            if ($now->lt($startDateTime)) {
-                return false;
+            $startDateStr = $this->start_date instanceof \DateTimeInterface 
+                ? $this->start_date->format('Y-m-d') 
+                : substr((string) $this->start_date, 0, 10);
+            $startTimeStr = $this->start_time ? substr((string) $this->start_time, 0, 8) : '00:00:00';
+            if (strlen($startTimeStr) === 5) {
+                $startTimeStr .= ':00';
+            }
+            try {
+                $startDateTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', "{$startDateStr} {$startTimeStr}", $tz);
+                if ($now->lt($startDateTime)) {
+                    return false;
+                }
+            } catch (\Throwable $e) {
+                if ($now->lt($this->start_date->copy()->startOfDay())) {
+                    return false;
+                }
             }
         }
 
         if ($this->end_date) {
-            $endDateTime = $this->end_time
-                ? $this->end_date->copy()->setTimeFromTimeString($this->end_time)
-                : $this->end_date->copy()->endOfDay();
-            if ($now->gt($endDateTime)) {
-                return false;
+            $endDateStr = $this->end_date instanceof \DateTimeInterface 
+                ? $this->end_date->format('Y-m-d') 
+                : substr((string) $this->end_date, 0, 10);
+            $endTimeStr = $this->end_time ? substr((string) $this->end_time, 0, 8) : '23:59:59';
+            if (strlen($endTimeStr) === 5) {
+                $endTimeStr .= ':00';
+            }
+            try {
+                $endDateTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', "{$endDateStr} {$endTimeStr}", $tz);
+                if ($now->gt($endDateTime)) {
+                    return false;
+                }
+            } catch (\Throwable $e) {
+                if ($now->gt($this->end_date->copy()->endOfDay())) {
+                    return false;
+                }
             }
         }
 
@@ -65,7 +88,7 @@ class Package extends Model
 
     /**
      * Status jadwal: upcoming, active, expired, atau no_limit.
-     * Mempertimbangkan tanggal DAN waktu.
+     * Mempertimbangkan tanggal DAN waktu dalam zona waktu Asia/Jakarta (WIB).
      */
     public function getScheduleStatusAttribute(): string
     {
@@ -73,23 +96,46 @@ class Package extends Model
             return 'no_limit';
         }
 
-        $now = now();
+        $tz = config('app.timezone', 'Asia/Jakarta');
+        $now = now($tz);
 
         if ($this->start_date) {
-            $startDateTime = $this->start_time
-                ? $this->start_date->copy()->setTimeFromTimeString($this->start_time)
-                : $this->start_date->copy()->startOfDay();
-            if ($now->lt($startDateTime)) {
-                return 'upcoming';
+            $startDateStr = $this->start_date instanceof \DateTimeInterface 
+                ? $this->start_date->format('Y-m-d') 
+                : substr((string) $this->start_date, 0, 10);
+            $startTimeStr = $this->start_time ? substr((string) $this->start_time, 0, 8) : '00:00:00';
+            if (strlen($startTimeStr) === 5) {
+                $startTimeStr .= ':00';
+            }
+            try {
+                $startDateTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', "{$startDateStr} {$startTimeStr}", $tz);
+                if ($now->lt($startDateTime)) {
+                    return 'upcoming';
+                }
+            } catch (\Throwable $e) {
+                if ($now->lt($this->start_date->copy()->startOfDay())) {
+                    return 'upcoming';
+                }
             }
         }
 
         if ($this->end_date) {
-            $endDateTime = $this->end_time
-                ? $this->end_date->copy()->setTimeFromTimeString($this->end_time)
-                : $this->end_date->copy()->endOfDay();
-            if ($now->gt($endDateTime)) {
-                return 'expired';
+            $endDateStr = $this->end_date instanceof \DateTimeInterface 
+                ? $this->end_date->format('Y-m-d') 
+                : substr((string) $this->end_date, 0, 10);
+            $endTimeStr = $this->end_time ? substr((string) $this->end_time, 0, 8) : '23:59:59';
+            if (strlen($endTimeStr) === 5) {
+                $endTimeStr .= ':00';
+            }
+            try {
+                $endDateTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', "{$endDateStr} {$endTimeStr}", $tz);
+                if ($now->gt($endDateTime)) {
+                    return 'expired';
+                }
+            } catch (\Throwable $e) {
+                if ($now->gt($this->end_date->copy()->endOfDay())) {
+                    return 'expired';
+                }
             }
         }
 
@@ -230,13 +276,26 @@ class Package extends Model
 
         // 3. Cek Level Kemampuan / Berbakat
         if ($pkgLevel !== '' && $studentLevel !== '') {
+            $effectiveStudentLevel = $studentLevel;
+            // Jika profil siswa memiliki format ganda seperti "Berbakat A (IPA), Berbakat B (MTK)"
+            $pkgIsIpa = (bool) (preg_match('/(ipa|sains|science)/i', $pkgBidang) || preg_match('/(ipa|sains|science)/i', $pkgTitle));
+            $pkgIsMtk = (bool) (preg_match('/(mtk|matematika|math)/i', $pkgBidang) || preg_match('/(mtk|matematika|math)/i', $pkgTitle));
+
+            if ($pkgIsIpa && preg_match('/Berbakat\s*([A-C][0-9]?)\s*\((?:IPA|Sains)\)/i', $studentLevel, $mSub)) {
+                $effectiveStudentLevel = 'Berbakat ' . strtoupper($mSub[1]);
+            } elseif ($pkgIsMtk && preg_match('/Berbakat\s*([A-C][0-9]?)\s*\((?:MTK|Matematika)\)/i', $studentLevel, $mSub)) {
+                $effectiveStudentLevel = 'Berbakat ' . strtoupper($mSub[1]);
+            }
+
             $matched = false;
-            if (strcasecmp($pkgLevel, $studentLevel) === 0) {
+            if (strcasecmp($pkgLevel, $effectiveStudentLevel) === 0) {
                 $matched = true;
-            } elseif (preg_match('/Berbakat\s*([A-C])/i', $studentLevel, $ms) && preg_match('/Berbakat\s*([A-C])/i', $pkgLevel, $mp)) {
+            } elseif (preg_match('/Berbakat\s*([A-C])/i', $effectiveStudentLevel, $ms) && preg_match('/Berbakat\s*([A-C])/i', $pkgLevel, $mp)) {
                 if (strtoupper($ms[1]) === strtoupper($mp[1])) {
                     $matched = true;
                 }
+            } elseif (str_contains(strtolower($effectiveStudentLevel), strtolower($pkgLevel))) {
+                $matched = true;
             }
 
             if (! $matched) {
