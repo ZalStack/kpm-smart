@@ -172,7 +172,9 @@ function doDelete() {
                     </Select>
                     <Select v-model="kelas" class="h-9 text-xs rounded-xl">
                         <option value="">Semua Kelas</option>
-                        <option v-for="k in allKelas" :key="k" :value="k">{{ k }}</option>
+                        <option v-for="k in allKelas" :key="k" :value="k">
+                            {{ String(k).toLowerCase().startsWith('kelas') ? k : 'Kelas ' + k }}
+                        </option>
                     </Select>
                 </div>
             </form>

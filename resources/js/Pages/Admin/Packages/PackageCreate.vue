@@ -1,5 +1,5 @@
 <script setup>
-import { inject, ref } from 'vue';
+import { inject, ref, computed } from 'vue';
 import { Head, useForm, Link } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import Button from '@/Components/ui/button/Button.vue';
@@ -19,6 +19,54 @@ const props = defineProps({
     bidangOptions: { type: Array, default: () => ['MTK', 'IPA'] },
     kelasOptions:  { type: Array, default: () => [] },
     levelOptions:  { type: Array, default: () => [] },
+});
+
+// Standard master options yang sinkron dengan sistem KPM Student Smart
+const standardKelas = [
+    'Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6',
+    'Kelas 7', 'Kelas 8', 'Kelas 9', 'Kelas 10', 'Kelas 11', 'Kelas 12',
+];
+const standardLevel = ['Berbakat A', 'Berbakat B', 'Berbakat B1', 'Berbakat B2', 'Berbakat C'];
+const standardBidang = ['MTK', 'IPA'];
+
+const availableKelas = computed(() => {
+    const list = [...standardKelas];
+    (props.kelasOptions || []).forEach((k) => {
+        if (!k) return;
+        const clean = String(k).replace(/['"]/g, '').trim();
+        if (clean && !list.some((x) => x.toLowerCase() === clean.toLowerCase())) {
+            list.push(clean);
+        }
+    });
+    return list.sort((a, b) => {
+        const numA = parseInt(a.replace(/\D/g, '')) || 0;
+        const numB = parseInt(b.replace(/\D/g, '')) || 0;
+        return numA - numB || a.localeCompare(b);
+    });
+});
+
+const availableLevel = computed(() => {
+    const list = [...standardLevel];
+    (props.levelOptions || []).forEach((l) => {
+        if (!l) return;
+        const clean = String(l).trim();
+        if (clean && !list.includes(clean)) {
+            list.push(clean);
+        }
+    });
+    return list;
+});
+
+const availableBidang = computed(() => {
+    const list = [...standardBidang];
+    (props.bidangOptions || []).forEach((b) => {
+        if (!b) return;
+        const clean = String(b).trim();
+        if (clean && !list.includes(clean)) {
+            list.push(clean);
+        }
+    });
+    return list;
 });
 
 const form = useForm({
@@ -109,15 +157,28 @@ function submit() {
                             <p v-if="form.errors.description" class="text-xs text-destructive">{{ form.errors.description }}</p>
                         </div>
 
-                        <!-- Bidang / Kelas / Level — semua pakai dropdown sesuai data sistem -->
+                        <!-- Bidang / Kelas / Level — sinkron dengan data profil siswa KPM Student Smart -->
+                        <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300 space-y-1">
+                            <div class="flex items-center gap-2 font-bold text-amber-900 dark:text-amber-200">
+                                <Icon icon="mdi:information" class="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                                <span>Sinkronisasi Data PR dengan Akun Siswa (KPM Student Smart)</span>
+                            </div>
+                            <p class="leading-relaxed text-[11px] text-amber-700/90 dark:text-amber-300/90">
+                                Pilihan <strong>Kelas</strong>, <strong>Bidang Studi</strong>, dan <strong>Level Berbakat</strong> disesuaikan langsung dengan profil akun siswa. Siswa hanya akan menerima dan melihat soal PR yang cocok dengan kelas, bidang, dan levelnya.
+                            </p>
+                        </div>
+
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <!-- Kelas Target -->
                             <div class="space-y-2">
-                                <Label for="kelas">Kelas Target</Label>
+                                <div class="flex items-center justify-between">
+                                    <Label for="kelas" class="font-bold">Kelas Target</Label>
+                                    <span class="text-[10px] text-muted-foreground">Sesuai Kelas Siswa</span>
+                                </div>
                                 <Select id="kelas" v-model="form.kelas" class="rounded-xl h-10">
                                     <option value="">— Semua Kelas —</option>
-                                    <option v-for="k in kelasOptions" :key="k" :value="k">
-                                        Kelas {{ k }}
+                                    <option v-for="k in availableKelas" :key="k" :value="k">
+                                        {{ String(k).toLowerCase().startsWith('kelas') ? k : 'Kelas ' + k }}
                                     </option>
                                 </Select>
                                 <p v-if="form.errors.kelas" class="text-xs text-destructive">{{ form.errors.kelas }}</p>
@@ -125,10 +186,13 @@ function submit() {
 
                             <!-- Bidang Studi -->
                             <div class="space-y-2">
-                                <Label for="bidang">Bidang Studi</Label>
+                                <div class="flex items-center justify-between">
+                                    <Label for="bidang" class="font-bold">Bidang Studi</Label>
+                                    <span class="text-[10px] text-muted-foreground">MTK / IPA</span>
+                                </div>
                                 <Select id="bidang" v-model="form.bidang" class="rounded-xl h-10">
                                     <option value="">— Semua Bidang —</option>
-                                    <option v-for="b in bidangOptions" :key="b" :value="b">
+                                    <option v-for="b in availableBidang" :key="b" :value="b">
                                         {{ b }}
                                     </option>
                                 </Select>
@@ -137,10 +201,13 @@ function submit() {
 
                             <!-- Level Berbakat -->
                             <div class="space-y-2">
-                                <Label for="level">Tingkat / Level Berbakat</Label>
+                                <div class="flex items-center justify-between">
+                                    <Label for="level" class="font-bold">Tingkat / Level Berbakat</Label>
+                                    <span class="text-[10px] text-muted-foreground">Berbakat A/B/C</span>
+                                </div>
                                 <Select id="level" v-model="form.level" class="rounded-xl h-10">
                                     <option value="">— Semua Level —</option>
-                                    <option v-for="l in levelOptions" :key="l" :value="l">
+                                    <option v-for="l in availableLevel" :key="l" :value="l">
                                         {{ l }}
                                     </option>
                                 </Select>

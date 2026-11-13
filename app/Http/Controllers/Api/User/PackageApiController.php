@@ -18,6 +18,75 @@ class PackageApiController extends BaseApiController
         $user = $this->resolveUser($request);
         $query = Package::where('is_active', true);
 
+        if ($user && $user->role === 'user') {
+            $studentBidang = trim((string) $user->bidang);
+            $studentLevel  = trim((string) $user->level);
+            $rawClass      = trim((string) $user->student_class);
+            $cleanClass    = trim(str_replace(["'", '"'], '', $rawClass));
+            $numClass      = preg_replace('/[^0-9]/', '', $cleanClass);
+            $combinedInfo  = $studentBidang . ' ' . $studentLevel;
+
+            $isStudentMtk = (bool) preg_match('/(mtk|matematika|math)/i', $combinedInfo);
+            $isStudentIpa = (bool) preg_match('/(ipa|sains|science)/i', $combinedInfo);
+            $isStudentDual = ($isStudentMtk && $isStudentIpa)
+                || preg_match('/(&|,|dan|\/)/i', $studentBidang)
+                || str_contains(strtolower($studentBidang), 'dual')
+                || str_contains(strtolower($studentBidang), 'semua');
+
+            if (! $isStudentDual) {
+                if ($isStudentMtk && ! $isStudentIpa) {
+                    $query->where(function ($q) {
+                        $q->where(function ($sub) {
+                            $sub->where('bidang', 'like', '%MTK%')
+                                ->orWhere('bidang', 'like', '%Matematika%')
+                                ->orWhere('bidang', 'like', '%Math%')
+                                ->orWhereNull('bidang')
+                                ->orWhere('bidang', '');
+                        })->where(function ($sub) {
+                            $sub->whereNull('bidang')->orWhere('bidang', 'not like', '%IPA%');
+                        });
+                    });
+                } elseif ($isStudentIpa && ! $isStudentMtk) {
+                    $query->where(function ($q) {
+                        $q->where(function ($sub) {
+                            $sub->where('bidang', 'like', '%IPA%')
+                                ->orWhere('bidang', 'like', '%Sains%')
+                                ->orWhere('bidang', 'like', '%Science%')
+                                ->orWhereNull('bidang')
+                                ->orWhere('bidang', '');
+                        })->where(function ($sub) {
+                            $sub->whereNull('bidang')->orWhere('bidang', 'not like', '%MTK%');
+                        });
+                    });
+                }
+            }
+
+            if ($cleanClass !== '') {
+                $query->where(function ($q) use ($rawClass, $cleanClass, $numClass) {
+                    $q->whereNull('kelas')
+                      ->orWhere('kelas', '')
+                      ->orWhere('kelas', $rawClass)
+                      ->orWhere('kelas', $cleanClass)
+                      ->orWhere('kelas', 'Kelas ' . $cleanClass);
+                    if (!empty($numClass)) {
+                        $q->orWhere('kelas', $numClass)
+                          ->orWhere('kelas', 'Kelas ' . $numClass);
+                    }
+                });
+            }
+
+            if ($studentLevel !== '') {
+                $query->where(function ($q) use ($studentLevel) {
+                    $q->whereNull('level')
+                      ->orWhere('level', '')
+                      ->orWhere('level', $studentLevel);
+                    if (preg_match('/Berbakat\s*([A-C])/i', $studentLevel, $m)) {
+                        $q->orWhere('level', 'Berbakat ' . strtoupper($m[1]));
+                    }
+                });
+            }
+        }
+
         if ($request->filled('bidang')) {
             $query->where('bidang', $request->bidang);
         }

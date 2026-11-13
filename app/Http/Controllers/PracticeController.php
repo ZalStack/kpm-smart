@@ -53,31 +53,9 @@ class PracticeController extends Controller
                     ->with('error', 'Jadwal pengerjaan PR sedang istirahat. Akses dibuka setiap Sabtu pukul 19:00 WIB s.d. Jumat pukul 19:00 WIB.');
             }
 
-            $studentBidang = trim((string) $user->bidang);
-            $studentLevel = trim((string) $user->level);
-            $combinedInfo = $studentBidang . ' ' . $studentLevel;
-            $isStudentMtk = (bool) preg_match('/(mtk|matematika|math)/i', $combinedInfo);
-            $isStudentIpa = (bool) preg_match('/(ipa|sains|science)/i', $combinedInfo);
-            $isStudentDual = ($isStudentMtk && $isStudentIpa)
-                || preg_match('/(&|,|dan|\/)/i', $studentBidang)
-                || str_contains(strtolower($studentBidang), 'dual')
-                || str_contains(strtolower($studentBidang), 'semua');
-
-            $pkgBidang = (string) ($package->bidang ?? '');
-            $pkgTitle = (string) ($package->title ?? '');
-            $pkgIsIpa = (bool) (preg_match('/(ipa|sains|science)/i', $pkgBidang) || preg_match('/(ipa|sains|science)/i', $pkgTitle));
-            $pkgIsMtk = (bool) (preg_match('/(mtk|matematika|math)/i', $pkgBidang) || preg_match('/(mtk|matematika|math)/i', $pkgTitle));
-
-            if (! $isStudentDual) {
-                if ($isStudentMtk && ! $isStudentIpa && $pkgIsIpa && ! $pkgIsMtk) {
-                    return redirect()->route('user.packages.index')
-                        ->with('error', 'Maaf, tugas ini khusus untuk bidang studi IPA. Anda terdaftar pada bidang Matematika.');
-                }
-
-                if ($isStudentIpa && ! $isStudentMtk && $pkgIsMtk && ! $pkgIsIpa) {
-                    return redirect()->route('user.packages.index')
-                        ->with('error', 'Maaf, tugas ini khusus untuk bidang studi Matematika. Anda terdaftar pada bidang IPA.');
-                }
+            $access = $package->matchesStudent($user);
+            if (! $access['allowed']) {
+                return redirect()->route('user.packages.index')->with('error', $access['reason']);
             }
         }
 

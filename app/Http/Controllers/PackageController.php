@@ -83,26 +83,44 @@ class PackageController extends Controller
         }
 
         // ===================== FILTER KELAS SISWA =====================
-        // Paket ditampilkan jika kelas paket = kelas siswa ATAU paket tidak punya kelas tertentu
+        // Paket ditampilkan jika kelas paket = kelas siswa ATAU paket berlaku umum (tanpa kelas)
         if ($isStudent && !empty($user->student_class)) {
-            $studentClass = trim((string) $user->student_class);
-            $query->where(function ($q) use ($studentClass) {
+            $rawClass = trim((string) $user->student_class);
+            $cleanClass = trim(str_replace(["'", '"'], '', $rawClass));
+            $numClass = preg_replace('/[^0-9]/', '', $cleanClass);
+
+            $query->where(function ($q) use ($rawClass, $cleanClass, $numClass) {
                 $q->whereNull('kelas')
                   ->orWhere('kelas', '')
-                  ->orWhere('kelas', $studentClass);
+                  ->orWhere('kelas', $rawClass)
+                  ->orWhere('kelas', $cleanClass)
+                  ->orWhere('kelas', 'Kelas ' . $cleanClass)
+                  ->orWhere('kelas', "'" . $cleanClass . "'");
+
+                if (!empty($numClass)) {
+                    $q->orWhere('kelas', $numClass)
+                      ->orWhere('kelas', 'Kelas ' . $numClass)
+                      ->orWhere('kelas', "'" . $numClass . "'");
+                }
             });
         } elseif (!$isStudent && request('kelas')) {
             $query->where('kelas', request('kelas'));
         }
 
         // ===================== FILTER LEVEL SISWA =====================
-        // Paket ditampilkan jika level paket = level siswa ATAU paket tidak punya level tertentu
+        // Paket ditampilkan jika level paket = level siswa ATAU paket berlaku umum (tanpa level)
         if ($isStudent && !empty($user->level)) {
-            $studentLevel = trim((string) $user->level);
-            $query->where(function ($q) use ($studentLevel) {
+            $cleanLevel = trim((string) $user->level);
+            $query->where(function ($q) use ($cleanLevel) {
                 $q->whereNull('level')
                   ->orWhere('level', '')
-                  ->orWhere('level', $studentLevel);
+                  ->orWhere('level', $cleanLevel);
+
+                // Siswa Berbakat B1 / B2 juga cocok dengan Berbakat B
+                if (preg_match('/Berbakat\s*([A-C])/i', $cleanLevel, $m)) {
+                    $baseLevel = 'Berbakat ' . strtoupper($m[1]);
+                    $q->orWhere('level', $baseLevel);
+                }
             });
         } elseif (!$isStudent && request('level')) {
             $query->where('level', request('level'));
@@ -244,9 +262,9 @@ class PackageController extends Controller
         }
 
         $packages = $query->latest()->paginate(10)->withQueryString();
-        $allKelas = Package::whereNotNull('kelas')->where('kelas', '!=', '')->distinct()->pluck('kelas')->sort()->values();
-        $allBidang = Package::whereNotNull('bidang')->where('bidang', '!=', '')->distinct()->pluck('bidang')->sort()->values();
-        $allLevel = Package::whereNotNull('level')->where('level', '!=', '')->distinct()->pluck('level')->sort()->values();
+        $allKelas = $this->getKelasOptions();
+        $allBidang = $this->getBidangOptions();
+        $allLevel = $this->getLevelOptions();
 
         $totalQuestions = 0;
         foreach ($packages as $pkg) {
@@ -309,32 +327,114 @@ class PackageController extends Controller
         }
     }
 
+    /**
+     * Mengambil daftar opsi Kelas yang sinkron dengan kpm-student-smart (Kelas 1 - 12)
+     * dan digabung dengan kelas unik yang ada di database.
+     */
+    public function getKelasOptions(): array
+    {
+        $defaultKelas = collect([
+            'Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6',
+            'Kelas 7', 'Kelas 8', 'Kelas 9', 'Kelas 10', 'Kelas 11', 'Kelas 12',
+        ]);
+
+        try {
+            $fromUsers = User::whereNotNull('student_class')
+                ->where('student_class', '!=', '')
+                ->distinct()
+                ->pluck('student_class')
+                ->map(fn($v) => trim(str_replace(["'", '"'], '', (string) $v)))
+                ->filter();
+
+            $fromPackages = Package::whereNotNull('kelas')
+                ->where('kelas', '!=', '')
+                ->distinct()
+                ->pluck('kelas')
+                ->map(fn($v) => trim(str_replace(["'", '"'], '', (string) $v)))
+                ->filter();
+
+            return $defaultKelas->merge($fromUsers)->merge($fromPackages)
+                ->unique()
+                ->sortBy(function ($v) {
+                    $num = preg_replace('/[^0-9]/', '', (string) $v);
+                    return $num !== '' ? (int) $num : 999;
+                })
+                ->values()
+                ->all();
+        } catch (\Throwable $e) {
+            return $defaultKelas->all();
+        }
+    }
+
+    /**
+     * Mengambil daftar opsi Level Berbakat yang sinkron dengan kpm-student-smart
+     * (Berbakat A, Berbakat B, Berbakat C, dst).
+     */
+    public function getLevelOptions(): array
+    {
+        $defaultLevel = collect(['Berbakat A', 'Berbakat B', 'Berbakat B1', 'Berbakat B2', 'Berbakat C']);
+
+        try {
+            $fromUsers = User::whereNotNull('level')
+                ->where('level', '!=', '')
+                ->distinct()
+                ->pluck('level')
+                ->map(fn($v) => trim((string) $v))
+                ->filter();
+
+            $fromPackages = Package::whereNotNull('level')
+                ->where('level', '!=', '')
+                ->distinct()
+                ->pluck('level')
+                ->map(fn($v) => trim((string) $v))
+                ->filter();
+
+            return $defaultLevel->merge($fromUsers)->merge($fromPackages)
+                ->unique()
+                ->sort()
+                ->values()
+                ->all();
+        } catch (\Throwable $e) {
+            return $defaultLevel->all();
+        }
+    }
+
+    /**
+     * Mengambil daftar opsi Bidang Studi yang sinkron dengan kpm-student-smart (MTK & IPA).
+     */
+    public function getBidangOptions(): array
+    {
+        $defaultBidang = collect(['MTK', 'IPA']);
+
+        try {
+            $fromPackages = Package::whereNotNull('bidang')
+                ->where('bidang', '!=', '')
+                ->distinct()
+                ->pluck('bidang')
+                ->map(fn($v) => trim((string) $v))
+                ->filter();
+
+            return $defaultBidang->merge($fromPackages)
+                ->unique()
+                ->sort()
+                ->values()
+                ->all();
+        } catch (\Throwable $e) {
+            return $defaultBidang->all();
+        }
+    }
+
     public function create(Request $request)
     {
         $this->ensureNotGuru();
-
-        // Opsi dropdown diambil dari data yang sudah ada di sistem
-        $bidangOptions = collect(['MTK', 'IPA'])
-            ->merge(Package::whereNotNull('bidang')->where('bidang', '!=', '')->distinct()->pluck('bidang'))
-            ->unique()->sort()->values();
-
-        $kelasOptions = User::where('role', 'user')
-            ->whereNotNull('student_class')->where('student_class', '!=', '')
-            ->distinct()->pluck('student_class')
-            ->sortBy(fn($v) => (int) ltrim((string) $v, "'"))
-            ->values();
-
-        $levelOptions = User::where('role', 'user')
-            ->whereNotNull('level')->where('level', '!=', '')
-            ->distinct()->pluck('level')->sort()->values();
 
         return Inertia::render('Admin/Packages/PackageCreate', [
             'initialKelas'  => $request->query('kelas', ''),
             'initialBidang' => $request->query('bidang', ''),
             'initialLevel'  => $request->query('level', ''),
-            'bidangOptions' => $bidangOptions,
-            'kelasOptions'  => $kelasOptions,
-            'levelOptions'  => $levelOptions,
+            'bidangOptions' => $this->getBidangOptions(),
+            'kelasOptions'  => $this->getKelasOptions(),
+            'levelOptions'  => $this->getLevelOptions(),
         ]);
     }
 
@@ -404,26 +504,11 @@ class PackageController extends Controller
     {
         $this->ensureNotGuru();
 
-        // Opsi dropdown diambil dari data yang sudah ada di sistem
-        $bidangOptions = collect(['MTK', 'IPA'])
-            ->merge(Package::whereNotNull('bidang')->where('bidang', '!=', '')->distinct()->pluck('bidang'))
-            ->unique()->sort()->values();
-
-        $kelasOptions = User::where('role', 'user')
-            ->whereNotNull('student_class')->where('student_class', '!=', '')
-            ->distinct()->pluck('student_class')
-            ->sortBy(fn($v) => (int) ltrim((string) $v, "'"))
-            ->values();
-
-        $levelOptions = User::where('role', 'user')
-            ->whereNotNull('level')->where('level', '!=', '')
-            ->distinct()->pluck('level')->sort()->values();
-
         return Inertia::render('Admin/Packages/PackageEditInfo', [
             'package'       => $package,
-            'bidangOptions' => $bidangOptions,
-            'kelasOptions'  => $kelasOptions,
-            'levelOptions'  => $levelOptions,
+            'bidangOptions' => $this->getBidangOptions(),
+            'kelasOptions'  => $this->getKelasOptions(),
+            'levelOptions'  => $this->getLevelOptions(),
         ]);
     }
 
@@ -625,31 +710,9 @@ class PackageController extends Controller
 
         $user = auth()->user();
         if ($user && $user->role === 'user') {
-            $studentBidang = trim((string) $user->bidang);
-            $studentLevel = trim((string) $user->level);
-            $combinedInfo = $studentBidang . ' ' . $studentLevel;
-            $isStudentMtk = (bool) preg_match('/(mtk|matematika|math)/i', $combinedInfo);
-            $isStudentIpa = (bool) preg_match('/(ipa|sains|science)/i', $combinedInfo);
-            $isStudentDual = ($isStudentMtk && $isStudentIpa)
-                || preg_match('/(&|,|dan|\/)/i', $studentBidang)
-                || str_contains(strtolower($studentBidang), 'dual')
-                || str_contains(strtolower($studentBidang), 'semua');
-
-            $pkgBidang = (string) ($package->bidang ?? '');
-            $pkgTitle = (string) ($package->title ?? '');
-            $pkgIsIpa = (bool) (preg_match('/(ipa|sains|science)/i', $pkgBidang) || preg_match('/(ipa|sains|science)/i', $pkgTitle));
-            $pkgIsMtk = (bool) (preg_match('/(mtk|matematika|math)/i', $pkgBidang) || preg_match('/(mtk|matematika|math)/i', $pkgTitle));
-
-            if (! $isStudentDual) {
-                if ($isStudentMtk && ! $isStudentIpa && $pkgIsIpa && ! $pkgIsMtk) {
-                    return redirect()->route('user.packages.index')
-                        ->with('error', 'Maaf, tugas ini khusus untuk bidang studi IPA. Anda terdaftar pada bidang Matematika.');
-                }
-
-                if ($isStudentIpa && ! $isStudentMtk && $pkgIsMtk && ! $pkgIsIpa) {
-                    return redirect()->route('user.packages.index')
-                        ->with('error', 'Maaf, tugas ini khusus untuk bidang studi Matematika. Anda terdaftar pada bidang IPA.');
-                }
+            $access = $package->matchesStudent($user);
+            if (! $access['allowed']) {
+                return redirect()->route('user.packages.index')->with('error', $access['reason']);
             }
         }
 

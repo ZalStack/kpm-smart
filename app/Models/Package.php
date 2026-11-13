@@ -156,6 +156,100 @@ class Package extends Model
     }
 
     /**
+     * Memeriksa apakah siswa yang sedang login berhak mengakses paket PR ini
+     * berdasarkan Bidang Studi, Tingkat Kelas, dan Level Berbakat.
+     *
+     * @param  \App\Models\User|null  $user
+     * @return array{allowed: bool, reason: string|null}
+     */
+    public function matchesStudent($user): array
+    {
+        if (! $user || $user->role !== 'user') {
+            return ['allowed' => true, 'reason' => null];
+        }
+
+        $studentBidang = trim((string) $user->bidang);
+        $studentLevel  = trim((string) $user->level);
+        $studentClass  = trim(str_replace(["'", '"'], '', (string) $user->student_class));
+        $combinedInfo  = $studentBidang . ' ' . $studentLevel;
+
+        $isStudentMtk = (bool) preg_match('/(mtk|matematika|math)/i', $combinedInfo);
+        $isStudentIpa = (bool) preg_match('/(ipa|sains|science)/i', $combinedInfo);
+        $isStudentDual = ($isStudentMtk && $isStudentIpa)
+            || preg_match('/(&|,|dan|\/)/i', $studentBidang)
+            || str_contains(strtolower($studentBidang), 'dual')
+            || str_contains(strtolower($studentBidang), 'semua');
+
+        $pkgBidang = trim((string) ($this->bidang ?? ''));
+        $pkgTitle  = trim((string) ($this->title ?? ''));
+        $pkgKelas  = trim(str_replace(["'", '"'], '', (string) ($this->kelas ?? '')));
+        $pkgLevel  = trim((string) ($this->level ?? ''));
+
+        // 1. Cek Bidang Studi
+        if (! $isStudentDual && $pkgBidang !== '') {
+            $pkgIsIpa = (bool) (preg_match('/(ipa|sains|science)/i', $pkgBidang) || preg_match('/(ipa|sains|science)/i', $pkgTitle));
+            $pkgIsMtk = (bool) (preg_match('/(mtk|matematika|math)/i', $pkgBidang) || preg_match('/(mtk|matematika|math)/i', $pkgTitle));
+
+            if ($isStudentMtk && ! $isStudentIpa && $pkgIsIpa && ! $pkgIsMtk) {
+                return [
+                    'allowed' => false,
+                    'reason' => 'Maaf, tugas PR ini khusus untuk bidang studi IPA. Anda terdaftar pada bidang Matematika.',
+                ];
+            }
+            if ($isStudentIpa && ! $isStudentMtk && $pkgIsMtk && ! $pkgIsIpa) {
+                return [
+                    'allowed' => false,
+                    'reason' => 'Maaf, tugas PR ini khusus untuk bidang studi Matematika. Anda terdaftar pada bidang IPA.',
+                ];
+            }
+        }
+
+        // 2. Cek Tingkat Kelas
+        if ($pkgKelas !== '' && $studentClass !== '') {
+            $numStudent = preg_replace('/[^0-9]/', '', $studentClass);
+            $numPkg     = preg_replace('/[^0-9]/', '', $pkgKelas);
+
+            $matched = false;
+            if (strcasecmp($pkgKelas, $studentClass) === 0) {
+                $matched = true;
+            } elseif (strcasecmp($pkgKelas, 'Kelas ' . $studentClass) === 0 || strcasecmp('Kelas ' . $pkgKelas, $studentClass) === 0) {
+                $matched = true;
+            } elseif (! empty($numStudent) && ! empty($numPkg) && $numStudent === $numPkg) {
+                $matched = true;
+            }
+
+            if (! $matched) {
+                $displayPkgKelas = str_starts_with(strtolower($pkgKelas), 'kelas') ? $pkgKelas : 'Kelas ' . $pkgKelas;
+                $displayUserKelas = str_starts_with(strtolower($user->student_class), 'kelas') ? $user->student_class : 'Kelas ' . $user->student_class;
+                return [
+                    'allowed' => false,
+                    'reason' => "Maaf, tugas PR ini diperuntukkan untuk {$displayPkgKelas}. Kelas Anda saat ini: {$displayUserKelas}.",
+                ];
+            }
+        }
+
+        // 3. Cek Level Kemampuan / Berbakat
+        if ($pkgLevel !== '' && $studentLevel !== '') {
+            $matched = false;
+            if (strcasecmp($pkgLevel, $studentLevel) === 0) {
+                $matched = true;
+            } elseif (preg_match('/Berbakat\s*([A-C])/i', $studentLevel, $ms) && preg_match('/Berbakat\s*([A-C])/i', $pkgLevel, $mp)) {
+                if (strtoupper($ms[1]) === strtoupper($mp[1])) {
+                    $matched = true;
+                }
+            }
+
+            if (! $matched) {
+                return [
+                    'allowed' => false,
+                    'reason' => "Maaf, tugas PR ini khusus untuk Level {$pkgLevel}. Level Anda saat ini: {$studentLevel}.",
+                ];
+            }
+        }
+
+        return ['allowed' => true, 'reason' => null];
+    }
+    /**
      * Ambil soal untuk ditampilkan ke siswa SEDANG mengerjakan.
      *
      * Penting: `correct_answer` dan `explanation` sengaja dibuang. Kalau ikut
