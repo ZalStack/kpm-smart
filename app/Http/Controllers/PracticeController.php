@@ -13,23 +13,8 @@ class PracticeController extends Controller
 {
     public static function isHomeworkWindowOpen(): bool
     {
-        if (app()->runningUnitTests()) {
-            return true;
-        }
-
-        $now = now('Asia/Jakarta');
-        $dayOfWeek = (int) $now->format('w'); // 0 (Sun) to 6 (Sat)
-        $timeInMinutes = ((int) $now->format('G')) * 60 + ((int) $now->format('i'));
-        $sevenPm = 19 * 60;
-
-        // Tutup: Jumat 19:00 s.d. Sabtu 19:00 WIB
-        if ($dayOfWeek === 5 && $timeInMinutes >= $sevenPm) {
-            return false;
-        }
-        if ($dayOfWeek === 6 && $timeInMinutes < $sevenPm) {
-            return false;
-        }
-
+        // Pengerjaan PR selalu terbuka sesuai jadwal aktif masing-masing paket soal,
+        // tanpa batasan penutupan istirahat mingguan yang mengunci paket aktif.
         return true;
     }
 
