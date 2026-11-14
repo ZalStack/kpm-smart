@@ -89,7 +89,10 @@ const syncing = ref(false);
 function syncFromParent() {
     if (confirm('Sinkronkan seluruh data user dari Web Induk sekarang?')) {
         syncing.value = true;
-        router.post(route('admin.users.sync-parent'), {}, {
+        const targetUrl = typeof route === 'function' && typeof route().has === 'function' && route().has('admin.users.sync-parent')
+            ? route('admin.users.sync-parent')
+            : '/admin/users/sync-parent';
+        router.post(targetUrl, {}, {
             onFinish: () => {
                 syncing.value = false;
             },
