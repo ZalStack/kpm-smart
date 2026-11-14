@@ -115,22 +115,50 @@ function isFolderOpen(key) {
     return openFolders.value[key] !== false;
 }
 
+function normalizeKelas(raw) {
+    if (!raw) return 'Tanpa Kelas';
+    const s = String(raw).trim().replace(/['"]/g, '');
+    if (!s) return 'Tanpa Kelas';
+    if (/^\d+$/.test(s)) return `Kelas ${s}`;
+    const m = s.match(/^kelas\s*(\d+)$/i);
+    if (m) return `Kelas ${m[1]}`;
+    return s;
+}
+
+function resolveBidang(pkg) {
+    const title = (pkg.title || '').toUpperCase();
+    const rawBidang = (pkg.bidang || '').toUpperCase();
+    const isTitleMtk = /(MTK|MATEMATIKA|MATH)/.test(title);
+    const isTitleIpa = /(IPA|SAINS|SCIENCE)/.test(title);
+    if (isTitleMtk && !isTitleIpa) return 'MTK';
+    if (isTitleIpa && !isTitleMtk) return 'IPA';
+    if (/(MTK|MATEMATIKA|MATH)/.test(rawBidang)) return 'MTK';
+    if (/(IPA|SAINS|SCIENCE)/.test(rawBidang)) return 'IPA';
+    return pkg.bidang || 'Umum';
+}
+
 const grouped = computed(() => {
     const all = props.packages?.data || [];
     const byKelas = {};
     for (const pkg of all) {
-        const kelas = pkg.kelas || 'Tanpa Kelas';
+        const kelas = normalizeKelas(pkg.kelas);
         if (!byKelas[kelas]) byKelas[kelas] = {};
-        const bidang = pkg.bidang || 'Umum';
+        const bidang = resolveBidang(pkg);
         if (!byKelas[kelas][bidang]) byKelas[kelas][bidang] = [];
         byKelas[kelas][bidang].push(pkg);
     }
     return Object.entries(byKelas)
-        .sort(([a], [b]) => a.localeCompare(b))
+        .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
         .map(([kelas, bidangMap]) => ({
             kelas,
             bidangs: Object.entries(bidangMap)
-                .sort(([a], [b]) => a.localeCompare(b))
+                .sort(([a], [b]) => {
+                    const order = { 'MTK': 1, 'IPA': 2, 'IPS': 3, 'B.IND': 4, 'B.ING': 5 };
+                    const orderA = order[a] || 99;
+                    const orderB = order[b] || 99;
+                    if (orderA !== orderB) return orderA - orderB;
+                    return a.localeCompare(b);
+                })
                 .map(([bidang, pkgs]) => ({ bidang, pkgs })),
         }));
 });

@@ -184,9 +184,7 @@ class StudentPackageFilter
             }
 
             $query->where(function ($q) use ($rawClass, $cleanClass, $numClass) {
-                $q->whereNull('kelas')
-                  ->orWhere('kelas', '')
-                  ->orWhere('kelas', $rawClass)
+                $q->where('kelas', $rawClass)
                   ->orWhere('kelas', $cleanClass)
                   ->orWhere('kelas', 'Kelas ' . $cleanClass)
                   ->orWhere('kelas', "'" . $cleanClass . "'");
@@ -194,6 +192,9 @@ class StudentPackageFilter
                 if (! empty($numClass)) {
                     $q->orWhere('kelas', $numClass)
                       ->orWhere('kelas', 'Kelas ' . $numClass)
+                      ->orWhere('kelas', 'Kelas ' . $numClass . ' SD')
+                      ->orWhere('kelas', 'Kelas ' . $numClass . ' SMP')
+                      ->orWhere('kelas', 'Kelas ' . $numClass . ' SMA')
                       ->orWhere('kelas', "'" . $numClass . "'");
                 }
             });
@@ -202,9 +203,18 @@ class StudentPackageFilter
         }
 
         // 3. FILTER LEVEL BERBAKAT
-        if ($isStudent && ! empty($info['studentLevel'])) {
-            $rawLevel = $info['studentLevel'];
-            self::applyLevelFilter($query, $rawLevel);
+        // Siswa dual (2 bidang): soal Matematika & IPA tetap muncul di kelasnya walaupun level berbakatnya beda
+        if ($isStudent && $info['isStudentDual']) {
+            if (! empty($levelFilter) && strtolower($levelFilter) !== 'semua') {
+                $query->where('level', $levelFilter);
+            }
+        } elseif ($isStudent && ! empty($info['studentLevel'])) {
+            if (! empty($levelFilter) && strtolower($levelFilter) !== 'semua') {
+                $query->where('level', $levelFilter);
+            } else {
+                $rawLevel = $info['studentLevel'];
+                self::applyLevelFilter($query, $rawLevel);
+            }
         } elseif (! $isStudent && ! empty($levelFilter) && strtolower($levelFilter) !== 'semua') {
             $query->where(function ($q) use ($levelFilter) {
                 $q->where('level', $levelFilter);

@@ -291,7 +291,8 @@ class Package extends Model
         }
 
         // 3. Cek Level Kemampuan / Berbakat
-        if ($pkgLevel !== '' && $studentLevel !== '') {
+        // Untuk siswa dual bidang (Matematika & IPA), jangan blokir walaupun level berbakat paket berbeda dari profil siswa
+        if (! $isStudentDual && $pkgLevel !== '' && $studentLevel !== '') {
             $effectiveStudentLevel = $studentLevel;
             // Jika profil siswa memiliki format ganda seperti "Berbakat A (IPA), Berbakat B (MTK)" atau "Berbakat 1 (MTK), Berbakat 2 (IPA)"
             $pkgIsIpa = (bool) (preg_match('/(ipa|sains|science)/i', $pkgBidang) || preg_match('/(ipa|sains|science)/i', $pkgTitle));

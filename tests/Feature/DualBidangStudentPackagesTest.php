@@ -18,7 +18,7 @@ class DualBidangStudentPackagesTest extends TestCase
         Package::query()->delete();
     }
 
-    public function test_dual_bidang_student_sees_both_mtk_and_ipa_matching_kelas_and_level(): void
+    public function test_dual_bidang_student_sees_both_mtk_and_ipa_even_if_level_differs_as_long_as_class_matches(): void
     {
         $dualStudent = User::factory()->create([
             'role' => 'user',
@@ -28,7 +28,7 @@ class DualBidangStudentPackagesTest extends TestCase
             'is_active' => true,
         ]);
 
-        // Paket yang harus muncul:
+        // Paket MTK Kelas 7 (Level Berbakat A): HARUS MUNCUL
         $mtkPkg = Package::create([
             'title' => 'PR Matematika Pekan 1',
             'description' => 'Deskripsi',
@@ -38,12 +38,13 @@ class DualBidangStudentPackagesTest extends TestCase
             'is_active' => true,
         ]);
 
+        // Paket IPA Kelas 7 (Level Berbakat B): HARUS MUNCUL (walaupun level beda)
         $ipaPkg = Package::create([
             'title' => 'PR IPA Pekan 1',
             'description' => 'Deskripsi',
             'bidang' => 'IPA',
             'kelas' => 'Kelas 7',
-            'level' => 'Berbakat A',
+            'level' => 'Berbakat B',
             'is_active' => true,
         ]);
 
@@ -57,13 +58,13 @@ class DualBidangStudentPackagesTest extends TestCase
             'is_active' => true,
         ]);
 
-        // Paket beda level (Berbakat B): TIDAK BOLEH MUNCUL
+        // Paket tanpa kelas: TIDAK BOLEH MUNCUL untuk siswa Kelas 7
         Package::create([
-            'title' => 'PR IPA Level B',
+            'title' => 'PR Tanpa Kelas',
             'description' => 'Deskripsi',
-            'bidang' => 'IPA',
-            'kelas' => 'Kelas 7',
-            'level' => 'Berbakat B',
+            'bidang' => 'MTK',
+            'kelas' => null,
+            'level' => 'Berbakat A',
             'is_active' => true,
         ]);
 
@@ -78,6 +79,12 @@ class DualBidangStudentPackagesTest extends TestCase
         $titles = collect($res->inertiaProps('packages.data'))->pluck('title')->toArray();
         $this->assertContains('PR Matematika Pekan 1', $titles);
         $this->assertContains('PR IPA Pekan 1', $titles);
+        $this->assertNotContains('PR MTK Kelas 8', $titles);
+        $this->assertNotContains('PR Tanpa Kelas', $titles);
+
+        // Pastikan matchesStudent mengizinkan akses ke kedua paket walau level IPA beda (Berbakat B)
+        $this->assertTrue($mtkPkg->matchesStudent($dualStudent)['allowed']);
+        $this->assertTrue($ipaPkg->matchesStudent($dualStudent)['allowed']);
 
         // Akses dashboard web
         $resDash = $this->actingAs($dualStudent)->get(route('user.dashboard'));
@@ -89,69 +96,6 @@ class DualBidangStudentPackagesTest extends TestCase
         $dashTitles = collect($resDash->inertiaProps('packages'))->pluck('title')->toArray();
         $this->assertContains('PR Matematika Pekan 1', $dashTitles);
         $this->assertContains('PR IPA Pekan 1', $dashTitles);
-    }
-
-    public function test_dual_bidang_student_with_split_levels_sees_correct_package_for_each_bidang(): void
-    {
-        // Siswa dual dengan level MTK = Berbakat A, dan level IPA = Berbakat B
-        $dualStudent = User::factory()->create([
-            'role' => 'user',
-            'bidang' => 'Matematika & IPA',
-            'student_class' => '7',
-            'level' => 'Berbakat A (MTK), Berbakat B (IPA)',
-            'is_active' => true,
-        ]);
-
-        // Paket MTK Level A untuk Kelas 7 -> Harus muncul
-        $mtkPkgA = Package::create([
-            'title' => 'PR Matematika Level A',
-            'description' => 'Deskripsi',
-            'bidang' => 'MTK',
-            'kelas' => '7',
-            'level' => 'Berbakat A',
-            'is_active' => true,
-        ]);
-
-        // Paket IPA Level B untuk Kelas 7 -> Harus muncul
-        $ipaPkgB = Package::create([
-            'title' => 'PR IPA Level B',
-            'description' => 'Deskripsi',
-            'bidang' => 'IPA',
-            'kelas' => '7',
-            'level' => 'Berbakat B',
-            'is_active' => true,
-        ]);
-
-        // Paket MTK Level B -> TIDAK BOLEH MUNCUL (siswa level MTK-nya A)
-        Package::create([
-            'title' => 'PR Matematika Level B',
-            'description' => 'Deskripsi',
-            'bidang' => 'MTK',
-            'kelas' => '7',
-            'level' => 'Berbakat B',
-            'is_active' => true,
-        ]);
-
-        // Paket IPA Level A -> TIDAK BOLEH MUNCUL (siswa level IPA-nya B)
-        Package::create([
-            'title' => 'PR IPA Level A',
-            'description' => 'Deskripsi',
-            'bidang' => 'IPA',
-            'kelas' => '7',
-            'level' => 'Berbakat A',
-            'is_active' => true,
-        ]);
-
-        $res = $this->actingAs($dualStudent)->get(route('user.packages.index'));
-        $res->assertOk();
-        $res->assertInertia(fn (Assert $page) => $page
-            ->component('Packages/PackageList')
-            ->has('packages.data', 2)
-        );
-
-        // Pastikan matchesStudent mengizinkan akses ke kedua paket yang cocok
-        $this->assertTrue($mtkPkgA->matchesStudent($dualStudent)['allowed']);
-        $this->assertTrue($ipaPkgB->matchesStudent($dualStudent)['allowed']);
     }
 
     public function test_dual_bidang_student_can_filter_by_specific_bidang(): void
