@@ -239,13 +239,13 @@ class Package extends Model
             if ($isStudentMtk && ! $isStudentIpa && $pkgIsIpa && ! $pkgIsMtk) {
                 return [
                     'allowed' => false,
-                    'reason' => 'Maaf, tugas PR ini khusus untuk bidang studi IPA. Anda terdaftar pada bidang Matematika.',
+                    'reason' => 'Maaf, tugas ini khusus untuk bidang studi IPA. Anda terdaftar pada bidang Matematika.',
                 ];
             }
             if ($isStudentIpa && ! $isStudentMtk && $pkgIsMtk && ! $pkgIsIpa) {
                 return [
                     'allowed' => false,
-                    'reason' => 'Maaf, tugas PR ini khusus untuk bidang studi Matematika. Anda terdaftar pada bidang IPA.',
+                    'reason' => 'Maaf, tugas ini khusus untuk bidang studi Matematika. Anda terdaftar pada bidang IPA.',
                 ];
             }
         }
@@ -254,6 +254,22 @@ class Package extends Model
         if ($pkgKelas !== '' && $studentClass !== '') {
             $numStudent = preg_replace('/[^0-9]/', '', $studentClass);
             $numPkg     = preg_replace('/[^0-9]/', '', $pkgKelas);
+
+            if (empty($numStudent)) {
+                $romanMap = [
+                    'XII' => '12', 'XI' => '11', 'X' => '10',
+                    'IX' => '9', 'VIII' => '8', 'VII' => '7',
+                    'VI' => '6', 'V' => '5', 'IV' => '4',
+                    'III' => '3', 'II' => '2', 'I' => '1',
+                ];
+                $romanUpper = strtoupper($studentClass);
+                foreach ($romanMap as $r => $n) {
+                    if ($romanUpper === $r || str_contains($romanUpper, ' ' . $r) || str_starts_with($romanUpper, $r . '-') || str_ends_with($romanUpper, '-' . $r)) {
+                        $numStudent = $n;
+                        break;
+                    }
+                }
+            }
 
             $matched = false;
             if (strcasecmp($pkgKelas, $studentClass) === 0) {
@@ -269,7 +285,7 @@ class Package extends Model
                 $displayUserKelas = str_starts_with(strtolower($user->student_class), 'kelas') ? $user->student_class : 'Kelas ' . $user->student_class;
                 return [
                     'allowed' => false,
-                    'reason' => "Maaf, tugas PR ini diperuntukkan untuk {$displayPkgKelas}. Kelas Anda saat ini: {$displayUserKelas}.",
+                    'reason' => "Maaf, tugas ini diperuntukkan untuk {$displayPkgKelas}. Kelas Anda saat ini: {$displayUserKelas}.",
                 ];
             }
         }
@@ -277,13 +293,13 @@ class Package extends Model
         // 3. Cek Level Kemampuan / Berbakat
         if ($pkgLevel !== '' && $studentLevel !== '') {
             $effectiveStudentLevel = $studentLevel;
-            // Jika profil siswa memiliki format ganda seperti "Berbakat A (IPA), Berbakat B (MTK)"
+            // Jika profil siswa memiliki format ganda seperti "Berbakat A (IPA), Berbakat B (MTK)" atau "Berbakat 1 (MTK), Berbakat 2 (IPA)"
             $pkgIsIpa = (bool) (preg_match('/(ipa|sains|science)/i', $pkgBidang) || preg_match('/(ipa|sains|science)/i', $pkgTitle));
             $pkgIsMtk = (bool) (preg_match('/(mtk|matematika|math)/i', $pkgBidang) || preg_match('/(mtk|matematika|math)/i', $pkgTitle));
 
-            if ($pkgIsIpa && preg_match('/Berbakat\s*([A-C][0-9]?)\s*\((?:IPA|Sains)\)/i', $studentLevel, $mSub)) {
+            if ($pkgIsIpa && preg_match('/(?:Berbakat|Level)?\s*([A-C][0-9]?|[0-9]+)\s*\((?:IPA|Sains|Science)\)/i', $studentLevel, $mSub)) {
                 $effectiveStudentLevel = 'Berbakat ' . strtoupper($mSub[1]);
-            } elseif ($pkgIsMtk && preg_match('/Berbakat\s*([A-C][0-9]?)\s*\((?:MTK|Matematika)\)/i', $studentLevel, $mSub)) {
+            } elseif ($pkgIsMtk && preg_match('/(?:Berbakat|Level)?\s*([A-C][0-9]?|[0-9]+)\s*\((?:MTK|Matematika|Math)\)/i', $studentLevel, $mSub)) {
                 $effectiveStudentLevel = 'Berbakat ' . strtoupper($mSub[1]);
             }
 
@@ -296,12 +312,21 @@ class Package extends Model
                 }
             } elseif (str_contains(strtolower($effectiveStudentLevel), strtolower($pkgLevel))) {
                 $matched = true;
+            } else {
+                // Periksa variasi level
+                $variants = \App\Support\StudentPackageFilter::generateLevelVariants($effectiveStudentLevel);
+                foreach ($variants as $v) {
+                    if (strcasecmp($pkgLevel, $v) === 0 || str_contains(strtolower($pkgLevel), strtolower($v))) {
+                        $matched = true;
+                        break;
+                    }
+                }
             }
 
             if (! $matched) {
                 return [
                     'allowed' => false,
-                    'reason' => "Maaf, tugas PR ini khusus untuk Level {$pkgLevel}. Level Anda saat ini: {$studentLevel}.",
+                    'reason' => "Maaf, tugas ini khusus untuk Level {$pkgLevel}. Level Anda saat ini: {$studentLevel}.",
                 ];
             }
         }
@@ -332,7 +357,7 @@ class Package extends Model
         }
 
         return array_map(function (array $question): array {
-            unset($question['correct_answer'], $question['explanation']);
+            unset($question['correct_answer'], $question['accepted_answers'], $question['explanation']);
 
             return $question;
         }, $questions);

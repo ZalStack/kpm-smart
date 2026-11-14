@@ -19,19 +19,10 @@ class DashboardApiController extends BaseApiController
     {
         $user = $this->resolveUser($request);
 
-        // Ambil paket aktif sesuai bidang/level jika terisi
+        // Ambil paket aktif sesuai data Kelas, Bidang, dan Level Berbakat siswa
         $packagesQuery = Package::where('is_active', true);
-        if ($user && $user->bidang) {
-            $packagesQuery->where(function ($q) use ($user) {
-                $q->where('bidang', $user->bidang)->orWhereNull('bidang');
-            });
-        }
-        if ($user && $user->level) {
-            $packagesQuery->where(function ($q) use ($user) {
-                $q->where('level', $user->level)->orWhereNull('level');
-            });
-        }
-        $packages = $packagesQuery->take(6)->get();
+        \App\Support\StudentPackageFilter::apply($packagesQuery, $user);
+        $packages = $packagesQuery->latest()->take(6)->get();
 
         $totalAttempts = 0;
         $bestScore = 0.0;

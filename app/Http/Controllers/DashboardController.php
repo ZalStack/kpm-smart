@@ -17,51 +17,10 @@ class DashboardController extends Controller
         }
 
         $user = Auth::user();
-        $studentBidang = $user ? trim((string) $user->bidang) : '';
-        $isStudent = $user && $user->role === 'user';
-
-        $isStudentMtk = (bool) preg_match('/(mtk|matematika|math)/i', $studentBidang);
-        $isStudentIpa = (bool) preg_match('/(ipa|sains|science)/i', $studentBidang);
-        $isStudentDual = $isStudentMtk && $isStudentIpa;
-
         $query = Package::where('is_active', true);
 
-        if ($isStudent && $isStudentDual) {
-            // Siswa terdaftar pada kedua bidang (Matematika & IPA): tampilkan paket MTK dan IPA
-            $query->where(function ($q) {
-                $q->whereIn('bidang', ['MTK', 'MATEMATIKA', 'Matematika', 'IPA', 'Ipa', 'Sains', 'SAINS'])
-                    ->orWhere('title', 'like', '%Matematika%')
-                    ->orWhere('title', 'like', '%MTK%')
-                    ->orWhere('title', 'like', '%IPA%')
-                    ->orWhere('title', 'like', '%Sains%');
-            });
-        } elseif ($isStudent && $isStudentMtk) {
-            $query->where(function ($q) {
-                $q->whereIn('bidang', ['MTK', 'MATEMATIKA', 'Matematika'])
-                    ->orWhere('title', 'like', '%Matematika%')
-                    ->orWhere('title', 'like', '%MTK%');
-            })->where(function ($q) {
-                $q->where(function ($sub) {
-                    $sub->whereNull('bidang')
-                        ->orWhere('bidang', 'not like', '%IPA%');
-                })->where('title', 'not like', '%IPA%');
-            });
-        } elseif ($isStudent && $isStudentIpa) {
-            $query->where(function ($q) {
-                $q->whereIn('bidang', ['IPA', 'Ipa', 'Sains', 'SAINS'])
-                  ->orWhere('title', 'like', '%IPA%')
-                  ->orWhere('title', 'like', '%Sains%');
-            })->where(function ($q) {
-                $q->where(function ($sub) {
-                    $sub->whereNull('bidang')
-                        ->orWhere(function ($s2) {
-                            $s2->where('bidang', 'not like', '%MTK%')
-                               ->where('bidang', 'not like', '%Matematika%');
-                        });
-                })->where('title', 'not like', '%Matematika%')
-                  ->where('title', 'not like', '%MTK%');
-            });
-        }
+        // Terapkan filter cerdas sesuai data Kelas, Bidang, dan Level Berbakat siswa
+        \App\Support\StudentPackageFilter::apply($query, $user);
 
         $packages = $query->latest()->take(6)->get();
 

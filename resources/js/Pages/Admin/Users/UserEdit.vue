@@ -177,12 +177,24 @@ function submit() {
 
                         <div class="space-y-1.5">
                             <Label class="text-xs font-semibold text-foreground">Bidang Studi</Label>
-                            <Input v-model="form.bidang" placeholder="Contoh: MATEMATIKA atau IPA" class="h-11 rounded-xl bg-background" />
+                            <Input v-model="form.bidang" placeholder="Contoh: Matematika & IPA" class="h-11 rounded-xl bg-background" />
+                            <div class="flex flex-wrap gap-1 pt-1">
+                                <button type="button" @click="form.bidang = 'Matematika'" class="text-[10px] px-2 py-0.5 rounded-md border border-border/80 hover:bg-muted font-medium transition" :class="{ 'bg-primary/10 border-primary text-primary font-bold': form.bidang === 'Matematika' }">MTK</button>
+                                <button type="button" @click="form.bidang = 'IPA'" class="text-[10px] px-2 py-0.5 rounded-md border border-border/80 hover:bg-muted font-medium transition" :class="{ 'bg-primary/10 border-primary text-primary font-bold': form.bidang === 'IPA' }">IPA</button>
+                                <button type="button" @click="form.bidang = 'Matematika & IPA'" class="text-[10px] px-2 py-0.5 rounded-md border border-border/80 hover:bg-muted font-medium transition" :class="{ 'bg-primary/10 border-primary text-primary font-bold': form.bidang === 'Matematika & IPA' }">MTK &amp; IPA (2 Bidang)</button>
+                            </div>
                         </div>
 
                         <div class="space-y-1.5">
                             <Label class="text-xs font-semibold text-foreground">Level Kemampuan / Berbakat</Label>
-                            <Input v-model="form.level" placeholder="Contoh: 1, 2, A1..." class="h-11 rounded-xl bg-background" />
+                            <Input v-model="form.level" placeholder="Contoh: Berbakat A atau 1" class="h-11 rounded-xl bg-background" />
+                            <div class="flex flex-wrap gap-1 pt-1">
+                                <button type="button" @click="form.level = 'Berbakat A'" class="text-[10px] px-1.5 py-0.5 rounded-md border border-border/80 hover:bg-muted font-medium transition" :class="{ 'bg-primary/10 border-primary text-primary font-bold': form.level === 'Berbakat A' }">A</button>
+                                <button type="button" @click="form.level = 'Berbakat B'" class="text-[10px] px-1.5 py-0.5 rounded-md border border-border/80 hover:bg-muted font-medium transition" :class="{ 'bg-primary/10 border-primary text-primary font-bold': form.level === 'Berbakat B' }">B</button>
+                                <button type="button" @click="form.level = 'Berbakat B1'" class="text-[10px] px-1.5 py-0.5 rounded-md border border-border/80 hover:bg-muted font-medium transition" :class="{ 'bg-primary/10 border-primary text-primary font-bold': form.level === 'Berbakat B1' }">B1</button>
+                                <button type="button" @click="form.level = 'Berbakat B2'" class="text-[10px] px-1.5 py-0.5 rounded-md border border-border/80 hover:bg-muted font-medium transition" :class="{ 'bg-primary/10 border-primary text-primary font-bold': form.level === 'Berbakat B2' }">B2</button>
+                                <button type="button" @click="form.level = 'Berbakat C'" class="text-[10px] px-1.5 py-0.5 rounded-md border border-border/80 hover:bg-muted font-medium transition" :class="{ 'bg-primary/10 border-primary text-primary font-bold': form.level === 'Berbakat C' }">C</button>
+                            </div>
                         </div>
 
                         <div class="space-y-1.5">

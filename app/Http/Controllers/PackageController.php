@@ -25,106 +25,19 @@ class PackageController extends Controller
         }
 
         $user = auth()->user();
-        $studentBidang = $user ? trim((string) $user->bidang) : '';
-        $studentLevel = $user ? trim((string) $user->level) : '';
-        $combinedInfo = $studentBidang . ' ' . $studentLevel;
-        $isStudent = $user && $user->role === 'user';
-
-        // Deteksi bidang siswa dari data akun siswa (bidang dan level)
-        $isStudentMtk = (bool) preg_match('/(mtk|matematika|math)/i', $combinedInfo);
-        $isStudentIpa = (bool) preg_match('/(ipa|sains|science)/i', $combinedInfo);
-        $isStudentDual = ($isStudentMtk && $isStudentIpa)
-            || preg_match('/(&|,|dan|\/)/i', $studentBidang)
-            || str_contains(strtolower($studentBidang), 'dual')
-            || str_contains(strtolower($studentBidang), 'semua');
-
         $query = Package::where('is_active', true);
 
-        // ===================== FILTER BIDANG SISWA =====================
-        // Kalo siswa bidangnya Matematika & IPA: DAPAT SOAL MATEMATIKA DAN IPA
-        // Kalo siswa bidangnya Matematika saja: DAPAT SOAL MATEMATIKA, TIDAK ADA SOAL IPA
-        // Kalo siswa bidangnya IPA saja: DAPAT SOAL IPA, TIDAK ADA SOAL MATEMATIKA
-        if ($isStudent && $isStudentDual) {
-            // Siswa dual berhak mengakses seluruh tugas PR MTK, IPA, maupun umum
-        } elseif ($isStudent && $isStudentMtk && ! $isStudentIpa) {
-            $query->where(function ($q) {
-                $q->where(function ($sub) {
-                    $sub->where('bidang', 'like', '%MTK%')
-                        ->orWhere('bidang', 'like', '%Matematika%')
-                        ->orWhere('bidang', 'like', '%Math%')
-                        ->orWhere('title', 'like', '%MTK%')
-                        ->orWhere('title', 'like', '%Matematika%')
-                        ->orWhere('title', 'like', '%Math%');
-                })->where(function ($sub) {
-                    $sub->whereNull('bidang')
-                        ->orWhere('bidang', 'not like', '%IPA%');
-                })->where('title', 'not like', '%IPA%');
-            });
-        } elseif ($isStudent && $isStudentIpa && ! $isStudentMtk) {
-            $query->where(function ($q) {
-                $q->where(function ($sub) {
-                    $sub->where('bidang', 'like', '%IPA%')
-                        ->orWhere('bidang', 'like', '%Sains%')
-                        ->orWhere('bidang', 'like', '%Science%')
-                        ->orWhere('title', 'like', '%IPA%')
-                        ->orWhere('title', 'like', '%Sains%')
-                        ->orWhere('title', 'like', '%Science%');
-                })->where(function ($sub) {
-                    $sub->whereNull('bidang')
-                        ->orWhere(function ($s2) {
-                            $s2->where('bidang', 'not like', '%MTK%')
-                                ->where('bidang', 'not like', '%Matematika%');
-                        });
-                })->where('title', 'not like', '%Matematika%')
-                    ->where('title', 'not like', '%MTK%');
-            });
-        } elseif (request('bidang')) {
-            $query->where('bidang', request('bidang'));
-        }
+        // Terapkan filter cerdas sesuai data Kelas, Bidang, dan Level Berbakat siswa
+        \App\Support\StudentPackageFilter::apply(
+            $query,
+            $user,
+            request('bidang'),
+            request('kelas'),
+            request('level')
+        );
 
-        // ===================== FILTER KELAS SISWA =====================
-        // Paket ditampilkan jika kelas paket = kelas siswa ATAU paket berlaku umum (tanpa kelas)
-        if ($isStudent && !empty($user->student_class)) {
-            $rawClass = trim((string) $user->student_class);
-            $cleanClass = trim(str_replace(["'", '"'], '', $rawClass));
-            $numClass = preg_replace('/[^0-9]/', '', $cleanClass);
-
-            $query->where(function ($q) use ($rawClass, $cleanClass, $numClass) {
-                $q->whereNull('kelas')
-                  ->orWhere('kelas', '')
-                  ->orWhere('kelas', $rawClass)
-                  ->orWhere('kelas', $cleanClass)
-                  ->orWhere('kelas', 'Kelas ' . $cleanClass)
-                  ->orWhere('kelas', "'" . $cleanClass . "'");
-
-                if (!empty($numClass)) {
-                    $q->orWhere('kelas', $numClass)
-                      ->orWhere('kelas', 'Kelas ' . $numClass)
-                      ->orWhere('kelas', "'" . $numClass . "'");
-                }
-            });
-        } elseif (!$isStudent && request('kelas')) {
-            $query->where('kelas', request('kelas'));
-        }
-
-        // ===================== FILTER LEVEL SISWA =====================
-        // Paket ditampilkan jika level paket = level siswa ATAU paket berlaku umum (tanpa level)
-        if ($isStudent && !empty($user->level)) {
-            $cleanLevel = trim((string) $user->level);
-            $query->where(function ($q) use ($cleanLevel) {
-                $q->whereNull('level')
-                  ->orWhere('level', '')
-                  ->orWhere('level', $cleanLevel);
-
-                // Siswa Berbakat B1 / B2 juga cocok dengan Berbakat B
-                if (preg_match('/Berbakat\s*([A-C])/i', $cleanLevel, $m)) {
-                    $baseLevel = 'Berbakat ' . strtoupper($m[1]);
-                    $q->orWhere('level', $baseLevel);
-                }
-            });
-        } elseif (!$isStudent && request('level')) {
-            $query->where('level', request('level'));
-        }
+        $bidangInfo = \App\Support\StudentPackageFilter::getBidangInfo($user);
+        $studentBidang = $bidangInfo['studentBidang'];
 
         if (request('search')) {
             $search = request('search');
@@ -201,19 +114,8 @@ class PackageController extends Controller
         ]));
 
         // Opsi filter bidang yang dinamis sesuai hak siswa
-        if ($isStudent && $isStudentMtk && $isStudentIpa) {
-            $allBidang = collect(['Matematika', 'IPA']);
-            $userBidangGroup = 'Matematika & IPA';
-        } elseif ($isStudent && $isStudentMtk) {
-            $allBidang = collect(['Matematika']);
-            $userBidangGroup = 'Matematika';
-        } elseif ($isStudent && $isStudentIpa) {
-            $allBidang = collect(['IPA']);
-            $userBidangGroup = 'IPA';
-        } else {
-            $allBidang = Package::where('is_active', true)->whereNotNull('bidang')->where('bidang', '!=', '')->distinct()->pluck('bidang')->sort()->values();
-            $userBidangGroup = null;
-        }
+        $allBidang = $bidangInfo['allBidang'];
+        $userBidangGroup = $bidangInfo['userBidangGroup'];
 
         $allKelas = Package::where('is_active', true)->whereNotNull('kelas')->where('kelas', '!=', '')->distinct()->pluck('kelas')->sort()->values();
         $allLevel = Package::where('is_active', true)->whereNotNull('level')->where('level', '!=', '')->distinct()->pluck('level')->sort()->values();
@@ -799,9 +701,10 @@ class PackageController extends Controller
         $this->ensureNotGuru();
         $validator = Validator::make($request->all(), [
             'question' => 'required|string',
-            'type' => 'nullable|string|in:pilihan_ganda,isian_singkat',
-            'options' => 'required_unless:type,isian_singkat|array',
+            'type' => 'nullable|string|in:pilihan_ganda,isian_singkat,essay',
+            'options' => 'required_if:type,pilihan_ganda|array',
             'correct_answer' => 'required|string',
+            'accepted_answers' => 'nullable|array',
             'explanation' => 'nullable|string',
             'card_id' => 'required|string',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
@@ -828,8 +731,9 @@ class PackageController extends Controller
             'card_id' => $request->card_id,
             'question' => $formattedQuestion,
             'type' => $questionType,
-            'options' => $questionType === 'isian_singkat' ? [] : $request->options,
+            'options' => in_array($questionType, ['isian_singkat', 'essay'], true) ? [] : $request->options,
             'correct_answer' => $request->correct_answer,
+            'accepted_answers' => $request->accepted_answers ?? [],
             'explanation' => $formattedExplanation,
             'image' => $imagePath,
             'created_at' => now()->toDateTimeString(),
@@ -846,9 +750,10 @@ class PackageController extends Controller
         $validator = Validator::make($request->all(), [
             'card_id' => 'required|string',
             'question' => 'required|string',
-            'type' => 'nullable|string|in:pilihan_ganda,isian_singkat',
-            'options' => 'required_unless:type,isian_singkat|array',
+            'type' => 'nullable|string|in:pilihan_ganda,isian_singkat,essay',
+            'options' => 'required_if:type,pilihan_ganda|array',
             'correct_answer' => 'required|string',
+            'accepted_answers' => 'nullable|array',
             'explanation' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
             'remove_image' => 'nullable|boolean',
@@ -889,8 +794,9 @@ class PackageController extends Controller
             $questions[$i]['card_id'] = $request->card_id;
             $questions[$i]['question'] = $formattedQuestion;
             $questions[$i]['type'] = $questionType;
-            $questions[$i]['options'] = $questionType === 'isian_singkat' ? [] : $request->options;
+            $questions[$i]['options'] = in_array($questionType, ['isian_singkat', 'essay'], true) ? [] : $request->options;
             $questions[$i]['correct_answer'] = $request->correct_answer;
+            $questions[$i]['accepted_answers'] = $request->accepted_answers ?? [];
             $questions[$i]['explanation'] = $formattedExplanation;
             $questions[$i]['image'] = $imagePath;
 
