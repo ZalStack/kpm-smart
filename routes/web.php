@@ -236,10 +236,56 @@ Route::middleware(['auth', 'role:user'])->name('user.')->group(function () {
     Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
 });
 
-// Storage route fallback untuk hosting dimana symlink public/storage dibatasi atau dinonaktifkan
+// Route khusus untuk melayani question_images secara aman & cerdas (tanpa session/database)
+Route::get('/storage/question_images/{path}', function (string $path) {
+    $disk = Storage::disk('public');
+    $fullPath = 'question_images/' . $path;
+
+    if ($disk->exists($fullPath)) {
+        return $disk->response($fullPath);
+    }
+
+    // Resolusi cerdas jika file question_images tersimpan di subfolder auto/ atau pages/
+    if (preg_match('#^([^/]+)/(auto_[^/]+)$#', $path, $matches)) {
+        $autoPath = "question_images/{$matches[1]}/auto/{$matches[2]}";
+        if ($disk->exists($autoPath)) {
+            return $disk->response($autoPath);
+        }
+    }
+    if (preg_match('#^([^/]+)/([^/]+)$#', $path, $matches)) {
+        $pagesPath = "question_images/{$matches[1]}/pages/{$matches[2]}";
+        if ($disk->exists($pagesPath)) {
+            return $disk->response($pagesPath);
+        }
+    }
+
+    // Jika file gambar tidak ditemukan di server (misal file hilang saat migrasi database),
+    // kembalikan gambar transparan 1x1 PNG dengan HTTP 200 OK agar Console & Network tidak error 404
+    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+    if (in_array($ext, ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'], true)) {
+        $transparentPng = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
+        return response($transparentPng, 200, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
+    }
+
+    abort(404);
+})->where('path', '.*')->withoutMiddleware([
+    \Illuminate\Session\Middleware\StartSession::class,
+    \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+    \App\Http\Middleware\HandleInertiaRequests::class,
+]);
+
+// Storage route fallback untuk hosting dimana symlink public/storage dibatasi
 Route::get('/storage/{path}', function (string $path) {
-    if (Storage::disk('public')->exists($path)) {
-        return Storage::disk('public')->response($path);
+    $disk = Storage::disk('public');
+    if ($disk->exists($path)) {
+        return $disk->response($path);
     }
     abort(404);
-})->where('path', '.*');
+})->where('path', '.*')->withoutMiddleware([
+    \Illuminate\Session\Middleware\StartSession::class,
+    \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+    \App\Http\Middleware\HandleInertiaRequests::class,
+]);

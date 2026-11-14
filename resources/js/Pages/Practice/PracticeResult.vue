@@ -325,15 +325,6 @@ onMounted(() => {
                     <Icon icon="mdi:view-dashboard-outline" class="h-4 w-4 text-primary" />
                     Ke Beranda
                 </Link>
-
-                <a
-                    v-if="session.status === 'completed'"
-                    :href="route('user.practice.certificate', session.id)"
-                    class="btn-outline col-span-1 py-3.5 sm:col-span-2"
-                >
-                    <Icon icon="mdi:certificate-outline" class="h-4 w-4 text-amber-600" />
-                    Unduh Sertifikat PDF
-                </a>
             </div>
         </div>
     </UserLayout>

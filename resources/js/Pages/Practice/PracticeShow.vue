@@ -215,15 +215,6 @@ function formatDate(dateStr) {
                         <Icon icon="mdi:book-open-page-variant" class="h-4 w-4" />
                         Kembali ke PR Siswa Kelas Khusus
                     </Link>
-
-                    <a
-                        v-if="session.status === 'completed'"
-                        :href="route('user.practice.certificate', session.id)"
-                        class="btn-primary px-6 py-3.5 w-full sm:w-auto text-xs"
-                    >
-                        <Icon icon="mdi:certificate-outline" class="h-5 w-5" />
-                        Unduh Sertifikat Pengerjaan
-                    </a>
                 </div>
             </div>
         </template>
