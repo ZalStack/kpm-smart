@@ -261,26 +261,6 @@ onUnmounted(() => {
                     </Link>
                 </div>
             </nav>
-
-            <!-- Footer Sidebar Desktop -->
-            <div class="relative flex-shrink-0 border-t border-border bg-muted/40 p-4">
-                <div class="flex items-center justify-between gap-3">
-                    <div class="min-w-0 flex-1">
-                        <p class="truncate text-xs font-extrabold text-foreground/60">Tahun Ajaran Aktif</p>
-                        <p class="truncate text-[11px] text-foreground/40">Kelas Khusus KPM</p>
-                    </div>
-                    <Link
-                        :href="safeRoute('logout')"
-                        method="post"
-                        as="button"
-                        class="flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-extrabold text-rose-600 transition-colors hover:bg-rose-100 hover:text-rose-700"
-                        title="Keluar dari akun"
-                    >
-                        <Icon icon="mdi:logout" class="h-4 w-4" />
-                        <span>Keluar</span>
-                    </Link>
-                </div>
-            </div>
         </aside>
 
         <!-- AREA UTAMA (HEADER + KONTEN) -->
