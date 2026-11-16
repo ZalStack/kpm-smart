@@ -142,8 +142,8 @@ class QuestionFormatter
                 $result[] = $line;
                 continue;
             }
-            // Skip baris yang sudah berisi tag <img> atau <table>
-            if (preg_match('/^<(img|table|div)/i', $trimmed)) {
+            // Skip baris yang sudah berisi tag <img>, <table>, atau <div> agar tidak di-escape htmlspecialchars
+            if (preg_match('/<(img|table|div)/i', $trimmed)) {
                 $result[] = $line;
                 continue;
             }
@@ -172,14 +172,30 @@ class QuestionFormatter
                 if (filter_var($path, FILTER_VALIDATE_URL)) {
                     return '<img src="' . htmlspecialchars($path, ENT_QUOTES, 'UTF-8') . '" alt="Gambar soal" class="max-w-full h-auto rounded-md my-2" />';
                 }
-                return '<img src="/storage/' . htmlspecialchars($path, ENT_QUOTES, 'UTF-8') . '" alt="Gambar soal" class="max-w-full h-auto rounded-md my-2" />';
+                $cleanPath = ltrim($path, '/');
+                if (str_starts_with($cleanPath, 'storage/')) {
+                    return '<img src="/' . htmlspecialchars($cleanPath, ENT_QUOTES, 'UTF-8') . '" alt="Gambar soal" class="max-w-full h-auto rounded-md my-2" />';
+                }
+                return '<img src="/storage/' . htmlspecialchars($cleanPath, ENT_QUOTES, 'UTF-8') . '" alt="Gambar soal" class="max-w-full h-auto rounded-md my-2" />';
             }
 
-            // Fallback: coba path dengan subfolder auto/
+            // Fallback 1: coba path dengan subfolder auto/
             $autoPath = 'question_images/auto/' . $filename;
-            $autoFullPath = public_path('storage/' . $autoPath);
-            if (file_exists($autoFullPath)) {
+            if (file_exists(public_path('storage/' . $autoPath))) {
                 return '<img src="/storage/' . htmlspecialchars($autoPath, ENT_QUOTES, 'UTF-8') . '" alt="Gambar soal" class="max-w-full h-auto rounded-md my-2" />';
+            }
+
+            // Fallback 2: cari otomatis di storage/question_images/* (misal question_images/2/auto/...)
+            $storageBase = public_path('storage/question_images');
+            if (is_dir($storageBase)) {
+                $candidates = glob($storageBase . '/*/' . $filename) ?: [];
+                if (empty($candidates)) {
+                    $candidates = glob($storageBase . '/*/*/' . $filename) ?: [];
+                }
+                if (!empty($candidates)) {
+                    $relPath = str_replace(public_path('storage/'), '', $candidates[0]);
+                    return '<img src="/storage/' . htmlspecialchars($relPath, ENT_QUOTES, 'UTF-8') . '" alt="Gambar soal" class="max-w-full h-auto rounded-md my-2" />';
+                }
             }
 
             // Tidak ditemukan - hapus tag daripada tampilkan gambar 404/403

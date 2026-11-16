@@ -63,9 +63,8 @@ const form = useForm({
     start_date: props.package.start_date ? String(props.package.start_date).substring(0, 10) : '',
     end_date: props.package.end_date ? String(props.package.end_date).substring(0, 10) : '',
     start_time: props.package.start_time ? String(props.package.start_time).substring(0, 5) : '',
-    end_time: props.package.end_time ? String(props.package.end_time).substring(0, 5) : '',
-    show_answer_key: Boolean(props.package.show_answer_key),
-    show_explanation: props.package.show_explanation !== undefined ? Boolean(props.package.show_explanation) : true,
+    show_answer_key: props.package.show_answer_key !== undefined ? Boolean(props.package.show_answer_key) : true,
+    show_explanation: props.package.show_explanation !== undefined ? Boolean(props.package.show_explanation) : false,
     show_score: props.package.show_score !== undefined ? Boolean(props.package.show_score) : true,
     thumbnail: null,
 });

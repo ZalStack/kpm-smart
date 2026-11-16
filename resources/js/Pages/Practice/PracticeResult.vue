@@ -41,6 +41,36 @@ function formatDate(dateStr) {
     });
 }
 
+function getQuestionImage(res) {
+    if (!res) return null;
+    const raw = res.image || res.image_path || res.gambar || null;
+    if (!raw || typeof raw !== 'string') return null;
+    const trimmed = raw.trim();
+    if (!trimmed) return null;
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:')) {
+        return trimmed;
+    }
+    const clean = trimmed.replace(/^\/+/, '');
+    if (clean.startsWith('storage/')) {
+        return '/' + clean;
+    }
+    return '/storage/' + clean;
+}
+
+function handleImageError(event, res) {
+    const imgEl = event.target;
+    if (!imgEl.dataset.retried) {
+        imgEl.dataset.retried = '1';
+        const raw = res.image || res.image_path || res.gambar || '';
+        const clean = (typeof raw === 'string' ? raw : '').trim().replace(/^\/+/, '');
+        if (imgEl.src.includes('/storage/')) {
+            imgEl.src = '/' + clean;
+            return;
+        }
+    }
+    imgEl.style.display = 'none';
+}
+
 const scoreGrade = computed(() => {
     const s = props.totalScore;
     if (s >= 90) return { label: 'Sangat Memuaskan!', icon: 'mdi:trophy', bg: 'from-emerald-700 via-emerald-600 to-teal-700', accent: 'text-emerald-200' };
@@ -175,8 +205,8 @@ onMounted(() => {
                             activeTab === 'detail' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                         ]"
                     >
-                        <Icon icon="mdi:lightbulb-outline" class="h-4 w-4 text-primary" />
-                        <span class="hidden sm:inline">Pembahasan Soal ({{ results.length }})</span><span class="sm:hidden">Pembahasan</span>
+                        <Icon icon="mdi:checkbox-marked-circle-outline" class="h-4 w-4 text-emerald-600" />
+                        <span class="hidden sm:inline">Kunci Jawaban &amp; Tinjauan Soal ({{ results.length }})</span><span class="sm:hidden">Kunci Jawaban</span>
                     </button>
                 </div>
 
@@ -251,12 +281,13 @@ onMounted(() => {
                                     </span>
                                 </div>
 
-                                <div v-if="result.image" class="mb-3">
+                                <div v-if="getQuestionImage(result)" class="mb-3">
                                     <img
-                                        :src="result.image.startsWith('/') || result.image.startsWith('http') ? result.image : '/storage/' + result.image"
+                                        :src="getQuestionImage(result)"
                                         alt="Gambar soal"
-                                        class="max-h-48 w-auto max-w-full rounded-xl border border-border/60 object-contain shadow-2xs"
-                                        @error="$event.target.style.display='none'"
+                                        class="max-h-56 w-auto max-w-full rounded-xl border border-border/60 object-contain shadow-2xs"
+                                        loading="lazy"
+                                        @error="handleImageError($event, result)"
                                     />
                                 </div>
 
@@ -272,13 +303,16 @@ onMounted(() => {
                                         :class="[
                                             'flex items-center gap-2.5 rounded-xl border px-3 py-2 text-sm transition-all',
                                             opt === result.correct_answer
-                                                ? 'border-emerald-300 bg-emerald-50 font-bold text-emerald-800'
+                                                ? 'border-emerald-400 bg-emerald-50 font-bold text-emerald-800 ring-1 ring-emerald-300'
                                                 : opt === result.user_answer && !result.is_correct
                                                     ? 'border-rose-300 bg-rose-50 font-medium text-rose-800 line-through'
                                                     : 'border-border/60 bg-card text-muted-foreground'
                                         ]"
                                     >
-                                        <Icon v-if="opt === result.correct_answer" icon="mdi:check-circle" class="h-4 w-4 shrink-0 text-emerald-600" />
+                                        <span v-if="opt === result.correct_answer" class="flex items-center gap-1 font-bold text-emerald-700 shrink-0">
+                                            <Icon icon="mdi:check-circle" class="h-4 w-4 text-emerald-600" />
+                                            <span class="text-[10px] uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">Kunci</span>
+                                        </span>
                                         <Icon v-else-if="opt === result.user_answer && !result.is_correct" icon="mdi:close-circle" class="h-4 w-4 shrink-0 text-rose-500" />
                                         <span v-else class="h-4 w-4 shrink-0 rounded-full border border-muted-foreground/30"></span>
                                         <MathRenderer :text="opt" />
@@ -287,14 +321,17 @@ onMounted(() => {
 
                                 <!-- Isian Singkat -->
                                 <div v-else class="mb-3 space-y-1.5 text-sm">
-                                    <div class="space-y-1 rounded-xl border border-border/60 bg-muted/40 p-3">
-                                        <p class="text-muted-foreground">
-                                            Jawabanmu:
-                                            <span :class="result.is_correct ? 'font-bold text-emerald-700' : 'font-bold text-rose-600 line-through'">
+                                    <div class="space-y-1.5 rounded-xl border border-border/60 bg-muted/40 p-3.5">
+                                        <p class="text-muted-foreground flex items-center gap-2">
+                                            <span>Jawabanmu:</span>
+                                            <span :class="result.is_correct ? 'font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200' : 'font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 line-through'">
                                                 {{ result.user_answer || 'Tidak dijawab' }}
                                             </span>
                                         </p>
-                                        <p class="font-bold text-emerald-700">Kunci: {{ result.correct_answer }}</p>
+                                        <p class="flex items-center gap-2 font-bold text-emerald-700">
+                                            <span class="text-xs uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">Kunci Jawaban</span>
+                                            <span>{{ result.correct_answer }}</span>
+                                        </p>
                                     </div>
                                 </div>
 

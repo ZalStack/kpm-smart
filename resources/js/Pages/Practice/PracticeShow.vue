@@ -42,11 +42,41 @@ function formatDate(dateStr) {
     const d = new Date(dateStr);
     return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
+
+function getQuestionImage(res) {
+    if (!res) return null;
+    const raw = res.image || res.image_path || res.gambar || null;
+    if (!raw || typeof raw !== 'string') return null;
+    const trimmed = raw.trim();
+    if (!trimmed) return null;
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:')) {
+        return trimmed;
+    }
+    const clean = trimmed.replace(/^\/+/, '');
+    if (clean.startsWith('storage/')) {
+        return '/' + clean;
+    }
+    return '/storage/' + clean;
+}
+
+function handleImageError(event, res) {
+    const imgEl = event.target;
+    if (!imgEl.dataset.retried) {
+        imgEl.dataset.retried = '1';
+        const raw = res.image || res.image_path || res.gambar || '';
+        const clean = (typeof raw === 'string' ? raw : '').trim().replace(/^\/+/, '');
+        if (imgEl.src.includes('/storage/')) {
+            imgEl.src = '/' + clean;
+            return;
+        }
+    }
+    imgEl.style.display = 'none';
+}
 </script>
 
 <template>
     <UserLayout>
-        <Head title="Pembahasan Soal - PR KK" />
+        <Head title="Kunci Jawaban & Tinjauan Soal - PR KK" />
 
         <Link :href="route('user.packages.index')" class="back-link mb-5 group select-none">
             <Icon icon="mdi:arrow-left" class="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
@@ -99,8 +129,8 @@ function formatDate(dateStr) {
                 <div v-if="showAnswerKey" class="space-y-4">
                     <div class="flex items-center justify-between">
                         <h3 class="section-title flex items-center gap-2">
-                            <Icon icon="mdi:lightbulb-outline" class="h-5 w-5 text-primary" />
-                            Pembahasan Soal
+                            <Icon icon="mdi:checkbox-marked-circle-outline" class="h-5 w-5 text-emerald-600" />
+                            Kunci Jawaban &amp; Tinjauan Soal
                         </h3>
                         <span class="text-xs font-semibold text-muted-foreground">{{ results.length }} Soal</span>
                     </div>
@@ -134,12 +164,13 @@ function formatDate(dateStr) {
                                     </span>
                                 </div>
 
-                                <div v-if="result.image" class="mb-3">
+                                <div v-if="getQuestionImage(result)" class="mb-3">
                                     <img
-                                        :src="result.image.startsWith('/') || result.image.startsWith('http') ? result.image : '/storage/' + result.image"
+                                        :src="getQuestionImage(result)"
                                         alt="Gambar Soal"
-                                        class="max-h-48 w-auto max-w-full rounded-xl border border-border/60 object-contain shadow-2xs"
-                                        @error="$event.target.style.display='none'"
+                                        class="max-h-56 w-auto max-w-full rounded-xl border border-border/60 object-contain shadow-2xs"
+                                        loading="lazy"
+                                        @error="handleImageError($event, result)"
                                     />
                                 </div>
 
@@ -148,11 +179,11 @@ function formatDate(dateStr) {
                                 </p>
 
                                 <!-- Pilihan Ganda -->
-                                <div v-if="!result.type || result.type === 'pilihan_ganda'" class="space-y-1.5 text-sm">
+                                <div v-if="!result.type || result.type === 'pilihan_ganda'" class="space-y-2 text-sm">
                                     <p v-if="result.user_answer" class="flex flex-wrap items-center gap-2">
                                         <span class="text-muted-foreground">Jawabanmu:</span>
                                         <span
-                                            class="rounded-md border px-2 py-0.5 font-bold"
+                                            class="rounded-md border px-2.5 py-0.5 font-bold"
                                             :class="result.is_correct
                                                 ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                                                 : 'border-rose-200 bg-rose-50 text-rose-700'"
@@ -160,9 +191,9 @@ function formatDate(dateStr) {
                                             {{ result.user_answer }}
                                         </span>
                                     </p>
-                                    <p v-if="!result.is_correct" class="mt-1 flex flex-wrap items-center gap-2">
-                                        <span class="text-muted-foreground">Kunci Jawaban:</span>
-                                        <span class="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-bold text-emerald-700">
+                                    <p class="flex flex-wrap items-center gap-2">
+                                        <span class="text-muted-foreground font-semibold">Kunci Jawaban:</span>
+                                        <span class="rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 font-bold text-emerald-800">
                                             {{ result.correct_answer }}
                                         </span>
                                     </p>

@@ -233,18 +233,16 @@ class PracticeController extends Controller
 
         $isExpired = $package && $package->schedule_status === 'expired';
 
-        // Ambil pengaturan dari package (realtime)
-        $showAnswerKey  = $package ? $package->canShowAnswerKey() : true;
-        // Pembahasan soal hanya bisa dilihat sampai batas deadline; jika sudah lewat deadline, otomatis dihapus
-        $showExplanation = (!$isExpired) && ($package ? $package->canShowExplanation() : true);
+        // Pengaturan hasil: Jawaban benar dimunculkan, pembahasan di-hide sesuai instruksi
+        $showAnswerKey  = true;
+        $showExplanation = false;
         $showScore      = $package ? $package->canShowScore() : true;
 
-        if ($isExpired) {
-            $results = array_map(function ($item) {
-                unset($item['explanation']);
-                return $item;
-            }, $results);
-        }
+        // Sembunyikan isi pembahasan dari payload agar tidak muncul di siswa
+        $results = array_map(function ($item) {
+            unset($item['explanation']);
+            return $item;
+        }, $results);
 
         return Inertia::render('Practice/PracticeResult', [
             'session' => $session->withoutRelations(),
@@ -294,18 +292,16 @@ class PracticeController extends Controller
         $results = $session->answers ?? [];
         $isExpired = $package && $package->schedule_status === 'expired';
 
-        // Ambil pengaturan realtime dari package (bisa berubah oleh admin kapan saja)
-        $showAnswerKey   = $package ? $package->canShowAnswerKey() : true;
-        // Pembahasan soal hanya bisa dilihat sampai batas deadline; jika sudah lewat deadline, otomatis dihapus
-        $showExplanation = (!$isExpired) && ($package ? $package->canShowExplanation() : true);
+        // Pengaturan hasil: Jawaban benar dimunculkan, pembahasan di-hide sesuai instruksi
+        $showAnswerKey   = true;
+        $showExplanation = false;
         $showScore       = $package ? $package->canShowScore() : true;
 
-        if ($isExpired) {
-            $results = array_map(function ($item) {
-                unset($item['explanation']);
-                return $item;
-            }, $results);
-        }
+        // Sembunyikan isi pembahasan dari payload agar tidak muncul di siswa
+        $results = array_map(function ($item) {
+            unset($item['explanation']);
+            return $item;
+        }, $results);
 
         return Inertia::render('Practice/PracticeShow', [
             'session' => $session->withoutRelations(),

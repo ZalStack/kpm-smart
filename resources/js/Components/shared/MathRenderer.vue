@@ -62,6 +62,32 @@ const renderedHtml = computed(() => {
                 return match;
             }
         });
+
+        // 1. Decode HTML-escaped image tags jika ada (misal &lt;img ...&gt;)
+        if (processedText.includes('&lt;img')) {
+            processedText = processedText.replace(/&lt;img\s+([^&>]+)&gt;/gi, '<img $1>');
+        }
+
+        // 2. Dukung format gambar Markdown: ![alt](url)
+        processedText = processedText.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, url) => {
+            let cleanUrl = (url || '').trim();
+            if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://') && !cleanUrl.startsWith('data:')) {
+                const clean = cleanUrl.replace(/^\/+/, '');
+                cleanUrl = clean.startsWith('storage/') ? '/' + clean : '/storage/' + clean;
+            }
+            return `<img src="${cleanUrl}" alt="${alt || 'Gambar'}" class="max-h-80 w-auto max-w-full rounded-2xl border border-border/80 object-contain my-3 shadow-sm block" loading="lazy" />`;
+        });
+
+        // 3. Normalisasi path src tag <img> agar selalu mengarah ke /storage/ jika relatif
+        processedText = processedText.replace(/<img([^>]+)src=["']([^"']+)["']([^>]*)>/gi, (match, before, src, after) => {
+            let newSrc = (src || '').trim();
+            if (!newSrc.startsWith('http://') && !newSrc.startsWith('https://') && !newSrc.startsWith('data:')) {
+                const clean = newSrc.replace(/^\/+/, '');
+                newSrc = clean.startsWith('storage/') ? '/' + clean : '/storage/' + clean;
+            }
+            // Pastikan class styling rapi dan responsif
+            return `<img${before}src="${newSrc}" class="max-h-80 w-auto max-w-full rounded-2xl border border-border/80 object-contain my-3 shadow-sm block"${after}>`;
+        });
         
         return processedText;
     } catch (e) {

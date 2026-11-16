@@ -66,8 +66,8 @@ const form = useForm({
     end_date: '',
     start_time: '',
     end_time: '',
-    show_answer_key: false,
-    show_explanation: true,
+    show_answer_key: true,
+    show_explanation: false,
     show_score: true,
     thumbnail: null,
 });

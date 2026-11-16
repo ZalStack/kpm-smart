@@ -24,6 +24,41 @@ class DashboardController extends Controller
 
         $packages = $query->latest()->take(6)->get();
 
+        // Ambil sesi pengerjaan siswa untuk setiap paket PR yang ditampilkan di dashboard
+        $packageIds = $packages->pluck('id');
+        $userSessions = $user ? PracticeSession::where('user_id', $user->id)
+            ->whereIn('package_id', $packageIds)
+            ->orderBy('id', 'desc')
+            ->get()
+            ->groupBy('package_id')
+            ->map(fn ($items) => $items->first()) : collect();
+
+        $packageCards = $packages->map(function ($pkg) use ($userSessions) {
+            $sess = $userSessions->get($pkg->id);
+            $questions = $pkg->questions ?? [];
+            return [
+                'id' => $pkg->id,
+                'title' => $pkg->title,
+                'description' => $pkg->description,
+                'kelas' => $pkg->kelas,
+                'bidang' => $pkg->bidang,
+                'level' => $pkg->level,
+                'thumbnail' => $pkg->thumbnail,
+                'schedule_status' => $pkg->schedule_status,
+                'start_date' => $pkg->start_date ? $pkg->start_date->format('Y-m-d') : null,
+                'end_date' => $pkg->end_date ? $pkg->end_date->format('Y-m-d') : null,
+                'start_time' => $pkg->start_time,
+                'end_time' => $pkg->end_time,
+                'total_questions' => is_array($questions) ? count($questions) : 0,
+                'user_attempt' => $sess ? [
+                    'id' => $sess->id,
+                    'status' => $sess->status,
+                    'score' => $sess->total_score !== null ? round((float) $sess->total_score, 1) : null,
+                    'finished_at' => $sess->finished_at?->format('d M Y H:i'),
+                ] : null,
+            ];
+        });
+
         // Rekap pengerjaan PR milik siswa yang sedang login
         $sessions = PracticeSession::where('status', 'completed')
             ->when($user, fn ($q) => $q->where('user_id', $user->id))
@@ -54,12 +89,13 @@ class DashboardController extends Controller
             ->values();
 
         return Inertia::render('Dashboard/UserDashboard', [
-            'packages' => $packages,
+            'packages' => $packageCards,
             'totalAttempts' => $totalAttempts,
             'bestScore' => $bestScore,
             'averageScore' => round($averageScore, 1),
             'gamification' => null,
             'teacherNotes' => $teacherNotes,
+            'isHomeworkWindowOpen' => PracticeController::isHomeworkWindowOpen(),
         ]);
     }
 

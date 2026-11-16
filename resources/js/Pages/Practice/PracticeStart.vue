@@ -214,15 +214,53 @@ function cancelConfirm() {
     if (countdownInterval) clearInterval(countdownInterval);
 }
 
-/** Kelas status tombol nomor soal: indikator aktif dipertegas dan dipertajam warnanya. */
+/** Format dan sanitasi URL gambar soal agar selalu dapat dimuat dengan benar */
+function getQuestionImage(q) {
+    if (!q) return null;
+    const raw = q.image || q.image_path || q.gambar || q.photo || null;
+    if (!raw || typeof raw !== 'string') return null;
+    const trimmed = raw.trim();
+    if (!trimmed) return null;
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:')) {
+        return trimmed;
+    }
+    const clean = trimmed.replace(/^\/+/, '');
+    if (clean.startsWith('storage/')) {
+        return '/' + clean;
+    }
+    return '/storage/' + clean;
+}
+
+function handleImageError(event, q) {
+    const imgEl = event.target;
+    if (!imgEl.dataset.retried) {
+        imgEl.dataset.retried = '1';
+        const raw = q.image || q.image_path || q.gambar || '';
+        const clean = (typeof raw === 'string' ? raw : '').trim().replace(/^\/+/, '');
+        if (imgEl.src.includes('/storage/')) {
+            imgEl.src = '/' + clean;
+            return;
+        }
+    }
+    imgEl.style.display = 'none';
+}
+
+/** Kelas status tombol nomor soal: warna hijau dipertebal dan solid (tidak pucat), biru saat aktif */
 function navBtnClass(idx) {
-    if (currentIndex.value === idx) {
-        return 'bg-blue-600 text-white font-black shadow-md ring-4 ring-blue-400/50 scale-105 border-blue-600';
+    const isCurrent = currentIndex.value === idx;
+    const isAnswered = answers.value[idx] !== null && answers.value[idx] !== undefined && answers.value[idx] !== '';
+
+    if (isCurrent && isAnswered) {
+        return 'bg-blue-600 text-white font-black shadow-lg shadow-blue-500/30 ring-4 ring-emerald-400 scale-105 border-2 border-white';
     }
-    if (answers.value[idx] !== null && answers.value[idx] !== undefined && answers.value[idx] !== '') {
-        return 'bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold hover:bg-emerald-100';
+    if (isCurrent) {
+        return 'bg-blue-600 text-white font-black shadow-lg shadow-blue-500/30 ring-4 ring-blue-300 scale-105 border-2 border-blue-600';
     }
-    return 'bg-muted/70 text-muted-foreground border border-transparent hover:bg-muted hover:text-foreground';
+    if (isAnswered) {
+        // Hijau tegas, tebal, pekat (solid emerald-600 dengan teks putih)
+        return 'bg-emerald-600 text-white font-black shadow-sm shadow-emerald-600/30 border-2 border-emerald-600 hover:bg-emerald-700 hover:scale-105';
+    }
+    return 'bg-slate-100 text-slate-700 border border-slate-200/90 font-bold hover:bg-slate-200 hover:text-slate-900';
 }
 
 onMounted(() => {
@@ -395,13 +433,16 @@ onBeforeUnmount(() => {
                                     <MathRenderer :text="q.question" />
                                 </div>
 
-                                <div v-if="q.image" class="mt-5">
-                                    <img
-                                        :src="q.image.startsWith('/') || q.image.startsWith('http') ? q.image : '/storage/' + q.image"
-                                        alt="Gambar soal"
-                                        class="max-h-80 w-auto max-w-full rounded-2xl border border-border/80 object-contain shadow-sm"
-                                        @error="$event.target.style.display='none'"
-                                    />
+                                <div v-if="getQuestionImage(q)" class="mt-5 flex justify-center sm:justify-start">
+                                    <div class="relative overflow-hidden rounded-2xl border border-border/80 bg-muted/20 p-2 shadow-sm">
+                                        <img
+                                            :src="getQuestionImage(q)"
+                                            alt="Gambar soal"
+                                            class="max-h-80 w-auto max-w-full rounded-xl object-contain"
+                                            loading="lazy"
+                                            @error="handleImageError($event, q)"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -525,7 +566,24 @@ onBeforeUnmount(() => {
 
                         <!-- Grid Nomor -->
                         <div class="ui-card p-5">
-                            <p class="mb-3 text-xs font-bold uppercase tracking-wider text-foreground">Navigasi Nomor Soal</p>
+                            <div class="mb-3 flex items-center justify-between">
+                                <p class="text-xs font-bold uppercase tracking-wider text-foreground">Nomor Soal</p>
+                                <span class="text-[11px] font-bold text-primary">{{ answeredCount }}/{{ questions.length }}</span>
+                            </div>
+
+                            <!-- Indikator Warna -->
+                            <div class="mb-3 flex items-center justify-between gap-1 rounded-xl bg-muted/50 p-2 text-[10px] font-bold">
+                                <span class="flex items-center gap-1 text-blue-700">
+                                    <span class="h-2.5 w-2.5 rounded-full bg-blue-600 ring-2 ring-blue-300"></span> Aktif
+                                </span>
+                                <span class="flex items-center gap-1 text-emerald-800">
+                                    <span class="h-2.5 w-2.5 rounded-full bg-emerald-600"></span> Terjawab
+                                </span>
+                                <span class="flex items-center gap-1 text-slate-500">
+                                    <span class="h-2.5 w-2.5 rounded-full bg-slate-300"></span> Belum
+                                </span>
+                            </div>
+
                             <div class="grid grid-cols-4 gap-2">
                                 <button
                                     v-for="(q, idx) in questions"
@@ -534,7 +592,7 @@ onBeforeUnmount(() => {
                                     :class="navBtnClass(idx)"
                                     @click="goToQuestion(idx)"
                                 >
-                                    <span v-if="q.type === 'isian_singkat'" class="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                                    <span v-if="q.type === 'isian_singkat'" class="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-amber-400"></span>
                                     {{ idx + 1 }}
                                 </button>
                             </div>
@@ -558,6 +616,19 @@ onBeforeUnmount(() => {
                             <div class="mb-3 flex items-center justify-between">
                                 <p class="text-sm font-bold text-foreground">Daftar Nomor Soal</p>
                                 <span class="text-xs font-bold text-primary">{{ answeredCount }}/{{ questions.length }} Terjawab</span>
+                            </div>
+
+                            <!-- Indikator Warna Mobile -->
+                            <div class="mb-3 flex items-center justify-between gap-1 rounded-xl bg-muted/50 p-2 text-[10px] font-bold">
+                                <span class="flex items-center gap-1 text-blue-700">
+                                    <span class="h-2.5 w-2.5 rounded-full bg-blue-600 ring-2 ring-blue-300"></span> Aktif
+                                </span>
+                                <span class="flex items-center gap-1 text-emerald-800">
+                                    <span class="h-2.5 w-2.5 rounded-full bg-emerald-600"></span> Terjawab
+                                </span>
+                                <span class="flex items-center gap-1 text-slate-500">
+                                    <span class="h-2.5 w-2.5 rounded-full bg-slate-300"></span> Belum
+                                </span>
                             </div>
                             <div class="grid grid-cols-4 gap-2.5">
                                 <button
