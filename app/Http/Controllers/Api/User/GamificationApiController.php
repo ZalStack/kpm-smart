@@ -15,57 +15,90 @@ class GamificationApiController extends BaseApiController
     /**
      * Get leaderboard ranking
      */
+    /**
+     * Get leaderboard ranking
+     */
     public function leaderboard(Request $request): JsonResponse
     {
         $userId = $this->resolveUserId($request);
 
-        $users = PracticeSession::where('status', 'completed')
+        $selectedBidang = trim((string) $request->query('bidang'));
+        $selectedKelas = trim((string) $request->query('kelas'));
+        $selectedLevel = trim((string) $request->query('level'));
+
+        if (strtolower($selectedBidang) === 'all') $selectedBidang = '';
+        if (strtolower($selectedKelas) === 'all') $selectedKelas = '';
+        if (strtolower($selectedLevel) === 'all') $selectedLevel = '';
+
+        $rows = PracticeSession::where('status', 'completed')
             ->select('user_id', DB::raw('COUNT(*) as total_attempts'), DB::raw('AVG(total_score) as avg_score'), DB::raw('MAX(total_score) as best_score'))
             ->groupBy('user_id')
             ->orderByDesc('avg_score')
             ->orderByDesc('best_score')
-            ->limit(20)
-            ->get()
-            ->map(function ($item, $index) {
-                $u = User::find($item->user_id);
+            ->limit(1000)
+            ->get();
+
+        $usersById = User::whereIn('id', $rows->pluck('user_id'))->get()->keyBy('id');
+
+        $users = $rows
+            ->map(function ($item) use ($usersById) {
+                $u = $usersById->get($item->user_id);
+                if (!$u) return null;
+
+                $bg = \App\Http\Controllers\GamificationController::bidangGroup($u->bidang);
+
                 return [
-                    'rank' => $index + 1,
-                    'user' => $u ? [
+                    'user' => [
                         'id' => $u->id,
                         'name' => $u->name,
                         'school_name' => $u->school_name,
                         'profile_photo_url' => $u->profile_photo_url,
-                    ] : null,
+                        'student_class' => $u->student_class,
+                        'kelas' => $u->student_class,
+                        'level' => $u->level,
+                        'bidang' => $u->bidang,
+                        'bidang_group' => $bg,
+                    ],
+                    'bidang_group' => $bg,
+                    'kelas' => $u->student_class,
+                    'level' => $u->level,
                     'total_attempts' => (int) $item->total_attempts,
                     'avg_score' => round((float) $item->avg_score, 1),
                     'best_score' => round((float) $item->best_score, 1),
                 ];
             })
-            ->filter(fn($item) => $item['user'] !== null)
+            ->filter()
+            ->when($selectedBidang !== '', fn ($col) => $col->filter(
+                fn ($e) => in_array($selectedBidang, ['Matematika', 'IPA', 'Lainnya'], true)
+                    ? $e['bidang_group'] === $selectedBidang
+                    : strcasecmp((string) $e['user']['bidang'], $selectedBidang) === 0
+            ))
+            ->when($selectedKelas !== '', fn ($col) => $col->filter(
+                fn ($e) => (string) $e['kelas'] === $selectedKelas
+            ))
+            ->when($selectedLevel !== '', fn ($col) => $col->filter(
+                fn ($e) => (string) $e['level'] === $selectedLevel
+            ))
+            ->sortBy([['avg_score', 'desc'], ['best_score', 'desc']])
+            ->values()
+            ->map(fn ($entry, $idx) => array_merge(['rank' => $idx + 1], $entry))
             ->values();
 
         $currentUserRank = null;
-        $currentUserData = PracticeSession::where('user_id', $userId)
-            ->where('status', 'completed')
-            ->select(DB::raw('COUNT(*) as total_attempts'), DB::raw('AVG(total_score) as avg_score'), DB::raw('MAX(total_score) as best_score'))
-            ->first();
-
-        if ($currentUserData && $currentUserData->total_attempts > 0) {
-            $higherCount = PracticeSession::where('status', 'completed')
-                ->groupBy('user_id')
-                ->havingRaw('AVG(total_score) > ?', [$currentUserData->avg_score])
-                ->count();
-
-            $currentUserRank = [
-                'rank' => $higherCount + 1,
-                'total_attempts' => (int) $currentUserData->total_attempts,
-                'avg_score' => round((float) $currentUserData->avg_score, 1),
-                'best_score' => round((float) $currentUserData->best_score, 1),
-            ];
+        if ($userId) {
+            $myEntry = $users->firstWhere('user.id', $userId);
+            if ($myEntry) {
+                $currentUserRank = [
+                    'rank' => $myEntry['rank'],
+                    'total_attempts' => $myEntry['total_attempts'],
+                    'avg_score' => $myEntry['avg_score'],
+                    'best_score' => $myEntry['best_score'],
+                ];
+            }
         }
 
         return $this->sendResponse([
-            'leaderboard' => $users,
+            'leaderboard' => $users->take(50)->values(),
             'current_user_rank' => $currentUserRank,
         ], 'Data leaderboard berhasil dimuat.');
     }

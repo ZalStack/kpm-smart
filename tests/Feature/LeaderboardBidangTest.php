@@ -116,4 +116,140 @@ class LeaderboardBidangTest extends TestCase
             ->get(route('admin.leaderboard'))
             ->assertRedirect(route('user.dashboard'));
     }
+
+    public function test_student_leaderboard_defaults_to_student_own_class_level_and_bidang(): void
+    {
+        $me = User::factory()->create([
+            'role' => 'user',
+            'bidang' => 'Matematika',
+            'student_class' => '4A',
+            'level' => '1',
+        ]);
+
+        $peerSame = User::factory()->create([
+            'role' => 'user',
+            'bidang' => 'Matematika',
+            'student_class' => '4A',
+            'level' => '1',
+        ]);
+
+        $peerDiffClass = User::factory()->create([
+            'role' => 'user',
+            'bidang' => 'Matematika',
+            'student_class' => '5B',
+            'level' => '1',
+        ]);
+
+        $peerDiffLevel = User::factory()->create([
+            'role' => 'user',
+            'bidang' => 'Matematika',
+            'student_class' => '4A',
+            'level' => '2',
+        ]);
+
+        $peerDiffBidang = User::factory()->create([
+            'role' => 'user',
+            'bidang' => 'IPA',
+            'student_class' => '4A',
+            'level' => '1',
+        ]);
+
+        $this->makeSession($me, 85, 'MTK');
+        $this->makeSession($peerSame, 92, 'MTK');
+        $this->makeSession($peerDiffClass, 95, 'MTK');
+        $this->makeSession($peerDiffLevel, 98, 'MTK');
+        $this->makeSession($peerDiffBidang, 100, 'IPA');
+
+        // Saat siswa login dan membuka leaderboard tanpa parameter,
+        // peringkat otomatis tersegmentasi sesuai kelas 4A, level 1, bidang Matematika.
+        $response = $this->actingAs($me)->get(route('user.leaderboard'));
+
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Gamification/Leaderboard')
+            ->where('bidangLabel', 'Matematika')
+            ->where('selectedKelas', '4A')
+            ->where('selectedLevel', '1')
+            ->where('isMyScope', true)
+            ->has('leaderboard', 2)
+            ->where('leaderboard.0.user.id', $peerSame->id)
+            ->where('leaderboard.1.user.id', $me->id)
+            ->where('currentUserRank.rank', 2));
+    }
+
+    public function test_student_leaderboard_can_be_filtered_by_class_and_level_interactively(): void
+    {
+        $me = User::factory()->create([
+            'role' => 'user',
+            'bidang' => 'Matematika',
+            'student_class' => '4A',
+            'level' => '1',
+        ]);
+
+        $peerDiffClass = User::factory()->create([
+            'role' => 'user',
+            'bidang' => 'Matematika',
+            'student_class' => '5B',
+            'level' => '1',
+        ]);
+
+        $this->makeSession($me, 85, 'MTK');
+        $this->makeSession($peerDiffClass, 95, 'MTK');
+
+        // Siswa memilih filter kelas 5B
+        $response = $this->actingAs($me)->get(route('user.leaderboard', [
+            'bidang' => 'Matematika',
+            'kelas' => '5B',
+            'level' => '1',
+        ]));
+
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->where('selectedKelas', '5B')
+            ->has('leaderboard', 1)
+            ->where('leaderboard.0.user.id', $peerDiffClass->id));
+
+        // Siswa memilih melihat semua kelas
+        $responseAllKelas = $this->actingAs($me)->get(route('user.leaderboard', [
+            'bidang' => 'Matematika',
+            'kelas' => 'all',
+            'level' => '1',
+        ]));
+
+        $responseAllKelas->assertOk();
+        $responseAllKelas->assertInertia(fn (Assert $page) => $page
+            ->where('selectedKelas', '')
+            ->has('leaderboard', 2));
+    }
+
+    public function test_admin_leaderboard_can_filter_by_class_level_and_bidang(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $s1 = User::factory()->create(['role' => 'user', 'bidang' => 'MTK', 'student_class' => '7A', 'level' => '1']);
+        $s2 = User::factory()->create(['role' => 'user', 'bidang' => 'MTK', 'student_class' => '7A', 'level' => '2']);
+        $s3 = User::factory()->create(['role' => 'user', 'bidang' => 'IPA', 'student_class' => '7A', 'level' => '1']);
+
+        $this->makeSession($s1, 80, 'MTK');
+        $this->makeSession($s2, 90, 'MTK');
+        $this->makeSession($s3, 95, 'IPA');
+
+        // Admin filter: Matematika, Kelas 7A, Level 2
+        $res = $this->actingAs($admin)->get(route('admin.leaderboard', [
+            'bidang' => 'Matematika',
+            'kelas' => '7A',
+            'level' => '2',
+        ]));
+
+        $res->assertOk();
+        $res->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Leaderboard/AdminLeaderboardIndex')
+            ->where('selectedBidang', 'Matematika')
+            ->where('selectedKelas', '7A')
+            ->where('selectedLevel', '2')
+            ->has('leaderboard', 1)
+            ->where('leaderboard.0.user.id', $s2->id)
+            ->where('leaderboard.0.level', '2'));
+    }
 }
+

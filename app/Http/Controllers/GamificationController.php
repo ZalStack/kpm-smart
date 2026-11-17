@@ -137,40 +137,64 @@ class GamificationController extends Controller
      * Papan peringkat siswa: top 10, disaring sesuai bidang dan level milik siswa login
      * sehingga peringkat Matematika dan IPA tidak pernah tercampur.
      */
-    public function leaderboard()
+    /**
+     * Papan peringkat siswa: dipisahkan secara presisi berdasarkan Kelas, Level, dan Bidang siswa.
+     * Secara default menampilkan cohort kelas, level, dan bidang siswa yang sedang login.
+     * Siswa juga dapat beralih antar kelas, level, dan bidang dengan filter interaktif.
+     */
+    public function leaderboard(Request $request)
     {
         $me = Auth::user();
 
-        $rows = $this->leaderboardQuery($me)
-            ->limit(500)
-            ->get()
-            ->map(fn ($item, $index) => [
-                'rank' => $index + 1,
-                'user' => $this->leaderboardUser($item->user_id),
-                'total_attempts' => $item->total_attempts,
-                'avg_score' => round($item->avg_score, 1),
-                'best_score' => round($item->best_score, 1),
-            ])
-            ->filter(fn ($item) => $item['user'] !== null)
+        $myBidangGroup = $me ? self::bidangGroup($me->bidang) : 'Lainnya';
+        $myKelas = $me?->student_class ?? '';
+        $myLevel = $me?->level ?? '';
+
+        $availableKelas = User::where('role', 'user')
+            ->whereNotNull('student_class')
+            ->where('student_class', '!=', '')
+            ->distinct()
+            ->pluck('student_class')
+            ->sort(SORT_NATURAL)
             ->values();
 
-        $currentUserRank = $me
-            ? $rows->firstWhere('user.id', $me->id)
-            : null;
+        $availableLevel = User::where('role', 'user')
+            ->whereNotNull('level')
+            ->where('level', '!=', '')
+            ->distinct()
+            ->pluck('level')
+            ->sort(SORT_NATURAL)
+            ->values();
 
-        return Inertia::render('Gamification/Leaderboard', [
-            'leaderboard' => $rows->take(10)->values(),
-            'currentUserRank' => $currentUserRank,
-            'bidangLabel' => $me ? self::bidangGroup($me->bidang) : 'Lainnya',
-        ]);
-    }
+        // Default filters:
+        // Jika query string ada, gunakan query string (jika 'all' artinya tanpa filter).
+        // Jika belum ada query string (kunjungan pertama):
+        // - bidang default ke bidang siswa
+        // - kelas default ke kelas siswa (jika profil siswa ada kelas)
+        // - level default ke level siswa (jika profil siswa ada level)
+        $selectedBidang = $request->has('bidang')
+            ? trim((string) $request->query('bidang'))
+            : ($me ? $myBidangGroup : '');
 
-    /**
-     * Query agregat peringkat (rata-rata nilai lalu nilai tertinggi).
-     */
-    private function leaderboardQuery(?User $me)
-    {
-        $query = PracticeSession::query()
+        $selectedKelas = $request->has('kelas')
+            ? trim((string) $request->query('kelas'))
+            : ($myKelas !== '' ? $myKelas : '');
+
+        $selectedLevel = $request->has('level')
+            ? trim((string) $request->query('level'))
+            : ($myLevel !== '' ? $myLevel : '');
+
+        if (strtolower($selectedBidang) === 'all') {
+            $selectedBidang = '';
+        }
+        if (strtolower($selectedKelas) === 'all') {
+            $selectedKelas = '';
+        }
+        if (strtolower($selectedLevel) === 'all') {
+            $selectedLevel = '';
+        }
+
+        $rows = PracticeSession::query()
             ->join('users', 'users.id', '=', 'practice_sessions.user_id')
             ->where('practice_sessions.status', 'completed')
             ->where('users.role', 'user')
@@ -182,85 +206,128 @@ class GamificationController extends Controller
             )
             ->groupBy('practice_sessions.user_id')
             ->orderByDesc('avg_score')
-            ->orderByDesc('best_score');
+            ->orderByDesc('best_score')
+            ->limit(2000)
+            ->get();
 
-        $this->applyBidangScope($query, $me);
+        $usersById = User::whereIn('id', $rows->pluck('user_id'))->get()->keyBy('id');
 
-        return $query;
+        $mapped = $rows->map(function ($item) use ($usersById) {
+            $u = $usersById->get($item->user_id);
+            if (!$u) {
+                return null;
+            }
+
+            $bg = self::bidangGroup($u->bidang);
+            return [
+                'user' => [
+                    'id' => $u->id,
+                    'name' => $u->name,
+                    'email' => $u->email,
+                    'school_name' => $u->school_name,
+                    'profile_photo_url' => $u->profile_photo_url,
+                    'student_class' => $u->student_class,
+                    'kelas' => $u->student_class,
+                    'level' => $u->level,
+                    'bidang' => $u->bidang,
+                    'bidang_group' => $bg,
+                ],
+                'bidang' => $u->bidang,
+                'bidang_group' => $bg,
+                'level' => $u->level,
+                'kelas' => $u->student_class,
+                'total_attempts' => (int) $item->total_attempts,
+                'avg_score' => round((float) $item->avg_score, 1),
+                'best_score' => round((float) $item->best_score, 1),
+            ];
+        })->filter();
+
+        $filtered = $mapped
+            ->when($selectedBidang !== '', function ($collection) use ($selectedBidang) {
+                if (in_array($selectedBidang, ['Matematika', 'IPA', 'Lainnya'], true)) {
+                    return $collection->filter(fn ($entry) => $entry['bidang_group'] === $selectedBidang);
+                }
+                return $collection->filter(fn ($entry) => strcasecmp((string) $entry['bidang'], $selectedBidang) === 0);
+            })
+            ->when($selectedKelas !== '', fn ($collection) => $collection->filter(
+                fn ($entry) => (string) $entry['kelas'] === $selectedKelas
+            ))
+            ->when($selectedLevel !== '', fn ($collection) => $collection->filter(
+                fn ($entry) => (string) $entry['level'] === $selectedLevel
+            ))
+            ->sortBy([['avg_score', 'desc'], ['best_score', 'desc']])
+            ->values();
+
+        $ranked = $filtered->map(function ($entry, $index) {
+            return array_merge(['rank' => $index + 1], $entry);
+        });
+
+        $currentUserRank = $me
+            ? $ranked->firstWhere('user.id', $me->id)
+            : null;
+
+        $bidangLabel = $selectedBidang !== '' ? $selectedBidang : 'Semua Bidang';
+
+        $isMyScope = (
+            ($myBidangGroup === '' || $selectedBidang === '' || $selectedBidang === $myBidangGroup) &&
+            ($myKelas === '' || $selectedKelas === '' || $selectedKelas === $myKelas) &&
+            ($myLevel === '' || $selectedLevel === '' || $selectedLevel === $myLevel)
+        );
+
+        return Inertia::render('Gamification/Leaderboard', [
+            'leaderboard' => $ranked->take(50)->values(),
+            'currentUserRank' => $currentUserRank,
+            'bidangLabel' => $bidangLabel,
+            'selectedBidang' => $selectedBidang,
+            'selectedKelas' => $selectedKelas,
+            'selectedLevel' => $selectedLevel,
+            'availableKelas' => $availableKelas,
+            'availableLevel' => $availableLevel,
+            'myScope' => [
+                'bidang' => $myBidangGroup,
+                'kelas' => $myKelas,
+                'level' => $myLevel,
+            ],
+            'isMyScope' => $isMyScope,
+            'totalParticipants' => $ranked->count(),
+        ]);
     }
 
     /**
-     * Saring peringkat sesuai bidang dan level studi siswa.
-     */
-    private function applyBidangScope($query, ?User $me): void
-    {
-        if (!$me) {
-            return;
-        }
-
-        $group = self::bidangGroup($me->bidang);
-
-        if ($group === 'Matematika') {
-            $query->where(function ($q) {
-                $q->whereRaw('LOWER(COALESCE(users.bidang, \'\')) LIKE ?', ['%mtk%'])
-                  ->orWhereRaw('LOWER(COALESCE(users.bidang, \'\')) LIKE ?', ['%matematika%'])
-                  ->orWhereRaw('LOWER(COALESCE(users.bidang, \'\')) LIKE ?', ['%math%']);
-            });
-        } elseif ($group === 'IPA') {
-            $query->where(function ($q) {
-                $q->whereRaw('LOWER(COALESCE(users.bidang, \'\')) LIKE ?', ['%ipa%'])
-                  ->orWhereRaw('LOWER(COALESCE(users.bidang, \'\')) LIKE ?', ['%sains%'])
-                  ->orWhereRaw('LOWER(COALESCE(users.bidang, \'\')) LIKE ?', ['%science%']);
-            });
-        } elseif ($group === 'Lainnya') {
-            $query->where(function ($q) {
-                $q->whereNull('users.bidang')
-                  ->orWhere('users.bidang', '')
-                  ->orWhere(function ($sub) {
-                      $sub->whereRaw('LOWER(COALESCE(users.bidang, \'\')) NOT LIKE ?', ['%mtk%'])
-                          ->whereRaw('LOWER(COALESCE(users.bidang, \'\')) NOT LIKE ?', ['%matematika%'])
-                          ->whereRaw('LOWER(COALESCE(users.bidang, \'\')) NOT LIKE ?', ['%math%'])
-                          ->whereRaw('LOWER(COALESCE(users.bidang, \'\')) NOT LIKE ?', ['%ipa%'])
-                          ->whereRaw('LOWER(COALESCE(users.bidang, \'\')) NOT LIKE ?', ['%sains%'])
-                          ->whereRaw('LOWER(COALESCE(users.bidang, \'\')) NOT LIKE ?', ['%science%']);
-                  });
-            });
-        } else {
-            // Bidang non-standar: peringkat khusus bidang tersebut saja.
-            $query->whereRaw('LOWER(TRIM(COALESCE(users.bidang, \'\'))) = ?', [strtolower($group)]);
-        }
-
-        if (!empty($me->level)) {
-            $query->where('users.level', $me->level);
-        }
-    }
-
-    private function leaderboardUser($userId): ?array
-    {
-        $user = User::find($userId);
-
-        return $user ? ['id' => $user->id, 'name' => $user->name] : null;
-    }
-
-    /**
-     * Papan peringkat admin: peringkat siswa per bidang studi (Matematika & IPA
-     * tidak pernah tercampur) dengan filter kelas.
+     * Papan peringkat admin: peringkat siswa per bidang studi, kelas, dan level.
      */
     public function adminLeaderboard(Request $request)
     {
         $selectedBidang = trim((string) $request->query('bidang'));
         $selectedKelas = trim((string) $request->query('kelas'));
+        $selectedLevel = trim((string) $request->query('level'));
+
+        if (strtolower($selectedBidang) === 'all') {
+            $selectedBidang = '';
+        }
+        if (strtolower($selectedKelas) === 'all') {
+            $selectedKelas = '';
+        }
+        if (strtolower($selectedLevel) === 'all') {
+            $selectedLevel = '';
+        }
 
         $availableKelas = User::where('role', 'user')
             ->whereNotNull('student_class')
             ->where('student_class', '!=', '')
-            ->orderBy('student_class')
+            ->distinct()
             ->pluck('student_class')
-            ->unique()
+            ->sort(SORT_NATURAL)
             ->values();
 
-        // Agregasi nilai seluruh siswa: rata-rata dulu, nilai tertinggi sebagai
-        // pengungkit saat rata-rata sama.
+        $availableLevel = User::where('role', 'user')
+            ->whereNotNull('level')
+            ->where('level', '!=', '')
+            ->distinct()
+            ->pluck('level')
+            ->sort(SORT_NATURAL)
+            ->values();
+
         $rows = PracticeSession::query()
             ->join('users', 'users.id', '=', 'practice_sessions.user_id')
             ->where('practice_sessions.status', 'completed')
@@ -297,6 +364,11 @@ class GamificationController extends Controller
                         'id' => $user->id,
                         'name' => $user->name,
                         'email' => $user->email,
+                        'school_name' => $user->school_name,
+                        'profile_photo_url' => $user->profile_photo_url,
+                        'student_class' => $user->student_class,
+                        'level' => $user->level,
+                        'bidang' => $user->bidang,
                     ],
                     'bidang' => $user->bidang,
                     'bidang_group' => $group,
@@ -314,6 +386,9 @@ class GamificationController extends Controller
             ->when($selectedKelas !== '', fn ($rows2) => $rows2->filter(
                 fn ($entry) => (string) $entry['kelas'] === $selectedKelas
             ))
+            ->when($selectedLevel !== '', fn ($rows2) => $rows2->filter(
+                fn ($entry) => (string) $entry['level'] === $selectedLevel
+            ))
             ->sortBy([['avg_score', 'desc'], ['best_score', 'desc']])
             ->values()
             ->map(fn ($entry, $index) => array_merge(['rank' => $index + 1], $entry))
@@ -325,8 +400,10 @@ class GamificationController extends Controller
         return Inertia::render('Admin/Leaderboard/AdminLeaderboardIndex', [
             'leaderboard' => $leaderboard,
             'availableKelas' => $availableKelas,
+            'availableLevel' => $availableLevel,
             'selectedBidang' => $selectedBidang,
             'selectedKelas' => $selectedKelas,
+            'selectedLevel' => $selectedLevel,
             'totalStudents' => $totalStudents,
             'attemptedStudents' => $attemptedStudents,
             'notAttemptedStudents' => max(0, $totalStudents - $attemptedStudents),
