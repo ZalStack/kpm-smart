@@ -1,0 +1,1535 @@
+openapi: 3.0.3
+info:
+  title: KPM Smart API Documentation
+  description: |
+    ## Dokumentasi Resmi Web API Sistem KPM Smart (Kelas Khusus KPM)
+    
+    API RESTful lengkap berstandar Software Engineering profesional untuk mengelola ekosistem pembelajaran digital KPM Smart. Melayani modul Siswa, Guru, Administrator, dan Sinkronisasi Satelit Web Induk.
+    
+    ### Fitur Utama API:
+    - **Autentikasi Aman:** Menggunakan Laravel Sanctum Bearer Token.
+    - **Role-Based Access Control (RBAC):** Pemisahan hak akses ketat antara `admin` (kontrol penuh), `guru` (monitoring read-only), dan `user`/siswa (data terisolasi IDOR protection).
+    - **Manajemen PR & Tugas Pekanan:** Mulai sesi latihan, pencegahan kecurangan (anti-cheat attempt limits), auto-grading pilihan ganda & isian singkat (Answer Normalizer).
+    - **Leaderboard Multi-Dimensi:** Filter real-time per Bidang (Matematika, IPA, IT, Bahasa Arab, Bahasa Inggris), Tingkat/Kelas, dan Level (A1 s.d. C2).
+    - **Sinkronisasi Satelit:** Komunikasi antar-node satelit dan web induk berbasis Header `X-API-KEY`.
+    
+    ### Format Standar Respons:
+    Semua respons API mengembalikan struktur JSON konsisten:
+    ```json
+    {
+      "success": true,
+      "message": "Pesan deskriptif keberhasilan",
+      "data": { ... }
+    }
+    ```
+    Dan untuk kesalahan:
+    ```json
+    {
+      "success": false,
+      "message": "Pesan deskripsi kesalahan",
+      "errors": { ... }
+    }
+    ```
+  version: 1.0.0
+  contact:
+    name: Tim Pengembang KPM Smart
+    email: admin@kpmacademic.io
+    url: https://kelas-khusus.kpmacademic.io
+
+servers:
+  - url: http://localhost:8000
+    description: Local Development Server
+  - url: https://kelas-khusus.kpmacademic.io
+    description: Production Server
+
+tags:
+  - name: Autentikasi
+    description: Endpoint untuk login, pengecekan token aktif (me), dan logout.
+  - name: Admin - Dashboard
+    description: Ringkasan statistik sistem untuk Administrator dan Guru.
+  - name: Admin - Manajemen User
+    description: Operasi CRUD pengguna, penyesuaian level, dan aktivasi akun.
+  - name: Admin - Paket Soal PR
+    description: Pembuatan, pembaruan, dan pengaturan jadwal tugas PR pekanan.
+  - name: Admin - Statistik Siswa
+    description: Monitoring data hasil pengerjaan dan performa seluruh siswa.
+  - name: Admin - Pengajuan Izin
+    description: Tinjauan dan persetujuan/penolakan permohonan izin siswa.
+  - name: Admin - Notifikasi
+    description: Pengiriman pesan personal atau siaran (broadcast) massal ke siswa.
+  - name: Admin - Pengumuman
+    description: Publikasi informasi penting sekolah kepada seluruh pengguna.
+  - name: Admin - Log Login
+    description: Audit trail riwayat aktivitas login pengguna.
+  - name: Admin - Profil
+    description: Informasi akun Administrator / Guru yang sedang aktif.
+  - name: User - Dashboard
+    description: Ringkasan capaian, statistik, gamifikasi, dan PR aktif milik siswa login.
+  - name: User - Profil
+    description: Biodata lengkap siswa yang sedang terotentikasi.
+  - name: User - Paket Soal PR
+    description: Katalog tugas PR yang sesuai dengan bidang, level, dan kelas siswa.
+  - name: User - Pengerjaan PR
+    description: Alur pengerjaan tugas (mulai sesi, pengumpulan jawaban, review hasil).
+  - name: User - Leaderboard
+    description: Papan peringkat siswa terfilter berdasarkan bidang, kelas, dan level.
+  - name: User - Analitik
+    description: Grafik kemajuan belajar dan tren akurasi nilai siswa.
+  - name: User - Pengajuan Izin
+    description: Pengajuan dispensasi/izin berhalangan beserta unggah bukti.
+  - name: User - Notifikasi
+    description: Riwayat notifikasi masuk dan penandaan status telah dibaca.
+  - name: User - Pengumuman
+    description: Informasi dan instruksi penting dari sekolah.
+  - name: Satelit - Integrasi Web Induk
+    description: Sinkronisasi batch user dan laporan mingguan berbasis API Key.
+
+paths:
+  # ============================================================
+  # AUTENTIKASI
+  # ============================================================
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Autentikasi
+      summary: Login pengguna untuk mendapatkan Sanctum Token
+      description: Siswa, Guru, atau Admin login menggunakan email dan password. Mendukung rate limiting untuk mencegah brute force.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: admin@kpm.test
+                password:
+                  type: string
+                  format: password
+                  example: password
+      responses:
+        '200':
+          description: Berhasil login dan memperoleh Bearer Token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginSuccessResponse'
+        '401':
+          description: Kredensial tidak valid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '429':
+          description: Terlalu banyak percobaan login (Rate limited).
+
+  /api/v1/auth/me:
+    get:
+      tags:
+        - Autentikasi
+      summary: Mendapatkan informasi akun yang sedang login
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Data user terautentikasi berhasil dimuat.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailResponse'
+        '401':
+          description: Token tidak valid atau kadaluarsa.
+
+  /api/v1/auth/logout:
+    post:
+      tags:
+        - Autentikasi
+      summary: Logout dan cabut (revoke) Sanctum Token saat ini
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Token berhasil dicabut.
+
+  # ============================================================
+  # ADMIN: DASHBOARD
+  # ============================================================
+  /api/admin/v1/dashboard:
+    get:
+      tags:
+        - Admin - Dashboard
+      summary: Mengambil ringkasan statistik dan metrik utama admin
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Ringkasan metrik dashboard admin.
+
+  # ============================================================
+  # ADMIN: MANAJEMEN USER
+  # ============================================================
+  /api/admin/v1/users:
+    get:
+      tags:
+        - Admin - Manajemen User
+      summary: Daftar pengguna dengan paginasi dan filter
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          description: Pencarian nama, email, atau asal sekolah
+          schema:
+            type: string
+        - name: role
+          in: query
+          description: Filter role pengguna (user, guru, admin)
+          schema:
+            type: string
+            enum: [user, guru, admin]
+        - name: bidang
+          in: query
+          description: Filter bidang peminatan (it, science, math, english, arabic)
+          schema:
+            type: string
+        - name: level
+          in: query
+          description: Filter tingkatan level (A1, A2, B1, B2, C1, C2)
+          schema:
+            type: string
+        - name: is_active
+          in: query
+          description: Filter status keaktifan user
+          schema:
+            type: boolean
+        - name: per_page
+          in: query
+          description: Jumlah baris data per halaman
+          schema:
+            type: integer
+            default: 15
+      responses:
+        '200':
+          description: Daftar pengguna berhasil dimuat.
+    post:
+      tags:
+        - Admin - Manajemen User
+      summary: Membuat pengguna baru
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+      responses:
+        '201':
+          description: Pengguna baru berhasil didaftarkan.
+        '422':
+          description: Validasi input gagal.
+
+  /api/admin/v1/users/{user}:
+    get:
+      tags:
+        - Admin - Manajemen User
+      summary: Mengambil detail profil dan riwayat pengerjaan user tertentu
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user
+          in: path
+          required: true
+          description: ID pengguna
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detail user berhasil dimuat.
+        '404':
+          description: User tidak ditemukan.
+    put:
+      tags:
+        - Admin - Manajemen User
+      summary: Memperbarui data pengguna
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+      responses:
+        '200':
+          description: Data pengguna berhasil diperbarui.
+    delete:
+      tags:
+        - Admin - Manajemen User
+      summary: Menghapus pengguna
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Pengguna berhasil dihapus.
+
+  /api/admin/v1/users/{user}/toggle-active:
+    post:
+      tags:
+        - Admin - Manajemen User
+      summary: Mengaktifkan atau menonaktifkan status akun pengguna
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Status keaktifan akun berhasil diubah.
+
+  /api/admin/v1/users/{user}/level:
+    put:
+      tags:
+        - Admin - Manajemen User
+      summary: Memperbarui tingkat level siswa
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - level
+              properties:
+                level:
+                  type: string
+                  example: B1
+      responses:
+        '200':
+          description: Level siswa berhasil diperbarui.
+
+  # ============================================================
+  # ADMIN: PAKET SOAL PR
+  # ============================================================
+  /api/admin/v1/packages:
+    get:
+      tags:
+        - Admin - Paket Soal PR
+      summary: Daftar seluruh paket soal PR pekanan
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: bidang
+          in: query
+          schema:
+            type: string
+        - name: level
+          in: query
+          schema:
+            type: string
+        - name: is_active
+          in: query
+          schema:
+            type: boolean
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+      responses:
+        '200':
+          description: Daftar paket soal berhasil dimuat.
+    post:
+      tags:
+        - Admin - Paket Soal PR
+      summary: Membuat paket soal PR baru
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackageCreateRequest'
+      responses:
+        '201':
+          description: Paket soal berhasil dibuat.
+
+  /api/admin/v1/packages/{package}:
+    get:
+      tags:
+        - Admin - Paket Soal PR
+      summary: Mengambil detail paket soal lengkap beserta butir pertanyaan dan kartu
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: package
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detail paket soal berhasil dimuat.
+    put:
+      tags:
+        - Admin - Paket Soal PR
+      summary: Memperbarui konfigurasi atau butir soal pada paket
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: package
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackageUpdateRequest'
+      responses:
+        '200':
+          description: Paket soal berhasil diperbarui.
+    delete:
+      tags:
+        - Admin - Paket Soal PR
+      summary: Menghapus paket soal
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: package
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Paket soal berhasil dihapus.
+
+  # ============================================================
+  # ADMIN: STATISTIK LATIHAN
+  # ============================================================
+  /api/admin/v1/practice-statistics:
+    get:
+      tags:
+        - Admin - Statistik Siswa
+      summary: Monitoring hasil pengerjaan seluruh siswa
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: package_id
+          in: query
+          schema:
+            type: integer
+        - name: user_id
+          in: query
+          schema:
+            type: integer
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+      responses:
+        '200':
+          description: Data statistik pengerjaan berhasil dimuat.
+
+  /api/admin/v1/practice-statistics/{session}:
+    get:
+      tags:
+        - Admin - Statistik Siswa
+      summary: Detail evaluasi lembar jawaban satu sesi pengerjaan siswa
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: session
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detail sesi latihan berhasil dimuat.
+
+  # ============================================================
+  # ADMIN: PENGAJUAN IZIN
+  # ============================================================
+  /api/admin/v1/leave-requests:
+    get:
+      tags:
+        - Admin - Pengajuan Izin
+      summary: Daftar permohonan izin siswa beserta rekap status
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, approved, rejected]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Rekap pengajuan izin berhasil dimuat.
+
+  /api/admin/v1/leave-requests/{id}:
+    get:
+      tags:
+        - Admin - Pengajuan Izin
+      summary: Detail satu berkas pengajuan izin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detail izin berhasil dimuat.
+
+  /api/admin/v1/leave-requests/{id}/status:
+    put:
+      tags:
+        - Admin - Pengajuan Izin
+      summary: Menyetujui atau menolak permohonan izin siswa
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [approved, rejected]
+                  example: approved
+                admin_note:
+                  type: string
+                  maxLength: 500
+                  example: Surat dokter valid dan telah disetujui.
+      responses:
+        '200':
+          description: Status pengajuan izin berhasil diperbarui.
+
+  # ============================================================
+  # ADMIN: NOTIFIKASI
+  # ============================================================
+  /api/admin/v1/notifications:
+    get:
+      tags:
+        - Admin - Notifikasi
+      summary: Daftar notifikasi sistem
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          description: Filter khusus ID user tertentu (hanya berlaku untuk admin)
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Notifikasi berhasil dimuat.
+
+  /api/admin/v1/notifications/unread-count:
+    get:
+      tags:
+        - Admin - Notifikasi
+      summary: Jumlah notifikasi yang belum dibaca
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Jumlah notifikasi belum dibaca.
+
+  /api/admin/v1/notifications/send:
+    post:
+      tags:
+        - Admin - Notifikasi
+      summary: Mengirim notifikasi ke user tertentu atau siaran (broadcast) massal
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - target
+                - title
+                - message
+              properties:
+                target:
+                  type: string
+                  enum: [user, all]
+                  example: user
+                user_id:
+                  type: integer
+                  description: Wajib diisi jika target bernilai 'user'
+                  example: 5
+                title:
+                  type: string
+                  example: Pengingat Tugas Pekan 3
+                message:
+                  type: string
+                  example: Harap selesaikan PR Matematika sebelum hari Jumat pukul 19:00 WIB.
+                type:
+                  type: string
+                  enum: [info, warning, success, leave, announcement]
+                  default: info
+      responses:
+        '201':
+          description: Notifikasi berhasil dikirim.
+
+  # ============================================================
+  # ADMIN: PENGUMUMAN
+  # ============================================================
+  /api/admin/v1/announcements:
+    get:
+      tags:
+        - Admin - Pengumuman
+      summary: Daftar pengumuman sekolah
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: is_active
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Daftar pengumuman berhasil dimuat.
+    post:
+      tags:
+        - Admin - Pengumuman
+      summary: Menerbitkan pengumuman baru
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+              properties:
+                title:
+                  type: string
+                  example: Jadwal Try Out Akbar 2026
+                content:
+                  type: string
+                  example: Try Out akan dilaksanakan secara serentak pada hari Minggu pukul 08:00 WIB.
+                priority:
+                  type: string
+                  enum: [normal, penting, urgent]
+                  default: normal
+                is_active:
+                  type: boolean
+                  default: true
+      responses:
+        '201':
+          description: Pengumuman berhasil diterbitkan.
+
+  /api/admin/v1/announcements/{announcement}:
+    get:
+      tags:
+        - Admin - Pengumuman
+      summary: Detail pengumuman
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: announcement
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detail pengumuman berhasil dimuat.
+    put:
+      tags:
+        - Admin - Pengumuman
+      summary: Memperbarui pengumuman
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: announcement
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+                priority:
+                  type: string
+                  enum: [normal, penting, urgent]
+                is_active:
+                  type: boolean
+      responses:
+        '200':
+          description: Pengumuman berhasil diperbarui.
+    delete:
+      tags:
+        - Admin - Pengumuman
+      summary: Menghapus pengumuman
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: announcement
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Pengumuman berhasil dihapus.
+
+  # ============================================================
+  # ADMIN: LOG LOGIN & PROFIL
+  # ============================================================
+  /api/admin/v1/login-logs:
+    get:
+      tags:
+        - Admin - Log Login
+      summary: Riwayat audit login seluruh pengguna
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Riwayat log login berhasil dimuat.
+
+  /api/admin/v1/profile:
+    get:
+      tags:
+        - Admin - Profil
+      summary: Informasi profil akun Administrator yang sedang aktif
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profil admin berhasil dimuat.
+
+  # ============================================================
+  # USER / SISWA: DASHBOARD & PROFIL
+  # ============================================================
+  /api/user/v1/dashboard:
+    get:
+      tags:
+        - User - Dashboard
+      summary: Mengambil data beranda siswa (statistik pengerjaan, poin gamifikasi, dan paket terbaru)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Data dashboard siswa berhasil dimuat.
+
+  /api/user/v1/profile:
+    get:
+      tags:
+        - User - Profil
+      summary: Mengambil profil lengkap siswa terotentikasi (IDOR-safe)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profil siswa berhasil dimuat.
+
+  # ============================================================
+  # USER / SISWA: PAKET SOAL PR
+  # ============================================================
+  /api/user/v1/packages:
+    get:
+      tags:
+        - User - Paket Soal PR
+      summary: Mengambil daftar tugas PR yang ditugaskan kepada siswa
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: bidang
+          in: query
+          schema:
+            type: string
+        - name: kelas
+          in: query
+          schema:
+            type: string
+        - name: level
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Daftar paket PR siswa berhasil dimuat.
+
+  /api/user/v1/packages/{package}:
+    get:
+      tags:
+        - User - Paket Soal PR
+      summary: Mengambil ringkasan paket PR dan daftar kartu soal
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: package
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Informasi paket PR berhasil dimuat.
+
+  # ============================================================
+  # USER / SISWA: PENGERJAAN PR & RIWAYAT
+  # ============================================================
+  /api/user/v1/practice/history:
+    get:
+      tags:
+        - User - Pengerjaan PR
+      summary: Riwayat tugas PR yang telah selesai dikerjakan siswa
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Riwayat latihan berhasil dimuat.
+
+  /api/user/v1/practice/statistics:
+    get:
+      tags:
+        - User - Pengerjaan PR
+      summary: Statistik performa belajar siswa (akurasi, rata-rata nilai, total soal terjawab)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Statistik performa belajar berhasil dimuat.
+
+  /api/user/v1/practice/start/{package}:
+    post:
+      tags:
+        - User - Pengerjaan PR
+      summary: Memulai atau melanjutkan sesi pengerjaan PR (Protected Anti-Cheat)
+      description: Membuka sesi pengerjaan tugas PR. Siswa hanya diizinkan mengerjakan 1 kali percobaan per pekan (1-attempt restriction). Kunci jawaban dan pembahasan tidak akan dibocorkan pada payload ini.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: package
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                card_id:
+                  type: string
+                  example: card-1
+      responses:
+        '201':
+          description: Sesi latihan berhasil dimulai dan butir soal siap dikerjakan.
+        '400':
+          description: Paket belum dibuka, telah berakhir, atau sudah pernah dikerjakan.
+        '403':
+          description: Akses ditolak karena paket tidak sesuai bidang/level siswa.
+
+  /api/user/v1/practice/submit/{session}:
+    post:
+      tags:
+        - User - Pengerjaan PR
+      summary: Mengumpulkan jawaban tugas PR dan menghitung nilai otomatis
+      description: Mengirimkan lembar jawaban siswa. Sistem akan otomatis menilai jawaban pilihan ganda dan isian singkat dengan normalisasi toleransi karakter, lalu mencatat skor serta durasi pengerjaan.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: session
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - answers
+              properties:
+                duration_seconds:
+                  type: integer
+                  example: 1240
+                answers:
+                  type: object
+                  description: Objek atau array jawaban siswa (indeks soal => jawaban)
+                  example:
+                    "0": "A"
+                    "1": "B"
+                    "2": "42"
+      responses:
+        '200':
+          description: Jawaban berhasil dinilai dan skor pengerjaan disimpan.
+        '400':
+          description: Sesi tugas sudah pernah dikumpulkan sebelumnya.
+        '403':
+          description: Akses ditolak (sesi bukan milik siswa yang login).
+
+  /api/user/v1/practice/{session}:
+    get:
+      tags:
+        - User - Pengerjaan PR
+      summary: Review detail hasil pengerjaan PR dan koreksi lembar jawaban
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: session
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Hasil evaluasi tugas PR berhasil dimuat.
+
+  # ============================================================
+  # USER / SISWA: LEADERBOARD & ANALITIK
+  # ============================================================
+  /api/user/v1/leaderboard:
+    get:
+      tags:
+        - User - Leaderboard
+      summary: Mengambil klasemen papan peringkat siswa (Leaderboard)
+      description: Mendukung filter multi-dimensi per Bidang, Kelas, dan Level siswa. Secara otomatis memfilter ke kelompok belajar siswa login secara default.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: bidang
+          in: query
+          description: Filter bidang (it, science, math, english, arabic atau 'all')
+          schema:
+            type: string
+            example: math
+        - name: kelas
+          in: query
+          description: Filter kelas siswa (misal 7, 8, 9 atau 'all')
+          schema:
+            type: string
+            example: 7
+        - name: level
+          in: query
+          description: Filter level (A1, A2, B1, B2, C1, C2 atau 'all')
+          schema:
+            type: string
+            example: A1
+      responses:
+        '200':
+          description: Data papan peringkat berhasil dimuat.
+
+  /api/user/v1/analytics:
+    get:
+      tags:
+        - User - Analitik
+      summary: Analisis performa belajar dan riwayat nilai berkala
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Data grafik dan analitik belajar berhasil dimuat.
+
+  # ============================================================
+  # USER / SISWA: PENGAJUAN IZIN
+  # ============================================================
+  /api/user/v1/leave-requests:
+    get:
+      tags:
+        - User - Pengajuan Izin
+      summary: Riwayat permohonan izin yang pernah diajukan siswa
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Daftar izin berhasil dimuat.
+    post:
+      tags:
+        - User - Pengajuan Izin
+      summary: Mengajukan dispensasi / izin baru
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reason
+              properties:
+                reason:
+                  type: string
+                  minLength: 3
+                  maxLength: 1000
+                  example: Izin tidak dapat mengikuti tugas PR pekan ini karena sakit demam berdarah dan rawat inap.
+                proof_file:
+                  type: string
+                  description: URL dokumen surat dokter atau bukti keterangan
+                  example: https://storage.kpmacademic.io/leave-proofs/surat-dokter.pdf
+      responses:
+        '201':
+          description: Permohonan izin berhasil dikirimkan ke administrator.
+
+  # ============================================================
+  # USER / SISWA: NOTIFIKASI
+  # ============================================================
+  /api/user/v1/notifications:
+    get:
+      tags:
+        - User - Notifikasi
+      summary: Daftar notifikasi masuk milik siswa
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Notifikasi berhasil dimuat.
+
+  /api/user/v1/notifications/unread-count:
+    get:
+      tags:
+        - User - Notifikasi
+      summary: Menghitung jumlah pesan notifikasi belum dibaca
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Total jumlah pesan belum dibaca.
+
+  /api/user/v1/notifications/{notification}/read:
+    post:
+      tags:
+        - User - Notifikasi
+      summary: Menandai satu notifikasi telah dibaca
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: notification
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Notifikasi berhasil ditandai telah dibaca.
+
+  /api/user/v1/notifications/read-all:
+    post:
+      tags:
+        - User - Notifikasi
+      summary: Menandai seluruh notifikasi siswa sebagai telah dibaca
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Seluruh notifikasi berhasil ditandai telah dibaca.
+
+  # ============================================================
+  # USER / SISWA: PENGUMUMAN
+  # ============================================================
+  /api/user/v1/announcements:
+    get:
+      tags:
+        - User - Pengumuman
+      summary: Mengambil daftar pengumuman resmi sekolah
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Daftar pengumuman berhasil dimuat.
+
+  /api/user/v1/announcements/{announcement}:
+    get:
+      tags:
+        - User - Pengumuman
+      summary: Melihat isi lengkap pengumuman
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: announcement
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detail pengumuman berhasil dimuat.
+
+  # ============================================================
+  # SATELIT INTEGRATION
+  # ============================================================
+  /api/satellite/practice-statistics:
+    get:
+      tags:
+        - Satelit - Integrasi Web Induk
+      summary: Ekspor statistik latihan untuk Web Induk
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Data statistik satelit berhasil dimuat.
+
+  /api/satellite/packages:
+    get:
+      tags:
+        - Satelit - Integrasi Web Induk
+      summary: Ekspor paket aktif untuk deteksi hitungan PR mingguan
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Daftar paket satelit berhasil dimuat.
+
+  /api/satellite/users:
+    get:
+      tags:
+        - Satelit - Integrasi Web Induk
+      summary: Ekspor data user untuk verifikasi Web Induk
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Data user satelit berhasil dimuat.
+
+  /api/satellite/weekly-report/sync:
+    post:
+      tags:
+        - Satelit - Integrasi Web Induk
+      summary: Sinkronisasi laporan mingguan dari satelit
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reports
+              properties:
+                reports:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: Laporan berhasil disinkronkan.
+
+  /api/satellite/users/sync:
+    post:
+      tags:
+        - Satelit - Integrasi Web Induk
+      summary: Sinkronisasi realtime satu user dari Web Induk
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - name
+              properties:
+                email:
+                  type: string
+                name:
+                  type: string
+      responses:
+        '200':
+          description: Sinkronisasi user berhasil.
+
+  /api/satellite/users/sync-batch:
+    post:
+      tags:
+        - Satelit - Integrasi Web Induk
+      summary: Sinkronisasi massal (batch) user dari Web Induk
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - users
+              properties:
+                users:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: Batch user berhasil disinkronkan.
+
+  /api/satellite/users/delete:
+    post:
+      tags:
+        - Satelit - Integrasi Web Induk
+      summary: Menghapus user berdasarkan instruksi Web Induk
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+      responses:
+        '200':
+          description: User berhasil dihapus.
+
+  /api/satellite/users/clean-orphans:
+    post:
+      tags:
+        - Satelit - Integrasi Web Induk
+      summary: Pembersihan user orphan yang tidak ada di Web Induk
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Data orphan berhasil dibersihkan.
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum Token
+      description: Masukkan token yang didapat dari endpoint `/api/v1/auth/login`. Format header `Authorization: Bearer <token>`.
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+      description: API Key integrasi node satelit dan Web Induk.
+
+  schemas:
+    ApiResponseSuccess:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Operasi berhasil.
+        data:
+          type: object
+
+    ApiErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Kredensial tidak valid atau akses ditolak.
+        errors:
+          type: object
+
+    LoginSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Login berhasil.
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+              example: 1|kpm_sanctum_token_abc123xyz
+            user:
+              $ref: '#/components/schemas/User'
+
+    UserDetailResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Data profil berhasil dimuat.
+        data:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Muhammad Fakhrizal
+        email:
+          type: string
+          format: email
+          example: fakhri@kpm.test
+        role:
+          type: string
+          enum: [user, guru, admin]
+          example: user
+        student_class:
+          type: string
+          example: "8"
+        bidang:
+          type: string
+          example: math
+        level:
+          type: string
+          example: B1
+        school_name:
+          type: string
+          example: SMP Negeri 1 Bogor
+        is_active:
+          type: boolean
+          example: true
+        profile_photo_url:
+          type: string
+          example: https://ui-avatars.com/api/?name=Muhammad+Fakhrizal
+
+    UserCreateRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          example: Siswa Baru
+        email:
+          type: string
+          format: email
+          example: siswa.baru@kpm.test
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: password123
+        role:
+          type: string
+          enum: [user, guru, admin]
+          default: user
+        phone:
+          type: string
+          example: "08123456789"
+        student_class:
+          type: string
+          example: "7"
+        bidang:
+          type: string
+          example: science
+        level:
+          type: string
+          example: A2
+        school_name:
+          type: string
+          example: MTs Negeri 1
+        is_active:
+          type: boolean
+          default: true
+
+    UserUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+        role:
+          type: string
+          enum: [user, guru, admin]
+        student_class:
+          type: string
+        bidang:
+          type: string
+        level:
+          type: string
+        school_name:
+          type: string
+        is_active:
+          type: boolean
+
+    PackageCreateRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          example: PR Pekanan 3 - Aljabar Dasar
+        description:
+          type: string
+          example: Latihan soal pemahaman aljabar linier satu variabel.
+        kelas:
+          type: string
+          example: "7"
+        bidang:
+          type: string
+          enum: [it, science, math, english, arabic]
+          example: math
+        level:
+          type: string
+          enum: [pemula, menengah, mahir]
+          example: pemula
+        start_date:
+          type: string
+          format: date
+          example: "2026-11-20"
+        end_date:
+          type: string
+          format: date
+          example: "2026-11-27"
+        start_time:
+          type: string
+          example: "08:00:00"
+        end_time:
+          type: string
+          example: "19:00:00"
+        show_answer_key:
+          type: boolean
+          default: true
+        show_explanation:
+          type: boolean
+          default: false
+        show_score:
+          type: boolean
+          default: true
+        is_active:
+          type: boolean
+          default: true
+        cards:
+          type: array
+          items:
+            type: object
+        questions:
+          type: array
+          items:
+            type: object
+
+    PackageUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        kelas:
+          type: string
+        bidang:
+          type: string
+        level:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        is_active:
+          type: boolean
+        show_answer_key:
+          type: boolean
+        show_explanation:
+          type: boolean
+        show_score:
+          type: boolean
+        cards:
+          type: array
+          items:
+            type: object
+        questions:
+          type: array
+          items:
+            type: object

@@ -475,4 +475,291 @@ class ApiEndpointsTest extends TestCase
         $this->assertSame(1, $first['questions_count']);
         $this->assertStringNotContainsString('correct_answer', $response->getContent());
     }
+
+    // ==========================================
+    // WRITE OPERATIONS TESTS (ADMIN & USER)
+    // ==========================================
+
+    public function test_admin_can_perform_user_write_operations(): void
+    {
+        $token = $this->admin->createToken('admin-test')->plainTextToken;
+        $headers = ['Authorization' => 'Bearer ' . $token];
+
+        // 1. Create User
+        $createRes = $this->withHeaders($headers)->postJson(route('api.admin.users.store'), [
+            'name' => 'Siswa API Test',
+            'email' => 'siswa.api.test@kpm.test',
+            'password' => 'secret1234',
+            'role' => 'user',
+            'bidang' => 'math',
+            'level' => 'A1',
+            'student_class' => '7',
+        ]);
+        $createRes->assertStatus(201)
+            ->assertJsonPath('data.email', 'siswa.api.test@kpm.test');
+
+        $userId = $createRes->json('data.id');
+
+        // 2. Update User
+        $updateRes = $this->withHeaders($headers)->putJson(route('api.admin.users.update', $userId), [
+            'name' => 'Siswa API Test Updated',
+            'school_name' => 'SMP IT KPM',
+        ]);
+        $updateRes->assertOk()
+            ->assertJsonPath('data.name', 'Siswa API Test Updated')
+            ->assertJsonPath('data.school_name', 'SMP IT KPM');
+
+        // 3. Toggle Active
+        $toggleRes = $this->withHeaders($headers)->postJson(route('api.admin.users.toggle-active', $userId));
+        $toggleRes->assertOk()
+            ->assertJsonPath('data.is_active', false);
+
+        // 4. Update Level
+        $levelRes = $this->withHeaders($headers)->putJson(route('api.admin.users.update-level', $userId), [
+            'level' => 'B2',
+        ]);
+        $levelRes->assertOk()
+            ->assertJsonPath('data.level', 'B2');
+
+        // 5. Delete User
+        $deleteRes = $this->withHeaders($headers)->deleteJson(route('api.admin.users.destroy', $userId));
+        $deleteRes->assertOk();
+        $this->assertDatabaseMissing('users', ['id' => $userId]);
+    }
+
+    public function test_admin_can_perform_package_write_operations(): void
+    {
+        $token = $this->admin->createToken('admin-test')->plainTextToken;
+        $headers = ['Authorization' => 'Bearer ' . $token];
+
+        // 1. Create Package
+        $createRes = $this->withHeaders($headers)->postJson(route('api.admin.packages.store'), [
+            'title' => 'Paket API Test',
+            'description' => 'Deskripsi paket API test',
+            'bidang' => 'science',
+            'level' => 'pemula',
+            'kelas' => '8',
+            'questions' => [
+                [
+                    'id' => 'q-1',
+                    'question' => 'Berapa 10 + 10?',
+                    'options' => ['A' => '20', 'B' => '15'],
+                    'type' => 'pilihan_ganda',
+                    'correct_answer' => 'A',
+                ],
+            ],
+        ]);
+        $createRes->assertStatus(201)
+            ->assertJsonPath('data.title', 'Paket API Test');
+
+        $packageId = $createRes->json('data.id');
+
+        // 2. Update Package
+        $updateRes = $this->withHeaders($headers)->putJson(route('api.admin.packages.update', $packageId), [
+            'title' => 'Paket API Test Updated',
+        ]);
+        $updateRes->assertOk()
+            ->assertJsonPath('data.title', 'Paket API Test Updated');
+
+        // 3. Delete Package
+        $deleteRes = $this->withHeaders($headers)->deleteJson(route('api.admin.packages.destroy', $packageId));
+        $deleteRes->assertOk();
+        $this->assertDatabaseMissing('packages', ['id' => $packageId]);
+    }
+
+    public function test_admin_can_update_leave_request_status(): void
+    {
+        $token = $this->admin->createToken('admin-test')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->putJson(route('api.admin.leave-requests.update-status', $this->leaveRequest->id), [
+                'status' => 'approved',
+                'admin_note' => 'Izin disetujui untuk pekan ini.',
+            ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.status', 'approved')
+            ->assertJsonPath('data.admin_note', 'Izin disetujui untuk pekan ini.');
+
+        $this->assertSame('approved', $this->leaveRequest->fresh()->status);
+    }
+
+    public function test_admin_can_send_notifications(): void
+    {
+        $token = $this->admin->createToken('admin-test')->plainTextToken;
+
+        // Kirim ke spesifik user
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->postJson(route('api.admin.notifications.send'), [
+                'target' => 'user',
+                'user_id' => $this->user->id,
+                'title' => 'Pengingat PR Pekanan',
+                'message' => 'Jangan lupa kerjakan PR pekan ini!',
+                'type' => 'info',
+            ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.title', 'Pengingat PR Pekanan');
+
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $this->user->id,
+            'title' => 'Pengingat PR Pekanan',
+        ]);
+    }
+
+    public function test_admin_can_manage_announcements(): void
+    {
+        $token = $this->admin->createToken('admin-test')->plainTextToken;
+        $headers = ['Authorization' => 'Bearer ' . $token];
+
+        // 1. Create Announcement
+        $createRes = $this->withHeaders($headers)->postJson(route('api.admin.announcements.store'), [
+            'title' => 'Pengumuman Ujian',
+            'content' => 'Ujian akhir semester akan diadakan pekan depan.',
+            'priority' => 'penting',
+            'is_active' => true,
+        ]);
+        $createRes->assertStatus(201)
+            ->assertJsonPath('data.title', 'Pengumuman Ujian');
+
+        $announcementId = $createRes->json('data.id');
+
+        // 2. Update Announcement
+        $updateRes = $this->withHeaders($headers)->putJson(route('api.admin.announcements.update', $announcementId), [
+            'title' => 'Pengumuman Ujian Semester Genap',
+        ]);
+        $updateRes->assertOk()
+            ->assertJsonPath('data.title', 'Pengumuman Ujian Semester Genap');
+
+        // 3. Delete Announcement
+        $deleteRes = $this->withHeaders($headers)->deleteJson(route('api.admin.announcements.destroy', $announcementId));
+        $deleteRes->assertOk();
+        $this->assertDatabaseMissing('announcements', ['id' => $announcementId]);
+    }
+
+    public function test_user_can_submit_leave_request(): void
+    {
+        $token = $this->user->createToken('student-token')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->postJson(route('api.user.leave-requests.store'), [
+                'reason' => 'Izin tidak dapat hadir karena sakit tipes selama 3 hari.',
+            ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.user_id', $this->user->id)
+            ->assertJsonPath('data.status', 'pending');
+
+        $this->assertDatabaseHas('leave_requests', [
+            'user_id' => $this->user->id,
+            'reason' => 'Izin tidak dapat hadir karena sakit tipes selama 3 hari.',
+        ]);
+    }
+
+    public function test_user_can_start_and_submit_practice_session(): void
+    {
+        // Paket tanpa pembatasan kelas/level/bidang agar matchesStudent() selalu allowed
+        $testPackage = Package::create([
+            'title' => 'PR Latihan API Open',
+            'description' => 'Latihan tanpa pembatasan',
+            'kelas' => '',      // kosong = tidak dibatasi kelas
+            'bidang' => '',     // kosong = tidak dibatasi bidang
+            'level' => '',      // kosong = tidak dibatasi level
+            'start_date' => now()->subDay()->toDateString(),
+            'end_date' => now()->addDays(5)->toDateString(),
+            'is_active' => true,
+            'questions' => [
+                [
+                    'id' => 'q-1',
+                    'question' => 'Berapa 5 + 5?',
+                    'options' => ['A' => '10', 'B' => '12'],
+                    'type' => 'pilihan_ganda',
+                    'correct_answer' => 'A',
+                ],
+                [
+                    'id' => 'q-2',
+                    'question' => 'Berapa 10 * 2?',
+                    'options' => ['A' => '15', 'B' => '20'],
+                    'type' => 'pilihan_ganda',
+                    'correct_answer' => 'B',
+                ],
+            ],
+        ]);
+
+        $token = $this->user->createToken('student-token')->plainTextToken;
+        $headers = ['Authorization' => 'Bearer ' . $token];
+
+        // 1. Start Practice Session
+        $startRes = $this->withHeaders($headers)->postJson(route('api.user.practice.start', $testPackage->id));
+        $startRes->assertStatus(201)
+            ->assertJsonStructure(['success', 'data' => ['session', 'package', 'questions']]);
+
+        // Pastikan attempt payload tidak bocor correct_answer ke siswa
+        $this->assertStringNotContainsString('correct_answer', $startRes->getContent());
+
+        $sessionId = $startRes->json('data.session.id');
+
+        // 2. Submit Answers
+        $submitRes = $this->withHeaders($headers)->postJson(route('api.user.practice.submit', $sessionId), [
+            'duration_seconds' => 300,
+            'answers' => [
+                '0' => 'A', // Benar
+                '1' => 'B', // Benar
+            ],
+        ]);
+
+        $submitRes->assertOk()
+            ->assertJsonPath('data.session.correct_answer', 2)
+            ->assertJsonPath('data.session.wrong_answer', 0);
+
+        // Pastikan skor disimpan di DB
+        $this->assertSame('completed', \App\Models\PracticeSession::find($sessionId)->status);
+    }
+
+    public function test_user_can_mark_notifications_as_read(): void
+    {
+        $token = $this->user->createToken('student-token')->plainTextToken;
+        $headers = ['Authorization' => 'Bearer ' . $token];
+
+        $notif = Notification::create([
+            'user_id' => $this->user->id,
+            'title' => 'Test Notif',
+            'message' => 'Pesan notif test',
+            'type' => 'info',
+        ]);
+
+        // Mark single read
+        $res = $this->withHeaders($headers)->postJson(route('api.user.notifications.read', $notif->id));
+        $res->assertOk();
+        $this->assertNotNull($notif->fresh()->read_at);
+
+        // Mark all read
+        $resAll = $this->withHeaders($headers)->postJson(route('api.user.notifications.read-all'));
+        $resAll->assertOk();
+    }
+
+    public function test_swagger_documentation_endpoint_is_accessible(): void
+    {
+        // Pastikan file Swagger UI dan OpenAPI YAML ada di filesystem
+        $this->assertFileExists(public_path('api-docs/index.html'));
+        $this->assertFileExists(public_path('api-docs/openapi.yaml'));
+
+        // Verifikasi konten file HTML mengandung elemen Swagger UI
+        $htmlContent = file_get_contents(public_path('api-docs/index.html'));
+        $this->assertStringContainsString('KPM Smart API Documentation', $htmlContent);
+        $this->assertStringContainsString('swagger-ui', $htmlContent);
+
+        // Verifikasi konten YAML mengandung definisi API yang benar
+        $yamlContent = file_get_contents(public_path('api-docs/openapi.yaml'));
+        $this->assertStringContainsString('openapi: 3.0.3', $yamlContent);
+        $this->assertStringContainsString('/api/v1/auth/login', $yamlContent);
+        $this->assertStringContainsString('/api/admin/v1/', $yamlContent);
+        $this->assertStringContainsString('/api/user/v1/', $yamlContent);
+
+        // Test bahwa endpoint /swagger-ui dapat diakses (route di luar api/* prefix)
+        $response = $this->get('/swagger-ui');
+        $response->assertOk();
+    }
 }
+
+

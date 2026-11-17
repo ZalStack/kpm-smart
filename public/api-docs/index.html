@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KPM Smart API Documentation | Swagger UI</title>
+  <link rel="icon" type="image/png" href="https://ui-avatars.com/api/?name=KPM+API&background=1E88E5&color=fff&size=64&bold=true">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1E88E5;
+      --primary-dark: #1565C0;
+      --primary-light: #E3F2FD;
+      --accent: #10B981;
+      --slate-900: #0F172A;
+      --slate-800: #1E293B;
+      --slate-700: #334155;
+      --slate-100: #F1F5F9;
+      --slate-50: #F8FAFC;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #F8FAFC;
+      color: #1E293B;
+      min-height: 100vh;
+    }
+
+    /* Custom Header */
+    .api-header {
+      background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+      color: #FFFFFF;
+      padding: 1.5rem 2rem;
+      border-bottom: 3px solid var(--primary);
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.25);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1E88E5 0%, #3B82F6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: #FFFFFF;
+      box-shadow: 0 8px 16px -4px rgba(30, 136, 229, 0.4);
+    }
+
+    .brand-text h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .brand-text p {
+      font-size: 0.825rem;
+      color: #94A3B8;
+      margin-top: 0.15rem;
+    }
+
+    .badge-version {
+      background: rgba(30, 136, 229, 0.2);
+      color: #60A5FA;
+      border: 1px solid rgba(96, 165, 250, 0.3);
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.55rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #1E88E5;
+      color: #FFFFFF;
+      border: 1px solid transparent;
+    }
+    .btn-primary:hover {
+      background: #1565C0;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.05);
+      color: #E2E8F0;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Auth Quick Guide Banner */
+    .guide-banner {
+      max-width: 1400px;
+      margin: 1.5rem auto 0;
+      padding: 0 1.5rem;
+    }
+
+    .guide-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-left: 4px solid var(--primary);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .guide-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--slate-900);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .guide-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      font-size: 0.825rem;
+      color: var(--slate-700);
+    }
+
+    .step-item {
+      background: var(--slate-50);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border: 1px solid #E2E8F0;
+    }
+
+    .step-item strong {
+      color: var(--primary-dark);
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      background: #E2E8F0;
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.8em;
+      color: #0F172A;
+    }
+
+    /* Swagger UI Container */
+    #swagger-ui {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem 4rem;
+    }
+
+    /* Custom Swagger UI Tweaks */
+    .swagger-ui .topbar {
+      display: none !important;
+    }
+
+    .swagger-ui .info {
+      margin: 2rem 0 !important;
+    }
+
+    .swagger-ui .info .title {
+      font-family: 'Plus Jakarta Sans', sans-serif !important;
+      font-weight: 800 !important;
+      color: var(--slate-900) !important;
+    }
+
+    .swagger-ui .scheme-container {
+      background: #FFFFFF !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 12px !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+      padding: 1rem 1.5rem !important;
+      margin-bottom: 2rem !important;
+    }
+
+    .swagger-ui .opblock {
+      border-radius: 10px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      margin-bottom: 0.75rem !important;
+    }
+
+    .swagger-ui .opblock .opblock-summary {
+      padding: 0.75rem 1rem !important;
+    }
+
+    .swagger-ui .opblock .opblock-summary-method {
+      border-radius: 6px !important;
+      font-family: 'JetBrains Mono', monospace !important;
+      font-weight: 700 !important;
+      font-size: 0.75rem !important;
+      min-width: 70px !important;
+    }
+
+    .swagger-ui .btn.authorize {
+      background: #10B981 !important;
+      border-color: #10B981 !important;
+      color: #FFFFFF !important;
+      border-radius: 8px !important;
+      font-weight: 700 !important;
+      font-family: 'Plus Jakarta Sans', sans-serif !important;
+    }
+
+    .swagger-ui .btn.authorize svg {
+      fill: #FFFFFF !important;
+    }
+
+    @media (max-width: 768px) {
+      .api-header {
+        padding: 1rem;
+      }
+      .header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .header-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="api-header">
+    <div class="header-inner">
+      <div class="brand-section">
+        <div class="brand-logo">KPM</div>
+        <div class="brand-text">
+          <h1>
+            KPM Smart API Documentation
+            <span class="badge-version">v1.0.0</span>
+          </h1>
+          <p>Sistem API Terpadu: Admin, Guru, Siswa & Integrasi Satelit</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="/api-docs/openapi.yaml" target="_blank" class="btn-action btn-outline">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Unduh YAML
+        </a>
+        <a href="/" class="btn-action btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Kembali ke Aplikasi
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Quick Start Auth Guide -->
+  <div class="guide-banner">
+    <div class="guide-card">
+      <div class="guide-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        Panduan Cepat Pengujian API (Authorize)
+      </div>
+      <div class="guide-steps">
+        <div class="step-item">
+          <strong>1. Dapatkan Token</strong>
+          Buka endpoint <code>POST /api/v1/auth/login</code> di bawah, isi email dan password, lalu klik <em>Execute</em>. Salin <code>data.token</code> dari respons.
+        </div>
+        <div class="step-item">
+          <strong>2. Klik Tombol Authorize</strong>
+          Klik tombol hijau <strong>Authorize</strong> di bawah, lalu masukkan token pada <code>BearerAuth</code>: <code>&lt;token_sanctum&gt;</code>.
+        </div>
+        <div class="step-item">
+          <strong>3. Role-Based Permissions</strong>
+          Endpoint <code>/api/admin/v1/*</code> memerlukan token akun role admin. Endpoint <code>/api/user/v1/*</code> berlaku untuk semua siswa aktif.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Swagger UI Root Container -->
+  <div id="swagger-ui"></div>
+
+  <!-- Swagger UI Bundle & Standalone JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-standalone-preset.min.js"></script>
+
+  <script>
+    window.onload = function() {
+      window.ui = SwaggerUIBundle({
+        url: "/api-docs/openapi.yaml",
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        plugins: [
+          SwaggerUIBundle.plugins.DownloadUrl
+        ],
+        layout: "BaseLayout",
+        defaultModelsExpandDepth: 1,
+        defaultModelExpandDepth: 1,
+        docExpansion: "list",
+        filter: true,
+        persistAuthorization: true,
+        displayRequestDuration: true,
+        tryItOutEnabled: true,
+        requestSnippetsEnabled: true
+      });
+    };
+  </script>
+</body>
+</html>

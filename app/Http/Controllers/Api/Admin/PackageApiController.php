@@ -4,11 +4,22 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\BaseApiController;
 use App\Models\Package;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PackageApiController extends BaseApiController
 {
+    /**
+     * Cegah role guru melakukan perubahan data (hanya pantau).
+     */
+    protected function ensureNotGuru(): void
+    {
+        if (Auth::check() && Auth::user()->role === 'guru') {
+            abort(403, 'Akses Terbatas: Role Guru hanya memiliki hak pantau (monitoring) dan tidak dapat memodifikasi data.');
+        }
+    }
+
     /**
      * Get paginated packages list with filters
      */
@@ -75,9 +86,6 @@ class PackageApiController extends BaseApiController
 
     /**
      * Get package detail
-     *
-     * Endpoint ini hanya untuk admin (route dijaga `role:admin`), jadi kunci
-     * jawaban tetap disertakan karena admin memang butuh untuk menyusun soal.
      */
     public function show(Package $package): JsonResponse
     {
@@ -88,5 +96,96 @@ class PackageApiController extends BaseApiController
             'cards_count' => count($package->cards ?? []),
             'questions_count' => count($package->questions ?? []),
         ], 'Detail paket berhasil dimuat.');
+    }
+
+    /**
+     * Create new package
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $this->ensureNotGuru();
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'kelas' => 'nullable|string|max:50',
+            'thumbnail' => 'nullable|string|max:500',
+            'bidang' => 'nullable|string|max:100',
+            'level' => 'nullable|string|max:50',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'start_time' => 'nullable|string|max:8',
+            'end_time' => 'nullable|string|max:8',
+            'show_answer_key' => 'nullable|boolean',
+            'show_explanation' => 'nullable|boolean',
+            'show_score' => 'nullable|boolean',
+            'is_active' => 'nullable|boolean',
+            'cards' => 'nullable|array',
+            'questions' => 'nullable|array',
+        ]);
+
+        $package = Package::create([
+            'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'kelas' => $validated['kelas'] ?? null,
+            'thumbnail' => $validated['thumbnail'] ?? null,
+            'bidang' => $validated['bidang'] ?? null,
+            'level' => $validated['level'] ?? null,
+            'start_date' => $validated['start_date'] ?? null,
+            'end_date' => $validated['end_date'] ?? null,
+            'start_time' => $validated['start_time'] ?? null,
+            'end_time' => $validated['end_time'] ?? null,
+            'show_answer_key' => $validated['show_answer_key'] ?? true,
+            'show_explanation' => $validated['show_explanation'] ?? false,
+            'show_score' => $validated['show_score'] ?? true,
+            'is_active' => $validated['is_active'] ?? true,
+            'cards' => $validated['cards'] ?? [],
+            'questions' => $validated['questions'] ?? [],
+        ]);
+
+        return $this->sendResponse($package, 'Paket soal berhasil dibuat.', 201);
+    }
+
+    /**
+     * Update package
+     */
+    public function update(Request $request, Package $package): JsonResponse
+    {
+        $this->ensureNotGuru();
+
+        $validated = $request->validate([
+            'title' => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string',
+            'kelas' => 'nullable|string|max:50',
+            'thumbnail' => 'nullable|string|max:500',
+            'bidang' => 'nullable|string|max:100',
+            'level' => 'nullable|string|max:50',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'start_time' => 'nullable|string|max:8',
+            'end_time' => 'nullable|string|max:8',
+            'show_answer_key' => 'nullable|boolean',
+            'show_explanation' => 'nullable|boolean',
+            'show_score' => 'nullable|boolean',
+            'is_active' => 'nullable|boolean',
+            'cards' => 'nullable|array',
+            'questions' => 'nullable|array',
+        ]);
+
+        $package->update($validated);
+
+        return $this->sendResponse($package->fresh(), 'Paket soal berhasil diperbarui.');
+    }
+
+    /**
+     * Delete package
+     */
+    public function destroy(Package $package): JsonResponse
+    {
+        $this->ensureNotGuru();
+
+        $package->delete();
+
+        return $this->sendResponse(null, 'Paket soal berhasil dihapus.');
     }
 }

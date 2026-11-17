@@ -93,11 +93,19 @@ Route::prefix('admin/v1')->name('api.admin.')->middleware(['auth:sanctum', 'role
 
     // 2. Users Management
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+    Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
     Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
+    Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+    Route::post('/users/{user}/toggle-active', [AdminUserController::class, 'toggleActive'])->name('users.toggle-active');
+    Route::put('/users/{user}/level', [AdminUserController::class, 'updateLevel'])->name('users.update-level');
 
     // 3. Packages Management (PR Pekanan)
     Route::get('/packages', [AdminPackageController::class, 'index'])->name('packages.index');
+    Route::post('/packages', [AdminPackageController::class, 'store'])->name('packages.store');
     Route::get('/packages/{package}', [AdminPackageController::class, 'show'])->name('packages.show');
+    Route::put('/packages/{package}', [AdminPackageController::class, 'update'])->name('packages.update');
+    Route::delete('/packages/{package}', [AdminPackageController::class, 'destroy'])->name('packages.destroy');
 
     // 4. Practice Statistics (Statistik Siswa)
     Route::get('/practice-statistics', [AdminPracticeStatsController::class, 'index'])->name('practice-statistics.index');
@@ -109,14 +117,19 @@ Route::prefix('admin/v1')->name('api.admin.')->middleware(['auth:sanctum', 'role
     // 6. Leave Requests (Pengajuan Izin)
     Route::get('/leave-requests', [AdminLeaveRequestController::class, 'index'])->name('leave-requests.index');
     Route::get('/leave-requests/{id}', [AdminLeaveRequestController::class, 'show'])->name('leave-requests.show');
+    Route::put('/leave-requests/{id}/status', [AdminLeaveRequestController::class, 'updateStatus'])->name('leave-requests.update-status');
 
     // 7. Notifications (?user_id= honoured untuk admin)
     Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/send', [AdminNotificationController::class, 'send'])->name('notifications.send');
     Route::get('/notifications/unread-count', [AdminNotificationController::class, 'unreadCount'])->name('notifications.unread-count');
 
     // 8. Announcements (Pengumuman)
     Route::get('/announcements', [AdminAnnouncementController::class, 'index'])->name('announcements.index');
+    Route::post('/announcements', [AdminAnnouncementController::class, 'store'])->name('announcements.store');
     Route::get('/announcements/{announcement}', [AdminAnnouncementController::class, 'show'])->name('announcements.show');
+    Route::put('/announcements/{announcement}', [AdminAnnouncementController::class, 'update'])->name('announcements.update');
+    Route::delete('/announcements/{announcement}', [AdminAnnouncementController::class, 'destroy'])->name('announcements.destroy');
 
     // 9. Admin Profile (?user_id= honoured untuk admin)
     Route::get('/profile', [AdminProfileController::class, 'show'])->name('profile');
@@ -138,9 +151,11 @@ Route::prefix('user/v1')->name('api.user.')->middleware('auth:sanctum')->group(f
     Route::get('/packages', [UserPackageController::class, 'index'])->name('packages.index');
     Route::get('/packages/{package}', [UserPackageController::class, 'show'])->name('packages.show');
 
-    // 4. Practice (Riwayat & Statistik)
+    // 4. Practice (Riwayat, Mulai, Kerjakan & Statistik)
     Route::get('/practice/history', [UserPracticeController::class, 'history'])->name('practice.history');
     Route::get('/practice/statistics', [UserPracticeController::class, 'statistics'])->name('practice.statistics');
+    Route::post('/practice/start/{package}', [UserPracticeController::class, 'start'])->name('practice.start');
+    Route::post('/practice/submit/{session}', [UserPracticeController::class, 'submit'])->name('practice.submit');
     Route::get('/practice/{session}', [UserPracticeController::class, 'show'])->name('practice.show');
 
     // 5. Leaderboard
@@ -151,10 +166,13 @@ Route::prefix('user/v1')->name('api.user.')->middleware('auth:sanctum')->group(f
 
     // 7. Leave Requests (Pengajuan Izin)
     Route::get('/leave-requests', [UserLeaveRequestController::class, 'index'])->name('leave-requests.index');
+    Route::post('/leave-requests', [UserLeaveRequestController::class, 'store'])->name('leave-requests.store');
 
     // 8. Notifications
     Route::get('/notifications', [UserNotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/unread-count', [UserNotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+    Route::post('/notifications/{notification}/read', [UserNotificationController::class, 'markRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [UserNotificationController::class, 'markAllRead'])->name('notifications.read-all');
 
     // 9. Announcements (Pengumuman)
     Route::get('/announcements', [UserAnnouncementController::class, 'index'])->name('announcements.index');

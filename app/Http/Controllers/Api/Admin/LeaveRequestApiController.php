@@ -4,11 +4,23 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\BaseApiController;
 use App\Models\LeaveRequest;
-use Illuminate\Http\Request;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LeaveRequestApiController extends BaseApiController
 {
+    /**
+     * Cegah role guru melakukan perubahan data (hanya pantau).
+     */
+    protected function ensureNotGuru(): void
+    {
+        if (Auth::check() && Auth::user()->role === 'guru') {
+            abort(403, 'Akses Terbatas: Role Guru hanya memiliki hak pantau (monitoring) dan tidak dapat memodifikasi data.');
+        }
+    }
+
     /**
      * Get paginated leave requests with count summary
      */
@@ -56,5 +68,46 @@ class LeaveRequestApiController extends BaseApiController
         }
 
         return $this->sendResponse($leaveRequest, 'Detail pengajuan izin berhasil dimuat.');
+    }
+
+    /**
+     * Update leave request status (approved/rejected)
+     */
+    public function updateStatus(Request $request, $id): JsonResponse
+    {
+        $this->ensureNotGuru();
+
+        $leaveRequest = LeaveRequest::with('user')->find($id);
+
+        if (!$leaveRequest) {
+            return $this->sendError('Pengajuan izin tidak ditemukan.', [], 404);
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|in:approved,rejected',
+            'admin_note' => 'nullable|string|max:500',
+        ]);
+
+        $leaveRequest->update([
+            'status' => $validated['status'],
+            'admin_note' => $validated['admin_note'] ?? null,
+        ]);
+
+        $statusLabel = $validated['status'] === 'approved' ? 'Disetujui' : 'Ditolak';
+
+        try {
+            NotificationService::create(
+                $leaveRequest->user_id,
+                'leave',
+                'Pengajuan Izin ' . $statusLabel,
+                'Pengajuan izin anda telah ' . strtolower($statusLabel) . ' oleh admin.',
+                ['leave_request_id' => $leaveRequest->id],
+                false
+            );
+        } catch (\Throwable $e) {
+            // Ignored if email fails
+        }
+
+        return $this->sendResponse($leaveRequest->fresh(), "Pengajuan izin berhasil {$statusLabel}.");
     }
 }

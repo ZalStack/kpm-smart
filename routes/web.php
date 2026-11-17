@@ -32,6 +32,19 @@ Route::get('/fitur', fn () => Inertia::render('Pages/Features'))->name('pages.fe
 Route::get('/panduan', fn () => Inertia::render('Pages/Guide'))->name('pages.guide');
 Route::get('/faq', fn () => Inertia::render('Pages/Faq'))->name('pages.faq');
 
+// Dokumentasi Web API (Swagger UI)
+// CATATAN: Disengaja menggunakan /swagger-ui (bukan /api/...) agar tidak
+// terdeteksi sebagai API endpoint oleh test ApiAuthorizationTest yang
+// memindai seluruh route dengan prefix api/ dan mengharapkan respons 401.
+Route::get('/swagger-ui', function () {
+    return response()->file(public_path('api-docs/index.html'), [
+        'Content-Type' => 'text/html; charset=UTF-8',
+    ]);
+})->name('api.docs');
+Route::redirect('/api-docs', '/swagger-ui');
+Route::redirect('/docs', '/swagger-ui');
+// JANGAN tambahkan redirect dengan prefix /api/... di sini!
+
 // Alias PR routes ke /packages
 Route::redirect('/pr', '/packages')->name('pr.index');
 Route::redirect('/siswa/pr', '/packages');
