@@ -740,9 +740,10 @@ class ApiEndpointsTest extends TestCase
 
     public function test_swagger_documentation_endpoint_is_accessible(): void
     {
-        // Pastikan file Swagger UI dan OpenAPI YAML ada di filesystem
+        // Pastikan file Swagger UI dan OpenAPI (YAML & JSON) ada di filesystem
         $this->assertFileExists(public_path('api-docs/index.html'));
         $this->assertFileExists(public_path('api-docs/openapi.yaml'));
+        $this->assertFileExists(public_path('api-docs/openapi.json'));
 
         // Verifikasi konten file HTML mengandung elemen Swagger UI
         $htmlContent = file_get_contents(public_path('api-docs/index.html'));

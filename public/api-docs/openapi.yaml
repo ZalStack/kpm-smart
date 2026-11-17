@@ -1275,7 +1275,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: Sanctum Token
-      description: Masukkan token yang didapat dari endpoint `/api/v1/auth/login`. Format header `Authorization: Bearer <token>`.
+      description: "Masukkan token yang didapat dari endpoint `/api/v1/auth/login`. Format header `Authorization: Bearer <token>`."
     ApiKeyAuth:
       type: apiKey
       in: header
