@@ -226,9 +226,21 @@ class SatelliteApiController extends Controller
             'is_active' => 'nullable',
         ]);
 
-        $isGuru = ($validated['role'] ?? '') === 'guru';
-        $role = in_array($validated['role'] ?? '', ['super_admin', 'administrator', 'admin']) ? 'admin' : ($isGuru ? 'guru' : 'user');
         $username = $validated['username'] ?? explode('@', $validated['email'])[0];
+        $isGuru = ($validated['role'] ?? '') === 'guru'
+            || str_ends_with(strtolower($validated['email']), '@satuguru.com')
+            || str_starts_with(strtolower($validated['email']), 'guru.');
+
+        if ($isGuru) {
+            User::where('email', $validated['email'])->orWhere('username', $username)->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Akun Guru dilewati dan dibersihkan dari KPM Smart',
+            ]);
+        }
+
+        $role = in_array($validated['role'] ?? '', ['super_admin', 'administrator', 'admin']) ? 'admin' : 'user';
         $avatar = $validated['foto_profil'] ?? null;
 
         $existing = User::where('email', $validated['email'])->first()
@@ -296,9 +308,19 @@ class SatelliteApiController extends Controller
                 if (empty($item['email']) || empty($item['name'])) {
                     continue;
                 }
-                $isGuru = ($item['role'] ?? '') === 'guru';
-                $role = in_array($item['role'] ?? '', ['super_admin', 'administrator', 'admin']) ? 'admin' : ($isGuru ? 'guru' : 'user');
                 $username = $item['username'] ?? explode('@', $item['email'])[0];
+                $isGuru = ($item['role'] ?? '') === 'guru'
+                    || ! empty($item['is_guru'])
+                    || str_ends_with(strtolower($item['email']), '@satuguru.com')
+                    || str_starts_with(strtolower($item['email']), 'guru.');
+
+                if ($isGuru) {
+                    DB::table('users')->where('email', $item['email'])->orWhere('username', $username)->delete();
+
+                    continue;
+                }
+
+                $role = in_array($item['role'] ?? '', ['super_admin', 'administrator', 'admin']) ? 'admin' : 'user';
                 $existing = DB::table('users')->where('email', $item['email'])->first()
                     ?? DB::table('users')->where('username', $username)->first();
 
@@ -388,7 +410,12 @@ class SatelliteApiController extends Controller
         $deletedCount = 0;
 
         if (! empty($activeEmails) && is_array($activeEmails)) {
-            $orphanUsers = User::where('role', 'user')->whereNotIn('email', $activeEmails)->get();
+            $orphanUsers = User::where(function ($q) use ($activeEmails) {
+                $q->whereIn('role', ['user', 'guru'])->whereNotIn('email', $activeEmails);
+            })->orWhere('role', 'guru')
+                ->orWhere('email', 'like', '%@satuguru.com')
+                ->orWhere('email', 'like', 'guru.%')
+                ->get();
             $deletedCount = $orphanUsers->count();
             foreach ($orphanUsers as $user) {
                 $user->practiceSessions()->delete();

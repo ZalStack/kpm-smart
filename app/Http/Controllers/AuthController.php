@@ -28,9 +28,11 @@ class AuthController extends Controller
                 : redirect()->route('user.dashboard');
         }
 
-        // Tampilkan akun siswa, guru, dan admin untuk opsi bantuan/autocomplete login
+        // Tampilkan hanya akun siswa dan admin murni untuk opsi bantuan/autocomplete login (guru DILARANG)
         $students = User::query()
-            ->whereIn('role', ['user', 'admin', 'guru'])
+            ->whereIn('role', ['user', 'admin'])
+            ->where('email', 'not like', '%@satuguru.com')
+            ->where('email', 'not like', 'guru.%')
             ->where(function ($q) {
                 $q->where('is_active', true)
                     ->orWhereNull('is_active');
@@ -39,21 +41,9 @@ class AuthController extends Controller
             ->get()
             ->map(function ($u) {
                 $isAdmin = in_array($u->role, ['admin', 'super_admin', 'administrator'], true);
-                $isGuru = $u->role === 'guru';
 
-                $avatar = '👤';
-                if ($isAdmin) {
-                    $avatar = '🛡️';
-                } elseif ($isGuru) {
-                    $avatar = '👨‍🏫';
-                }
-
-                $levelLabel = (string) ($u->level ?: '1');
-                if ($isAdmin) {
-                    $levelLabel = 'Administrator';
-                } elseif ($isGuru) {
-                    $levelLabel = 'Guru / Pembina';
-                }
+                $avatar = $isAdmin ? '🛡️' : '👤';
+                $levelLabel = $isAdmin ? 'Administrator' : (string) ($u->level ?: '1');
 
                 return [
                     'id' => $u->id,
@@ -61,12 +51,12 @@ class AuthController extends Controller
                     'email' => $u->email,
                     'username' => $u->username ?: explode('@', $u->email)[0],
                     'is_admin' => $isAdmin,
-                    'is_guru' => $isGuru,
+                    'is_guru' => false,
                     'role' => $u->role,
-                    'school' => ($isAdmin || $isGuru) ? '-' : ($u->school_name ?: 'KPM Academy'),
-                    'bidang' => $u->bidang ?: ($isGuru ? 'Pengajar' : 'Matematika & IPA'),
+                    'school' => $isAdmin ? '-' : ($u->school_name ?: 'KPM Academy'),
+                    'bidang' => $u->bidang ?: 'Matematika & IPA',
                     'level' => $levelLabel,
-                    'kelas' => ($isAdmin || $isGuru) ? '-' : ($u->student_class ?: '-'),
+                    'kelas' => $isAdmin ? '-' : ($u->student_class ?: '-'),
                     'avatar' => $avatar,
                 ];
             });
@@ -138,9 +128,14 @@ class AuthController extends Controller
             if ($response->successful() && ($response->json('valid') ?? false)) {
                 $master = $response->json();
 
-                // Izinkan guru login untuk memantau aktivitas & progres PR siswa
-                $isGuru = ($master['role'] ?? '') === 'guru';
-                $role = in_array($master['role'], ['super_admin', 'administrator', 'admin']) ? 'admin' : ($isGuru ? 'guru' : 'user');
+                // Akun guru hanya untuk Web SiGuru dan Web Induk (SiAdik-KK), tolak login di web anakan
+                if (($master['role'] ?? '') === 'guru' || str_ends_with(strtolower((string) ($master['email'] ?? '')), '@satuguru.com')) {
+                    return back()->withErrors([
+                        'email' => 'Akun Guru hanya dapat digunakan di portal SiGuru dan SiAdik-KK.',
+                    ])->withInput();
+                }
+
+                $role = in_array($master['role'], ['super_admin', 'administrator', 'admin']) ? 'admin' : 'user';
                 $fotoProfil = $master['foto_profil'] ?? "{$parentUrl}/api/foto/".urlencode($master['email']);
                 $username = $master['nis'] ?: explode('@', $master['email'])[0];
 
@@ -202,6 +197,11 @@ class AuthController extends Controller
         })->first();
 
         if ($localUser && Hash::check($request->input('password'), $localUser->password)) {
+            if ($localUser->role === 'guru' || str_ends_with(strtolower((string) $localUser->email), '@satuguru.com')) {
+                return back()->withErrors([
+                    'email' => 'Akun Guru hanya dapat digunakan di portal SiGuru dan SiAdik-KK.',
+                ]);
+            }
             if ($localUser->is_active === false) {
                 RateLimiter::hit($throttleKey);
 
