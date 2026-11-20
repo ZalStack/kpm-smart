@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, inject, onMounted, nextTick } from 'vue';
+import { ref, computed, inject, onMounted, onUnmounted, nextTick } from 'vue';
 import { Head, useForm, Link } from '@inertiajs/vue3';
 import { Icon } from '@iconify/vue/offline';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
@@ -28,14 +28,15 @@ const isOpen = ref(false);
 const selectedStudent = ref(null);
 const highlightedIndex = ref(-1);
 const suggestionsContainer = ref(null);
+const wrapperRef = ref(null);
 
 const studentList = computed(() => props.students || []);
 
 const filteredStudents = computed(() => {
     const q = search.value.trim().toLowerCase();
-    if (!q) return [];
+    if (!q) return studentList.value.slice(0, 10);
     return studentList.value
-        .filter((s) => s.name.toLowerCase().includes(q) || (s.username && s.username.toLowerCase().includes(q)))
+        .filter((s) => s.name.toLowerCase().includes(q) || (s.username && s.username.toLowerCase().includes(q)) || (s.email && s.email.toLowerCase().includes(q)))
         .slice(0, 10);
 });
 
@@ -49,13 +50,19 @@ const onSearchInput = () => {
         selectedStudent.value = null;
     }
 
-    form.email = search.value;
+    const exact = studentList.value.find(
+        (s) => s.name.toLowerCase() === q || (s.email && s.email.toLowerCase() === q) || (s.username && s.username.toLowerCase() === q)
+    );
+    if (exact) {
+        selectedStudent.value = exact;
+        form.email = exact.email || exact.username || exact.name;
+    } else {
+        form.email = search.value;
+    }
 };
 
 const onFocus = () => {
-    if (search.value.trim().length > 0) {
-        isOpen.value = true;
-    }
+    isOpen.value = true;
 };
 
 const scrollHighlightedIntoView = () => {
@@ -121,6 +128,12 @@ const clearSelection = () => {
     highlightedIndex.value = -1;
 };
 
+const handleClickOutside = (e) => {
+    if (wrapperRef.value && !wrapperRef.value.contains(e.target)) {
+        isOpen.value = false;
+    }
+};
+
 function submit() {
     if (!form.email && search.value) {
         form.email = search.value;
@@ -131,6 +144,7 @@ function submit() {
 }
 
 onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
     if (form.email) {
         search.value = form.email;
         const found = studentList.value.find(
@@ -140,6 +154,10 @@ onMounted(() => {
             selectedStudent.value = found;
         }
     }
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
 });
 
 const FIELD_ERRORS = ['email', 'password'];
@@ -188,7 +206,7 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
 
             <form @submit.prevent="submit" class="space-y-5" autocomplete="off" novalidate :aria-busy="form.processing">
                 <!-- 1. Input Nama / Username (Autocomplete) -->
-                <div class="space-y-2 relative">
+                <div ref="wrapperRef" class="space-y-2 relative">
                     <Label for="search-input">Nama Siswa / Username</Label>
                     <div class="relative">
                         <Input
