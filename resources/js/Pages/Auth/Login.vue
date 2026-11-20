@@ -201,11 +201,18 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
                     <div class="relative">
                         <Input
                             id="search-input"
+                            name="search_username"
                             v-model="search"
                             type="text"
                             placeholder="Ketik nama siswa atau admin..."
                             required
                             autofocus
+                            autocomplete="off"
+                            autocorrect="off"
+                            autocapitalize="off"
+                            spellcheck="false"
+                            data-lpignore="true"
+                            data-form-type="other"
                             @input="onSearchInput"
                             @focus="onFocus"
                             @keydown.down.prevent="onKeyDown"
