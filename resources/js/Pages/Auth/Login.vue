@@ -34,7 +34,7 @@ const studentList = computed(() => props.students || []);
 
 const filteredStudents = computed(() => {
     const q = search.value.trim().toLowerCase();
-    if (!q) return studentList.value.slice(0, 10);
+    if (!q) return [];
     return studentList.value
         .filter((s) => s.name.toLowerCase().includes(q) || (s.username && s.username.toLowerCase().includes(q)) || (s.email && s.email.toLowerCase().includes(q)))
         .slice(0, 10);
@@ -62,7 +62,9 @@ const onSearchInput = () => {
 };
 
 const onFocus = () => {
-    isOpen.value = true;
+    if (search.value.trim().length > 0) {
+        isOpen.value = true;
+    }
 };
 
 const scrollHighlightedIntoView = () => {
@@ -215,7 +217,6 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
                             v-model="search"
                             type="search"
                             placeholder="Ketik nama siswa atau admin..."
-                            autofocus
                             autocomplete="new-password"
                             autocorrect="off"
                             autocapitalize="off"
