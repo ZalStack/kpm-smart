@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, inject, onMounted } from 'vue';
+import { ref, computed, inject, onMounted, nextTick } from 'vue';
 import { Head, useForm, Link } from '@inertiajs/vue3';
 import { Icon } from '@iconify/vue/offline';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
@@ -26,6 +26,8 @@ const showPassword = ref(false);
 const search = ref('');
 const isOpen = ref(false);
 const selectedStudent = ref(null);
+const highlightedIndex = ref(-1);
+const suggestionsContainer = ref(null);
 
 const studentList = computed(() => props.students || []);
 
@@ -38,6 +40,7 @@ const filteredStudents = computed(() => {
 });
 
 const onSearchInput = () => {
+    highlightedIndex.value = -1;
     const q = search.value.trim().toLowerCase();
     if (q.length > 0) {
         isOpen.value = true;
@@ -63,11 +66,59 @@ const onFocus = () => {
     }
 };
 
+const scrollHighlightedIntoView = () => {
+    nextTick(() => {
+        if (!suggestionsContainer.value) return;
+        const items = suggestionsContainer.value.querySelectorAll('button');
+        if (items[highlightedIndex.value]) {
+            items[highlightedIndex.value].scrollIntoView({ block: 'nearest' });
+        }
+    });
+};
+
+const onKeyDown = () => {
+    const len = filteredStudents.value.length;
+    if (len === 0) return;
+    if (!isOpen.value) {
+        isOpen.value = true;
+        highlightedIndex.value = 0;
+    } else {
+        highlightedIndex.value = (highlightedIndex.value + 1) % len;
+    }
+    scrollHighlightedIntoView();
+};
+
+const onKeyUp = () => {
+    const len = filteredStudents.value.length;
+    if (len === 0) return;
+    if (!isOpen.value) {
+        isOpen.value = true;
+        highlightedIndex.value = len - 1;
+    } else {
+        highlightedIndex.value = (highlightedIndex.value - 1 + len) % len;
+    }
+    scrollHighlightedIntoView();
+};
+
+const onKeyEnter = (e) => {
+    if (isOpen.value && highlightedIndex.value >= 0 && filteredStudents.value[highlightedIndex.value]) {
+        e.preventDefault();
+        e.stopPropagation();
+        selectStudent(filteredStudents.value[highlightedIndex.value]);
+    }
+};
+
+const onKeyEsc = () => {
+    isOpen.value = false;
+    highlightedIndex.value = -1;
+};
+
 const selectStudent = (student) => {
     selectedStudent.value = student;
     search.value = student.name;
     form.email = student.email || student.username || student.name;
     isOpen.value = false;
+    highlightedIndex.value = -1;
 };
 
 const clearSelection = () => {
@@ -75,6 +126,7 @@ const clearSelection = () => {
     search.value = '';
     form.email = '';
     isOpen.value = false;
+    highlightedIndex.value = -1;
 };
 
 function submit() {
@@ -156,6 +208,10 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
                             autofocus
                             @input="onSearchInput"
                             @focus="onFocus"
+                            @keydown.down.prevent="onKeyDown"
+                            @keydown.up.prevent="onKeyUp"
+                            @keydown.enter="onKeyEnter"
+                            @keydown.esc="onKeyEsc"
                             class="pr-12"
                         />
                         <button
@@ -170,14 +226,19 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
 
                     <div
                         v-if="isOpen && filteredStudents.length > 0"
+                        ref="suggestionsContainer"
                         class="absolute left-0 right-0 top-full mt-1.5 bg-white rounded-2xl shadow-2xl border border-slate-200 max-h-64 overflow-y-auto z-40 divide-y divide-slate-100"
                     >
                         <button
-                            v-for="s in filteredStudents"
+                            v-for="(s, idx) in filteredStudents"
                             :key="s.id"
                             type="button"
                             @click="selectStudent(s)"
-                            class="w-full text-left px-3.5 py-3 hover:bg-indigo-50/70 transition flex items-center justify-between gap-3 cursor-pointer"
+                            @mouseenter="highlightedIndex = idx"
+                            :class="[
+                                'w-full text-left px-3.5 py-3 transition flex items-center justify-between gap-3 cursor-pointer',
+                                highlightedIndex === idx ? 'bg-indigo-100/80 ring-1 ring-indigo-300' : 'hover:bg-indigo-50/70'
+                            ]"
                         >
                             <div class="min-w-0">
                                 <div class="font-extrabold text-sm text-slate-900 truncate flex items-center gap-2">
