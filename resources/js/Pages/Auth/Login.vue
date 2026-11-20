@@ -49,15 +49,7 @@ const onSearchInput = () => {
         selectedStudent.value = null;
     }
 
-    const exact = studentList.value.find(
-        (s) => s.name.toLowerCase() === q || (s.email && s.email.toLowerCase() === q) || (s.username && s.username.toLowerCase().includes(q))
-    );
-    if (exact) {
-        selectedStudent.value = exact;
-        form.email = exact.email || exact.username || exact.name;
-    } else {
-        form.email = search.value;
-    }
+    form.email = search.value;
 };
 
 const onFocus = () => {
@@ -250,6 +242,9 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
                             <div class="min-w-0">
                                 <div class="font-extrabold text-sm text-slate-900 truncate flex items-center gap-2">
                                     <span>{{ s.name }}</span>
+                                    <span v-if="s.username" class="text-xs font-semibold text-indigo-600 font-mono">
+                                        @{{ s.username }}
+                                    </span>
                                     <span
                                         v-if="!s.is_admin && s.school"
                                         class="text-[9px] px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200/80 font-extrabold shrink-0"
