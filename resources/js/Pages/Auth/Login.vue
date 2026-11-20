@@ -211,11 +211,11 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
                 <div ref="wrapperRef" class="space-y-2 relative">
                     <Label for="search-input">Nama Siswa / Username</Label>
                     <div class="relative">
-                        <Input
+                        <input
                             id="search-input"
                             name="search_student_query"
                             v-model="search"
-                            type="search"
+                            type="text"
                             placeholder="Ketik nama siswa atau admin..."
                             autocomplete="new-password"
                             autocorrect="off"
@@ -230,15 +230,23 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
                             @keydown.up.prevent="onKeyUp"
                             @keydown.enter="onKeyEnter"
                             @keydown.esc="onKeyEsc"
-                            class="pr-12"
+                            :class="[
+                                'flex h-11 w-full rounded-2xl border bg-background px-3.5 pr-10 py-2 text-sm font-medium text-foreground transition-all duration-200 shadow-sm outline-none',
+                                'placeholder:text-muted-foreground/70',
+                                form.errors.email
+                                    ? 'border-rose-400 bg-rose-50/20 text-rose-900 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
+                                    : 'border-border/80 hover:border-brand-blue/60 focus:border-primary focus:ring-2 focus:ring-primary/20'
+                            ]"
                         />
                         <button
                             v-if="search"
                             type="button"
                             @click="clearSelection"
-                            class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
                         >
-                            &times;
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                         </button>
                     </div>
 
