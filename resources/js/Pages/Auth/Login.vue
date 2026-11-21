@@ -33,16 +33,23 @@ const wrapperRef = ref(null);
 const studentList = computed(() => props.students || []);
 
 const filteredStudents = computed(() => {
-    const q = search.value.trim().toLowerCase();
+    const raw = search.value || '';
+    const q = raw.trim().toLowerCase();
     if (!q) return [];
     return studentList.value
-        .filter((s) => s.name.toLowerCase().includes(q) || (s.username && s.username.toLowerCase().includes(q)) || (s.email && s.email.toLowerCase().includes(q)))
+        .filter((s) => {
+            const nameMatch = s.name && s.name.toLowerCase().includes(q);
+            const usernameMatch = s.username && s.username.toLowerCase().includes(q);
+            const emailMatch = s.email && s.email.toLowerCase().includes(q);
+            return nameMatch || usernameMatch || emailMatch;
+        })
         .slice(0, 10);
 });
 
 const onSearchInput = () => {
     highlightedIndex.value = -1;
-    const q = search.value.trim().toLowerCase();
+    const raw = search.value || '';
+    const q = raw.trim().toLowerCase();
     if (q.length > 0) {
         isOpen.value = true;
     } else {
@@ -51,7 +58,9 @@ const onSearchInput = () => {
     }
 
     const exact = studentList.value.find(
-        (s) => s.name.toLowerCase() === q || (s.email && s.email.toLowerCase() === q) || (s.username && s.username.toLowerCase() === q)
+        (s) => (s.name && s.name.toLowerCase() === q) || 
+               (s.email && s.email.toLowerCase() === q) || 
+               (s.username && s.username.toLowerCase() === q)
     );
     if (exact) {
         selectedStudent.value = exact;
@@ -62,7 +71,8 @@ const onSearchInput = () => {
 };
 
 const onFocus = () => {
-    if (search.value.trim().length > 0) {
+    const q = (search.value || '').trim();
+    if (q.length > 0) {
         isOpen.value = true;
     }
 };
@@ -213,11 +223,11 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
                     <div class="relative">
                         <input
                             id="search-input"
-                            name="search_student_query"
+                            name="username"
                             v-model="search"
                             type="text"
                             placeholder="Ketik nama siswa atau admin..."
-                            autocomplete="new-password"
+                            autocomplete="off"
                             autocorrect="off"
                             autocapitalize="off"
                             spellcheck="false"
@@ -231,7 +241,7 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
                             @keydown.enter="onKeyEnter"
                             @keydown.esc="onKeyEsc"
                             :class="[
-                                'flex h-11 w-full rounded-2xl border bg-background px-3.5 pr-10 py-2 text-sm font-medium text-foreground transition-all duration-200 shadow-sm outline-none',
+                                'no-native-clear flex h-11 w-full rounded-2xl border bg-background px-3.5 pr-10 py-2 text-sm font-medium text-foreground transition-all duration-200 shadow-sm outline-none',
                                 'placeholder:text-muted-foreground/70',
                                 form.errors.email
                                     ? 'border-rose-400 bg-rose-50/20 text-rose-900 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
@@ -421,5 +431,20 @@ const hasErrors = computed(() => Object.keys(form.errors || {}).length > 0);
 }
 .animate-fade-in {
     animation: fadeIn 0.3s ease-out;
+}
+
+/* Hilangkan ikon silang bawaan peramban (Edge/IE/WebKit search) agar tidak bertumpuk */
+.no-native-clear::-ms-clear,
+.no-native-clear::-ms-reveal {
+    display: none;
+    width: 0;
+    height: 0;
+}
+.no-native-clear::-webkit-search-decoration,
+.no-native-clear::-webkit-search-cancel-button,
+.no-native-clear::-webkit-search-results-button,
+.no-native-clear::-webkit-search-results-decoration {
+    display: none;
+    -webkit-appearance: none;
 }
 </style>
