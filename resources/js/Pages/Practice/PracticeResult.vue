@@ -57,6 +57,19 @@ function getQuestionImage(res) {
     return '/storage/' + clean;
 }
 
+function hideImageWrapper(imgEl) {
+    imgEl.style.display = 'none';
+    const wrapper = imgEl.closest('.question-image-wrapper');
+    if (wrapper) wrapper.style.display = 'none';
+}
+
+function handleImageLoad(event) {
+    const imgEl = event.target;
+    if (imgEl.naturalWidth <= 1 && imgEl.naturalHeight <= 1) {
+        hideImageWrapper(imgEl);
+    }
+}
+
 function handleImageError(event, res) {
     const imgEl = event.target;
     if (!imgEl.dataset.retried) {
@@ -68,7 +81,7 @@ function handleImageError(event, res) {
             return;
         }
     }
-    imgEl.style.display = 'none';
+    hideImageWrapper(imgEl);
 }
 
 const scoreGrade = computed(() => {
@@ -281,12 +294,13 @@ onMounted(() => {
                                     </span>
                                 </div>
 
-                                <div v-if="getQuestionImage(result)" class="mb-3">
+                                <div v-if="getQuestionImage(result)" class="question-image-wrapper mb-3">
                                     <img
                                         :src="getQuestionImage(result)"
                                         alt="Gambar soal"
                                         class="max-h-56 w-auto max-w-full rounded-xl border border-border/60 object-contain shadow-2xs"
                                         loading="lazy"
+                                        @load="handleImageLoad($event)"
                                         @error="handleImageError($event, result)"
                                     />
                                 </div>

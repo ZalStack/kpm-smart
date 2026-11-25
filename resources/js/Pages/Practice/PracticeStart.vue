@@ -231,6 +231,19 @@ function getQuestionImage(q) {
     return '/storage/' + clean;
 }
 
+function hideImageWrapper(imgEl) {
+    imgEl.style.display = 'none';
+    const wrapper = imgEl.closest('.question-image-wrapper');
+    if (wrapper) wrapper.style.display = 'none';
+}
+
+function handleImageLoad(event) {
+    const imgEl = event.target;
+    if (imgEl.naturalWidth <= 1 && imgEl.naturalHeight <= 1) {
+        hideImageWrapper(imgEl);
+    }
+}
+
 function handleImageError(event, q) {
     const imgEl = event.target;
     if (!imgEl.dataset.retried) {
@@ -242,7 +255,7 @@ function handleImageError(event, q) {
             return;
         }
     }
-    imgEl.style.display = 'none';
+    hideImageWrapper(imgEl);
 }
 
 /** Kelas status tombol nomor soal: warna hijau dipertebal dan solid (tidak pucat), biru saat aktif */
@@ -433,13 +446,14 @@ onBeforeUnmount(() => {
                                     <MathRenderer :text="q.question" />
                                 </div>
 
-                                <div v-if="getQuestionImage(q)" class="mt-5 flex justify-center sm:justify-start">
+                                <div v-if="getQuestionImage(q)" class="question-image-wrapper mt-5 flex justify-center sm:justify-start">
                                     <div class="relative overflow-hidden rounded-2xl border border-border/80 bg-muted/20 p-2 shadow-sm">
                                         <img
                                             :src="getQuestionImage(q)"
                                             alt="Gambar soal"
                                             class="max-h-80 w-auto max-w-full rounded-xl object-contain"
                                             loading="lazy"
+                                            @load="handleImageLoad($event)"
                                             @error="handleImageError($event, q)"
                                         />
                                     </div>

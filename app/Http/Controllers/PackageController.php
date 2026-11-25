@@ -1296,6 +1296,11 @@ class PackageController extends Controller
 
         $details = $xobject->getDetails();
 
+        // Skip image mask (alpha mask / stencil) agar tidak tertukar dengan gambar utama
+        if (! empty($details['ImageMask'])) {
+            return false;
+        }
+
         if (isset($details['Subtype']) && $details['Subtype'] === 'Image') {
             return true;
         }
@@ -1335,13 +1340,19 @@ class PackageController extends Controller
             }
 
             if (in_array('FlateDecode', $filters)) {
-                $width = $details['Width'] ?? 0;
-                $height = $details['Height'] ?? 0;
-                $bitsPerComponent = $details['BitsPerComponent'] ?? 8;
+                if (substr($content, 0, 8) === "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A") {
+                    return ['content' => $content, 'ext' => 'png'];
+                }
+
+                $width = (int) ($details['Width'] ?? 0);
+                $height = (int) ($details['Height'] ?? 0);
+                $bitsPerComponent = (int) ($details['BitsPerComponent'] ?? 8);
                 $colorSpace = $details['ColorSpace'] ?? null;
 
-                if (isset($details['DecodeParms']['Predictor']) && $details['DecodeParms']['Predictor'] > 1) {
-                    $content = $this->decodeFlateWithPredictor($content, $width, $height, $bitsPerComponent, $colorSpace);
+                $predictor = (int) ($details['DecodeParms']['Predictor'] ?? 1);
+                if ($predictor > 1) {
+                    $colors = (int) ($details['DecodeParms']['Colors'] ?? $this->guessColorChannels($colorSpace, $content, $width, $height, true));
+                    $content = $this->decodeFlateWithPredictor($content, $width, $height, $bitsPerComponent, $colors, $predictor);
                 }
 
                 $pngContent = $this->convertRawToPng($content, $width, $height, $bitsPerComponent, $colorSpace);
@@ -1349,7 +1360,8 @@ class PackageController extends Controller
                     return ['content' => $pngContent, 'ext' => 'png'];
                 }
 
-                return ['content' => $content, 'ext' => 'png'];
+                // Jangan simpan raw pixel bytes sebagai .png korup
+                return null;
             }
 
             if (in_array('JPXDecode', $filters)) {
@@ -1370,9 +1382,102 @@ class PackageController extends Controller
         }
     }
 
-    private function decodeFlateWithPredictor($data, $width, $height, $bitsPerComponent, $colorSpace)
+    private function guessColorChannels($colorSpace, string $data, int $width, int $height, bool $hasPredictor = false): int
     {
-        return $data;
+        if (is_string($colorSpace)) {
+            if (stripos($colorSpace, 'RGB') !== false) {
+                return 3;
+            }
+            if (stripos($colorSpace, 'Gray') !== false) {
+                return 1;
+            }
+        } elseif (is_array($colorSpace)) {
+            $joined = implode(' ', array_map(fn ($v) => is_scalar($v) ? (string) $v : '', $colorSpace));
+            if (stripos($joined, 'RGB') !== false) {
+                return 3;
+            }
+        }
+
+        if ($width > 0 && $height > 0) {
+            $len = strlen($data);
+            $rgbExpected = $hasPredictor ? ($width * 3 + 1) * $height : $width * $height * 3;
+            if ($len >= $rgbExpected) {
+                return 3;
+            }
+        }
+
+        return 1;
+    }
+
+    private function decodeFlateWithPredictor($data, $width, $height, $bitsPerComponent, $colors, int $predictor = 15)
+    {
+        if ($width <= 0 || $height <= 0 || $bitsPerComponent !== 8 || $predictor < 10) {
+            return $data;
+        }
+
+        $bpp = max(1, (int) $colors);
+        $rowBytes = $width * $bpp;
+        $stride = $rowBytes + 1;
+        $totalLen = strlen($data);
+
+        if ($totalLen < $stride * $height) {
+            return $data;
+        }
+
+        $out = '';
+        $prevRow = str_repeat("\x00", $rowBytes);
+
+        for ($y = 0; $y < $height; $y++) {
+            $offset = $y * $stride;
+            $filterType = ord($data[$offset]);
+            $row = substr($data, $offset + 1, $rowBytes);
+            $decoded = '';
+
+            for ($i = 0; $i < $rowBytes; $i++) {
+                $raw = ord($row[$i]);
+                $left = $i >= $bpp ? ord($decoded[$i - $bpp]) : 0;
+                $up = ord($prevRow[$i]);
+                $upLeft = $i >= $bpp ? ord($prevRow[$i - $bpp]) : 0;
+
+                switch ($filterType) {
+                    case 0: // None
+                        $val = $raw;
+                        break;
+                    case 1: // Sub
+                        $val = ($raw + $left) & 0xFF;
+                        break;
+                    case 2: // Up
+                        $val = ($raw + $up) & 0xFF;
+                        break;
+                    case 3: // Average
+                        $val = ($raw + intdiv($left + $up, 2)) & 0xFF;
+                        break;
+                    case 4: // Paeth
+                        $p = $left + $up - $upLeft;
+                        $pa = abs($p - $left);
+                        $pb = abs($p - $up);
+                        $pc = abs($p - $upLeft);
+                        if ($pa <= $pb && $pa <= $pc) {
+                            $pr = $left;
+                        } elseif ($pb <= $pc) {
+                            $pr = $up;
+                        } else {
+                            $pr = $upLeft;
+                        }
+                        $val = ($raw + $pr) & 0xFF;
+                        break;
+                    default:
+                        $val = $raw;
+                }
+
+                $decoded .= chr($val);
+            }
+
+            $out .= $decoded;
+            $prevRow = $decoded;
+        }
+
+        return $out;
     }
 
     private function convertRawToPng($data, $width, $height, $bitsPerComponent, $colorSpace)
@@ -1392,9 +1497,21 @@ class PackageController extends Controller
                 return null;
             } elseif (strpos($colorSpace, 'Indexed') !== false) {
                 return null;
+            } elseif (strpos($colorSpace, 'Gray') === false && strlen($data) >= $width * $height * 3) {
+                $channels = 3;
+                $type = 'rgb';
             }
-        } elseif (is_array($colorSpace) && isset($colorSpace[0]) && $colorSpace[0] === 'Indexed') {
-            return null;
+        } elseif (is_array($colorSpace)) {
+            if (isset($colorSpace[0]) && $colorSpace[0] === 'Indexed') {
+                return null;
+            }
+            if (strlen($data) >= $width * $height * 3) {
+                $channels = 3;
+                $type = 'rgb';
+            }
+        } elseif (strlen($data) >= $width * $height * 3) {
+            $channels = 3;
+            $type = 'rgb';
         }
 
         $image = imagecreatetruecolor($width, $height);
