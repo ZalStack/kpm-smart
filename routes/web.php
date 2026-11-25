@@ -287,6 +287,7 @@ Route::get('/storage/question_images/{path}', function (string $path) {
 })->where('path', '.*')->withoutMiddleware([
     \Illuminate\Session\Middleware\StartSession::class,
     \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+    \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class,
     \App\Http\Middleware\HandleInertiaRequests::class,
 ]);
 
@@ -300,5 +301,6 @@ Route::get('/storage/{path}', function (string $path) {
 })->where('path', '.*')->withoutMiddleware([
     \Illuminate\Session\Middleware\StartSession::class,
     \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+    \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class,
     \App\Http\Middleware\HandleInertiaRequests::class,
 ]);
