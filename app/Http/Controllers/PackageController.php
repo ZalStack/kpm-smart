@@ -120,6 +120,10 @@ class PackageController extends Controller
         $allKelas = Package::where('is_active', true)->whereNotNull('kelas')->where('kelas', '!=', '')->distinct()->pluck('kelas')->sort()->values();
         $allLevel = Package::where('is_active', true)->whereNotNull('level')->where('level', '!=', '')->distinct()->pluck('level')->sort()->values();
 
+        $prAccess = $user && $user->role === 'user'
+            ? \App\Services\ParentSyncService::checkStudentPrAccess($user)
+            : ['allowed' => true, 'message' => ''];
+
         return Inertia::render('Packages/PackageList', [
             'packages' => $packages,
             'packageStatuses' => $packageStatuses,
@@ -130,6 +134,7 @@ class PackageController extends Controller
             'userBidangRaw' => $studentBidang,
             'currentSort' => $sortBy,
             'isHomeworkWindowOpen' => PracticeController::isHomeworkWindowOpen(),
+            'prAccess' => $prAccess,
             'filters' => request()->only(['search', 'kelas', 'bidang', 'level', 'sort']),
         ]);
     }
@@ -577,6 +582,12 @@ class PackageController extends Controller
             $access = $package->matchesStudent($user);
             if (! $access['allowed']) {
                 return redirect()->route('user.packages.index')->with('error', $access['reason']);
+            }
+
+            // Cek apakah akses PR dikunci karena belum verifikasi keropak perizinan di Web Induk
+            $prAccess = \App\Services\ParentSyncService::checkStudentPrAccess($user);
+            if (! $prAccess['allowed']) {
+                return redirect()->route('user.packages.index')->with('error', $prAccess['message']);
             }
         }
 

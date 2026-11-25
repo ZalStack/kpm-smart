@@ -16,10 +16,13 @@ const props = defineProps({
     userBidangRaw: { type: String, default: '' },
     currentSort: { type: String, default: 'latest' },
     isHomeworkWindowOpen: { type: Boolean, default: true },
+    prAccess: { type: Object, default: () => ({ allowed: true, message: '' }) },
     filters: { type: Object, default: () => ({}) },
 });
 
 const startingId = ref(null);
+const showLockedModal = ref(false);
+const lockedModalMessage = ref('');
 
 function attemptInfo(pkg) {
     return props.packageStatuses?.[pkg.id] || { status: 'none', session_id: null };
@@ -30,11 +33,17 @@ function attemptStatus(pkg) {
 }
 
 function isLocked(pkg) {
+    if (props.prAccess && !props.prAccess.allowed) return true;
     if (!props.isHomeworkWindowOpen) return true;
     return pkg.schedule_status === 'expired' || pkg.schedule_status === 'upcoming';
 }
 
 function openPackage(pkg) {
+    if (props.prAccess && !props.prAccess.allowed) {
+        lockedModalMessage.value = props.prAccess.message || 'Akses PR pekan ini terkunci karena belum menyelesaikan transfer keropak perizinan.';
+        showLockedModal.value = true;
+        return;
+    }
     if (isLocked(pkg) || startingId.value) return;
     const info = attemptInfo(pkg);
     if ((info.status === 'completed' || info.status === 'in_progress') && info.session_id) {
@@ -48,6 +57,7 @@ function openPackage(pkg) {
 }
 
 function ctaLabel(pkg) {
+    if (props.prAccess && !props.prAccess.allowed) return 'Terkunci Keropak';
     if (!props.isHomeworkWindowOpen) return 'Jadwal Istirahat';
     if (pkg.schedule_status === 'expired') return 'Berakhir';
     if (pkg.schedule_status === 'upcoming') return 'Belum Dimulai';
@@ -59,6 +69,7 @@ function ctaLabel(pkg) {
 }
 
 function ctaIcon(pkg) {
+    if (props.prAccess && !props.prAccess.allowed) return 'mdi:lock-outline';
     if (pkg.schedule_status === 'expired') return 'mdi:clock-remove-outline';
     if (pkg.schedule_status === 'upcoming') return 'mdi:clock-outline';
     const s = attemptStatus(pkg);
@@ -69,6 +80,9 @@ function ctaIcon(pkg) {
 }
 
 function ctaClass(pkg) {
+    if (props.prAccess && !props.prAccess.allowed) {
+        return 'cursor-pointer bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 hover:bg-amber-500/25';
+    }
     if (isLocked(pkg)) return 'bg-muted text-muted-foreground cursor-not-allowed border border-border';
     const s = attemptStatus(pkg);
     if (s === 'completed') return 'bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100';
@@ -382,7 +396,7 @@ const totalActive = computed(() =>
                                     type="button"
                                     class="flex-shrink-0 inline-flex items-center gap-1.5 rounded-2xl px-4 py-2.5 text-xs font-extrabold transition-all duration-200"
                                     :class="ctaClass(pkg)"
-                                    :disabled="isLocked(pkg) || startingId === pkg.id"
+                                    :disabled="(isLocked(pkg) && (prAccess && prAccess.allowed)) || startingId === pkg.id"
                                     @click="openPackage(pkg)"
                                 >
                                     <Icon
@@ -398,6 +412,42 @@ const totalActive = computed(() =>
                 </div>
             </section>
         </div>
+
+        <!-- Modal Peringatan Akses PR Terkunci Keropak -->
+        <Teleport to="body">
+            <div
+                v-if="showLockedModal"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+                @click.self="showLockedModal = false"
+            >
+                <div class="relative w-full max-w-md rounded-3xl border border-amber-200 bg-white p-6 shadow-2xl dark:border-amber-900/40 dark:bg-slate-900 text-center">
+                    <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
+                        <Icon icon="mdi:lock-alert" class="h-8 w-8" />
+                    </div>
+                    <h3 class="text-base font-extrabold text-foreground">Akses PR Pekan Ini Terkunci</h3>
+                    <p class="mt-2 text-xs leading-relaxed text-muted-foreground">
+                        {{ lockedModalMessage }}
+                    </p>
+                    <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2.5">
+                        <a
+                            href="https://kelas-khusus.kpmacademic.io/peserta/kehadiran"
+                            target="_blank"
+                            class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary px-5 py-2.5 text-xs font-extrabold text-primary-foreground hover:bg-primary/90 transition shadow-sm"
+                        >
+                            <Icon icon="mdi:bank-transfer" class="h-4 w-4" />
+                            <span>Buka Web SI ADIK-KK</span>
+                        </a>
+                        <button
+                            type="button"
+                            @click="showLockedModal = false"
+                            class="w-full sm:w-auto rounded-xl border border-border px-4 py-2.5 text-xs font-bold text-muted-foreground hover:bg-muted transition"
+                        >
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </UserLayout>
 </template>
 

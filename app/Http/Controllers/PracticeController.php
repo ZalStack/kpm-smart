@@ -42,6 +42,12 @@ class PracticeController extends Controller
                 return redirect()->route('user.packages.index')->with('error', $access['reason']);
             }
 
+            // Cek apakah akses PR dikunci karena belum verifikasi keropak perizinan di Web Induk
+            $prAccess = \App\Services\ParentSyncService::checkStudentPrAccess($user);
+            if (! $prAccess['allowed']) {
+                return redirect()->route('user.packages.index')->with('error', $prAccess['message']);
+            }
+
             if (! self::isHomeworkWindowOpen()) {
                 return redirect()->route('user.packages.index')
                     ->with('error', 'Jadwal pengerjaan PR sedang istirahat. Akses dibuka setiap Sabtu pukul 19:00 WIB s.d. Jumat pukul 19:00 WIB.');

@@ -140,4 +140,139 @@ class ParentSyncService
             return false;
         }
     }
+
+    /**
+     * Memeriksa status akses pengerjaan PR siswa berdasarkan perizinan & keropak di Web Induk
+     */
+    public static function checkStudentPrAccess(User $user): array
+    {
+        if ($user->role !== 'user') {
+            return ['allowed' => true, 'message' => 'Admin memiliki akses penuh.'];
+        }
+
+        // Cek direct local database kpm-student-smart jika file SQLite ada (Environment Local)
+        $indukDb = base_path('../kpm-student-smart/database/database.sqlite');
+        if (file_exists($indukDb)) {
+            try {
+                $pdo = new \PDO("sqlite:{$indukDb}", null, null, [
+                    \PDO::ATTR_TIMEOUT => 2,
+                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                ]);
+
+                // 1. Cek setting kropak_perizinan_enabled
+                $settingStmt = $pdo->prepare("SELECT value FROM settings WHERE key = 'kropak_perizinan_enabled' LIMIT 1");
+                $settingStmt->execute();
+                $settingVal = $settingStmt->fetchColumn();
+                if ($settingVal !== false && $settingVal === '0') {
+                    return ['allowed' => true, 'message' => 'Fitur penguncian keropak perizinan nonaktif di Super Admin.'];
+                }
+
+                // 2. Cari student berdasarkan email / username
+                $userStmt = $pdo->prepare('SELECT id FROM users WHERE email = :email OR username = :username LIMIT 1');
+                $userStmt->execute([
+                    ':email' => $user->email,
+                    ':username' => $user->username ?: explode('@', $user->email)[0],
+                ]);
+                $indukUserId = $userStmt->fetchColumn();
+
+                if (! $indukUserId) {
+                    return ['allowed' => true, 'message' => 'Siswa tidak ditemukan di Web Induk.'];
+                }
+
+                $studentStmt = $pdo->prepare('SELECT id FROM students WHERE user_id = :user_id LIMIT 1');
+                $studentStmt->execute([':user_id' => $indukUserId]);
+                $indukStudentId = $studentStmt->fetchColumn();
+
+                if (! $indukStudentId) {
+                    return ['allowed' => true, 'message' => 'Data student tidak ditemukan di Web Induk.'];
+                }
+
+                $now = now();
+                $startOfWeek = $now->copy()->startOfWeek(\Carbon\Carbon::MONDAY)->toDateString();
+                $endOfWeek = $now->copy()->endOfWeek(\Carbon\Carbon::SUNDAY)->toDateString();
+
+                // 3. Cek kehadiran pekan berjalan
+                $attStmt = $pdo->prepare("
+                    SELECT id, status, infaq_verified, date FROM attendances 
+                    WHERE student_id = :student_id 
+                    AND date >= :start_date AND date <= :end_date 
+                    AND status IN ('izin', 'sakit', 'alpha', 'ditolak')
+                    ORDER BY date DESC LIMIT 1
+                ");
+                $attStmt->execute([
+                    ':student_id' => $indukStudentId,
+                    ':start_date' => $startOfWeek,
+                    ':end_date' => $endOfWeek,
+                ]);
+                $att = $attStmt->fetch(\PDO::FETCH_ASSOC);
+
+                if (! $att) {
+                    return ['allowed' => true, 'message' => 'Siswa hadir atau belum ada data perizinan pekan ini.'];
+                }
+
+                $isVerified = (bool) ($att['infaq_verified'] ?? false);
+                if (! $isVerified) {
+                    // Cek tabel kropak_verifications
+                    $kvStmt = $pdo->prepare("
+                        SELECT id FROM kropak_verifications 
+                        WHERE student_id = :student_id 
+                        AND type = 'perizinan' AND status = 'approved'
+                        AND created_at >= :start_time AND created_at <= :end_time
+                        LIMIT 1
+                    ");
+                    $kvStmt->execute([
+                        ':student_id' => $indukStudentId,
+                        ':start_time' => $startOfWeek.' 00:00:00',
+                        ':end_time' => $endOfWeek.' 23:59:59',
+                    ]);
+                    if ($kvStmt->fetchColumn()) {
+                        $isVerified = true;
+                    }
+                }
+
+                if ($isVerified) {
+                    return ['allowed' => true, 'message' => 'Keropak perizinan siswa telah diverifikasi admin.'];
+                }
+
+                $statusText = $att['status'] === 'sakit' ? 'Sakit' : ($att['status'] === 'izin' ? 'Izin' : ucfirst($att['status']));
+
+                return [
+                    'allowed' => false,
+                    'reason' => 'unverified_kropak_perizinan',
+                    'message' => "Akses pengerjaan PR pekan ini terkunci karena status kehadiran Anda {$statusText} pada pekan berjalan dan belum menyelesaikan transfer keropak. Silakan lakukan transfer keropak di Web SI ADIK-KK untuk membuka akses.",
+                ];
+            } catch (\Throwable $e) {
+                Log::warning('ParentSyncService direct check exception: '.$e->getMessage());
+            }
+        }
+
+        // Cek via HTTP REST API ke Web Induk (Production cross-server)
+        try {
+            $parentUrl = rtrim(config('app.parent_app_url', env('PARENT_APP_URL', 'https://kelas-khusus.kpmacademic.io')), '/');
+            $apiKey = config('services.parent_api_key', env('PARENT_APP_API_KEY', env('API_SECRET_KEY', 'kpm-satellite-secret-key-2026')));
+
+            $response = Http::withHeaders([
+                'X-API-Key' => $apiKey,
+                'Accept' => 'application/json',
+            ])->timeout(4)->get("{$parentUrl}/api/v1/pr-access/check", [
+                'email' => $user->email,
+                'username' => $user->username,
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                if (isset($data['allowed']) && ! $data['allowed']) {
+                    return [
+                        'allowed' => false,
+                        'reason' => $data['reason'] ?? 'unverified_kropak_perizinan',
+                        'message' => $data['message'] ?? 'Akses pengerjaan PR pekan ini terkunci karena belum menyelesaikan transfer keropak perizinan.',
+                    ];
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('ParentSyncService HTTP check exception: '.$e->getMessage());
+        }
+
+        return ['allowed' => true, 'message' => 'Akses PR diizinkan.'];
+    }
 }
