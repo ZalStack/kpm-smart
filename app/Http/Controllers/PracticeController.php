@@ -233,14 +233,18 @@ class PracticeController extends Controller
 
         $isExpired = $package && $package->schedule_status === 'expired';
 
-        // Pengaturan hasil: Jawaban benar dimunculkan, pembahasan di-hide sesuai instruksi
-        $showAnswerKey  = true;
-        $showExplanation = false;
-        $showScore      = $package ? $package->canShowScore() : true;
+        $showAnswerKey   = $package ? $package->canShowAnswerKey() : true;
+        $showExplanation = $package ? $package->canShowExplanation() : false;
+        $showScore       = $package ? $package->canShowScore() : true;
 
-        // Sembunyikan isi pembahasan dari payload agar tidak muncul di siswa
-        $results = array_map(function ($item) {
-            unset($item['explanation']);
+        // Sembunyikan kunci jawaban atau pembahasan dari payload jika dinonaktifkan oleh admin
+        $results = array_map(function ($item) use ($showAnswerKey, $showExplanation) {
+            if (! $showAnswerKey) {
+                unset($item['correct_answer']);
+            }
+            if (! $showExplanation) {
+                unset($item['explanation']);
+            }
             return $item;
         }, $results);
 
@@ -266,6 +270,10 @@ class PracticeController extends Controller
 
     public function show(PracticeSession $session)
     {
+        if ($session->user_id !== Auth::id()) {
+            return redirect()->route('user.packages.index')->with('error', 'Akses ditolak!');
+        }
+
         $package = $session->package;
 
         if ($session->status === 'in_progress') {
@@ -292,14 +300,18 @@ class PracticeController extends Controller
         $results = $session->answers ?? [];
         $isExpired = $package && $package->schedule_status === 'expired';
 
-        // Pengaturan hasil: Jawaban benar dimunculkan, pembahasan di-hide sesuai instruksi
-        $showAnswerKey   = true;
-        $showExplanation = false;
+        $showAnswerKey   = $package ? $package->canShowAnswerKey() : true;
+        $showExplanation = $package ? $package->canShowExplanation() : false;
         $showScore       = $package ? $package->canShowScore() : true;
 
-        // Sembunyikan isi pembahasan dari payload agar tidak muncul di siswa
-        $results = array_map(function ($item) {
-            unset($item['explanation']);
+        // Sembunyikan kunci jawaban atau pembahasan dari payload jika dinonaktifkan oleh admin
+        $results = array_map(function ($item) use ($showAnswerKey, $showExplanation) {
+            if (! $showAnswerKey) {
+                unset($item['correct_answer']);
+            }
+            if (! $showExplanation) {
+                unset($item['explanation']);
+            }
             return $item;
         }, $results);
 
