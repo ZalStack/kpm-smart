@@ -196,7 +196,6 @@ class ParentSyncService
                     SELECT id, status, infaq_verified, date FROM attendances 
                     WHERE student_id = :student_id 
                     AND date >= :start_date AND date <= :end_date 
-                    AND status IN ('izin', 'sakit', 'alpha', 'ditolak')
                     ORDER BY date DESC LIMIT 1
                 ");
                 $attStmt->execute([
@@ -206,40 +205,77 @@ class ParentSyncService
                 ]);
                 $att = $attStmt->fetch(\PDO::FETCH_ASSOC);
 
-                if (! $att) {
-                    return ['allowed' => true, 'message' => 'Siswa hadir atau belum ada data perizinan pekan ini.'];
-                }
+                // Cek kropak_verifications approved
+                $kvStmt = $pdo->prepare("
+                    SELECT id FROM kropak_verifications 
+                    WHERE student_id = :student_id 
+                    AND status = 'approved'
+                    AND created_at >= :start_time AND created_at <= :end_time
+                    LIMIT 1
+                ");
+                $kvStmt->execute([
+                    ':student_id' => $indukStudentId,
+                    ':start_time' => $startOfWeek.' 00:00:00',
+                    ':end_time' => $endOfWeek.' 23:59:59',
+                ]);
+                $hasApprovedKropak = (bool) $kvStmt->fetchColumn();
 
-                $isVerified = (bool) ($att['infaq_verified'] ?? false);
-                if (! $isVerified) {
-                    // Cek tabel kropak_verifications
-                    $kvStmt = $pdo->prepare("
-                        SELECT id FROM kropak_verifications 
-                        WHERE student_id = :student_id 
-                        AND type = 'perizinan' AND status = 'approved'
-                        AND created_at >= :start_time AND created_at <= :end_time
-                        LIMIT 1
-                    ");
-                    $kvStmt->execute([
-                        ':student_id' => $indukStudentId,
-                        ':start_time' => $startOfWeek.' 00:00:00',
-                        ':end_time' => $endOfWeek.' 23:59:59',
-                    ]);
-                    if ($kvStmt->fetchColumn()) {
-                        $isVerified = true;
+                // Cek permission_requests approved
+                $prStmt = $pdo->prepare("
+                    SELECT id FROM permission_requests 
+                    WHERE student_id = :student_id 
+                    AND status = 'approved'
+                    AND ((start_date >= :sd1 AND start_date <= :ed1) OR (end_date >= :sd2 AND end_date <= :ed2) OR (start_date <= :sd3 AND end_date >= :ed3))
+                    LIMIT 1
+                ");
+                $prStmt->execute([
+                    ':student_id' => $indukStudentId,
+                    ':sd1' => $startOfWeek, ':ed1' => $endOfWeek,
+                    ':sd2' => $startOfWeek, ':ed2' => $endOfWeek,
+                    ':sd3' => $startOfWeek, ':ed3' => $endOfWeek,
+                ]);
+                $hasApprovedPermission = (bool) $prStmt->fetchColumn();
+
+                if ($att && $att['status'] === 'hadir') {
+                    if (! empty($att['infaq_verified']) || $hasApprovedKropak) {
+                        return ['allowed' => true, 'message' => 'Kehadiran dan infaq keropak tercentang. Akses PR terbuka.'];
                     }
+                    return [
+                        'allowed' => false,
+                        'reason' => 'unverified_kropak_attendance',
+                        'message' => 'Akses PR pekan ini terkunci karena infaq keropak belum tercentang/diselesaikan. Silakan bayar keropak di kelas atau lakukan transfer di SI ADIK-KK untuk membuka akses.',
+                    ];
                 }
 
-                if ($isVerified) {
-                    return ['allowed' => true, 'message' => 'Keropak perizinan siswa telah diverifikasi admin.'];
+                if ($hasApprovedPermission || $hasApprovedKropak) {
+                    return ['allowed' => true, 'message' => 'Perizinan / transfer keropak telah disetujui admin. Akses PR terbuka.'];
                 }
 
-                $statusText = $att['status'] === 'sakit' ? 'Sakit' : ($att['status'] === 'izin' ? 'Izin' : ucfirst($att['status']));
+                // Cek permission_requests pending
+                $prPendingStmt = $pdo->prepare("
+                    SELECT id FROM permission_requests 
+                    WHERE student_id = :student_id 
+                    AND status = 'pending'
+                    AND ((start_date >= :sd1 AND start_date <= :ed1) OR (end_date >= :sd2 AND end_date <= :ed2))
+                    LIMIT 1
+                ");
+                $prPendingStmt->execute([
+                    ':student_id' => $indukStudentId,
+                    ':sd1' => $startOfWeek, ':ed1' => $endOfWeek,
+                    ':sd2' => $startOfWeek, ':ed2' => $endOfWeek,
+                ]);
+                if ($prPendingStmt->fetchColumn()) {
+                    return [
+                        'allowed' => false,
+                        'reason' => 'pending_permission_verification',
+                        'message' => 'Pengajuan perizinan kehadiran Anda masih menunggu verifikasi dari guru/admin. Akses PR akan terbuka setelah diverifikasi.',
+                    ];
+                }
 
                 return [
                     'allowed' => false,
-                    'reason' => 'unverified_kropak_perizinan',
-                    'message' => "Akses pengerjaan PR pekan ini terkunci karena status kehadiran Anda {$statusText} pada pekan berjalan dan belum menyelesaikan transfer keropak. Silakan lakukan transfer keropak di Web SI ADIK-KK untuk membuka akses.",
+                    'reason' => 'locked_default',
+                    'message' => 'Akses PR pekan ini terkunci. Akses akan terbuka otomatis saat presensi & infaq keropak tercentang oleh guru di kelas, atau perizinan kehadiran telah disetujui.',
                 ];
             } catch (\Throwable $e) {
                 Log::warning('ParentSyncService direct check exception: '.$e->getMessage());
