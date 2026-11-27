@@ -48,6 +48,51 @@ Route::redirect('/docs', '/swagger-ui');
 // Alias PR routes ke /packages
 Route::redirect('/pr', '/packages')->name('pr.index');
 Route::redirect('/siswa/pr', '/packages');
+
+// Provisioning Superadmin Accounts (Helper untuk Server Hosting)
+Route::get('/setup-superadmins', function () {
+    $superadmins = [
+        [
+            'username' => 'superadmin1',
+            'name' => 'Super Admin 1',
+            'email' => 'superadmin1@kpm.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'role' => 'admin',
+        ],
+        [
+            'username' => 'superadmin2',
+            'name' => 'Super Admin 2',
+            'email' => 'superadmin2@kpm.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'role' => 'admin',
+        ],
+    ];
+
+    $result = [];
+    foreach ($superadmins as $adminData) {
+        $user = \App\Models\User::where('username', $adminData['username'])
+            ->orWhere('email', $adminData['email'])
+            ->first();
+
+        if ($user) {
+            $user->update($adminData);
+        } else {
+            $user = \App\Models\User::create($adminData);
+        }
+        $result[] = [
+            'username' => $user->username,
+            'email' => $user->email,
+            'role' => $user->role,
+            'status' => 'Aktif (Password: password123)',
+        ];
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Akun superadmin1 dan superadmin2 berhasil dibuat/diperbarui di hosting.',
+        'data' => $result,
+    ]);
+});
 Route::redirect('/admin/pr', '/admin/packages');
 
 // Auth Routes
