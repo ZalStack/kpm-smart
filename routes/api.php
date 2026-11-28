@@ -61,6 +61,8 @@ Route::prefix('satellite')->name('api.satellite.')->middleware('api.key')->group
         ->name('users.sync-batch');
     Route::post('/users/delete', [SatelliteApiController::class, 'deleteUser'])
         ->name('users.delete');
+    Route::post('/reset-progress', [SatelliteApiController::class, 'resetProgress'])
+        ->name('reset-progress');
     Route::post('/users/clean-orphans', [SatelliteApiController::class, 'cleanOrphans'])
         ->name('users.clean-orphans');
     Route::post('/setup-november-packages', [SatelliteApiController::class, 'setupNovemberPackages'])

@@ -571,57 +571,10 @@ class PackageController extends Controller
     public function destroy(Package $package)
     {
         $this->ensureNotGuru();
-
-        $resetItems = $package->practiceSessions()
-            ->with('user:id,email')
-            ->get()
-            ->map(function ($session) {
-                $email = $session->user?->email;
-                if (! $email) {
-                    return null;
-                }
-                $dt = $session->finished_at ?? $session->updated_at ?? now();
-
-                return [
-                    'email' => $email,
-                    'week_number' => (int) $dt->format('W'),
-                    'year' => (int) $dt->format('Y'),
-                ];
-            })
-            ->filter()
-            ->values()
-            ->all();
-
         $package->delete();
-        $this->notifyParentResetWeeklyProgress('pr', $resetItems);
         $this->notifyParentAlertCacheClear();
 
         return redirect()->route('admin.packages.index')->with('success', 'Paket berhasil dihapus!');
-    }
-
-    protected function notifyParentResetWeeklyProgress(string $source, array $items): void
-    {
-        if (empty($items)) {
-            return;
-        }
-
-        try {
-            $parentUrl = rtrim(config('app.parent_app_url', env('PARENT_APP_URL', 'https://kelas-khusus.kpmacademic.io')), '/');
-            $apiKey = config('services.parent_api_key', env('PARENT_APP_API_KEY', env('API_SECRET_KEY', 'kpm-satellite-secret-key-2026')));
-
-            Http::withoutVerifying()
-                ->withHeaders([
-                    'X-API-Key' => $apiKey,
-                    'Accept' => 'application/json',
-                ])
-                ->timeout(5)
-                ->post("{$parentUrl}/api/v1/weekly-reports/reset-progress", [
-                    'source' => $source,
-                    'items' => $items,
-                ]);
-        } catch (\Throwable) {
-            // Non-blocking
-        }
     }
 
     protected function notifyParentAlertCacheClear(): void

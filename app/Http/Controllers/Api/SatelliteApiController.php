@@ -605,4 +605,18 @@ class SatelliteApiController extends Controller
             'message' => "{$sessionsCreated} practice session sampel berhasil dicatat untuk 5 siswa aktif.",
         ]);
     }
+
+    /**
+     * Reset seluruh riwayat pengerjaan PR siswa (dipanggil oleh SuperAdmin Web Induk).
+     * Data akun siswa, guru, dan paket soal tetap dipertahankan.
+     */
+    public function resetProgress(): JsonResponse
+    {
+        \App\Models\PracticeSession::query()->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Seluruh riwayat pengerjaan PR di KPM Smart berhasil direset.',
+        ]);
+    }
 }
