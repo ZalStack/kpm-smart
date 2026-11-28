@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Support\QuestionFormatter;
 use App\Support\SearchHelper;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -357,6 +358,8 @@ class PackageController extends Controller
             $package->update(['thumbnail' => $path]);
         }
 
+        $this->notifyParentAlertCacheClear();
+
         return redirect()->route('admin.packages.index')->with('success', 'Paket berhasil dibuat!');
     }
 
@@ -455,6 +458,8 @@ class PackageController extends Controller
             $path = $request->file('thumbnail')->store('thumbnails', 'public');
             $package->update(['thumbnail' => $path]);
         }
+
+        $this->notifyParentAlertCacheClear();
 
         return redirect()->route('admin.packages.edit.informasi', $package)->with('success', 'Informasi paket berhasil diperbarui!');
     }
@@ -567,8 +572,27 @@ class PackageController extends Controller
     {
         $this->ensureNotGuru();
         $package->delete();
+        $this->notifyParentAlertCacheClear();
 
         return redirect()->route('admin.packages.index')->with('success', 'Paket berhasil dihapus!');
+    }
+
+    protected function notifyParentAlertCacheClear(): void
+    {
+        try {
+            $parentUrl = rtrim(config('app.parent_app_url', env('PARENT_APP_URL', 'https://kelas-khusus.kpmacademic.io')), '/');
+            $apiKey = config('services.parent_api_key', env('PARENT_APP_API_KEY', env('API_SECRET_KEY', 'kpm-satellite-secret-key-2026')));
+
+            Http::withoutVerifying()
+                ->withHeaders([
+                    'X-API-Key' => $apiKey,
+                    'Accept' => 'application/json',
+                ])
+                ->timeout(3)
+                ->post("{$parentUrl}/api/v1/satellite/clear-alert-cache");
+        } catch (\Throwable) {
+            // Non-blocking
+        }
     }
 
     public function show(Package $package)
