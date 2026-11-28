@@ -20,6 +20,14 @@ class AdminUserController extends Controller
      */
     public function index(Request $request)
     {
+        if (\Illuminate\Support\Facades\Cache::add('kpm_smart_auto_sync_parent_lock', true, 60)) {
+            try {
+                $this->syncFromParent($request, true);
+            } catch (\Throwable $e) {
+                Log::warning('Auto syncFromParent failed: '.$e->getMessage());
+            }
+        }
+
         $query = User::query()->where('role', 'user');
 
         if ($search = $request->get('search')) {
@@ -581,9 +589,11 @@ class AdminUserController extends Controller
     /**
      * Sinkronisasi seluruh user dari Web Induk via REST API
      */
-    public function syncFromParent(Request $request)
+    public function syncFromParent(Request $request, bool $silent = false)
     {
-        $this->ensureNotGuru();
+        if (! $silent) {
+            $this->ensureNotGuru();
+        }
         $parentUrl = rtrim(config('app.parent_app_url', env('PARENT_APP_URL', 'https://kelas-khusus.kpmacademic.io')), '/');
         $apiKey = config('services.parent_api_key', env('PARENT_APP_API_KEY', env('API_SECRET_KEY', 'kpm-satellite-secret-key-2026')));
 
@@ -684,8 +694,18 @@ class AdminUserController extends Controller
                 $msg .= " Sebanyak {$deleted} user lama yang tidak ada di Web Induk telah dihapus.";
             }
 
+            if ($silent) {
+                return null;
+            }
+
             return back()->with('success', $msg);
         } catch (\Throwable $e) {
+            if ($silent) {
+                Log::warning('Silent syncFromParent failed: '.$e->getMessage());
+
+                return null;
+            }
+
             return back()->with('error', 'Gagal sinkronisasi data dari Web Induk: '.$e->getMessage());
         }
     }

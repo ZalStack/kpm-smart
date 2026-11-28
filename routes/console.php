@@ -12,3 +12,6 @@ Artisan::command('inspire', function () {
 Schedule::command('push:sps-reminder --time=morning')->dailyAt('07:00');
 Schedule::command('push:sps-reminder --time=afternoon')->dailyAt('13:00');
 Schedule::command('push:sps-reminder --time=evening')->dailyAt('18:00');
+
+// Auto-sync data siswa dari Web Induk setiap 5 menit
+Schedule::command('kpm:sync-parent')->everyFiveMinutes()->withoutOverlapping();
