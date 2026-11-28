@@ -588,10 +588,10 @@ class AdminUserController extends Controller
         $apiKey = config('services.parent_api_key', env('PARENT_APP_API_KEY', env('API_SECRET_KEY', 'kpm-satellite-secret-key-2026')));
 
         try {
-            $response = Http::withHeaders([
+            $response = Http::withoutVerifying()->withHeaders([
                 'X-API-Key' => $apiKey,
                 'Accept' => 'application/json',
-            ])->timeout(15)->get("{$parentUrl}/api/v1/users");
+            ])->timeout(20)->get("{$parentUrl}/api/v1/users");
 
             if (! $response->successful()) {
                 return back()->with('error', 'Gagal menghubungi Web Induk: HTTP '.$response->status());
@@ -609,9 +609,15 @@ class AdminUserController extends Controller
                     continue;
                 }
 
+                $isGuru = ($pu['role'] ?? '') === 'guru' || str_ends_with(strtolower($pu['email']), '@satuguru.com');
+                if ($isGuru) {
+                    User::where('email', $pu['email'])->delete();
+
+                    continue;
+                }
+
                 $activeEmails[] = $pu['email'];
-                $isGuru = ($pu['role'] ?? '') === 'guru';
-                $role = in_array($pu['role'] ?? '', ['super_admin', 'administrator', 'admin']) ? 'admin' : ($isGuru ? 'guru' : 'user');
+                $role = in_array($pu['role'] ?? '', ['super_admin', 'administrator', 'admin']) ? 'admin' : 'user';
                 $username = $pu['nis'] ?? ($pu['username'] ?? explode('@', $pu['email'])[0]);
                 $avatar = ! empty($pu['foto_profil']) ? $pu['foto_profil'] : "{$parentUrl}/api/foto/".urlencode($pu['email']);
 

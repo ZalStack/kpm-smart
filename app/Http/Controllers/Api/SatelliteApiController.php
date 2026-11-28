@@ -322,7 +322,12 @@ class SatelliteApiController extends Controller
 
                 $role = in_array($item['role'] ?? '', ['super_admin', 'administrator', 'admin']) ? 'admin' : 'user';
                 $existing = DB::table('users')->where('email', $item['email'])->first()
-                    ?? DB::table('users')->where('username', $username)->first();
+                    ?? (! empty($username) ? DB::table('users')->where('username', $username)->first() : null);
+
+                $rawIsActive = $item['is_active'] ?? true;
+                $isActive = ($rawIsActive === null || $rawIsActive === '')
+                    ? 1
+                    : (filter_var($rawIsActive, FILTER_VALIDATE_BOOLEAN) ? 1 : 0);
 
                 $data = [
                     'email' => $item['email'],
@@ -334,7 +339,7 @@ class SatelliteApiController extends Controller
                     'level' => $item['level'] ?? ($existing->level ?? '1'),
                     'school_name' => $item['asal_sekolah'] ?? ($existing->school_name ?? 'KPM Academy'),
                     'role' => $role,
-                    'is_active' => filter_var($item['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN) ? 1 : 0,
+                    'is_active' => $isActive,
                     'is_verified' => 1,
                     'updated_at' => now(),
                 ];
