@@ -20,14 +20,6 @@ class AdminUserController extends Controller
      */
     public function index(Request $request)
     {
-        if (\Illuminate\Support\Facades\Cache::add('kpm_smart_auto_sync_parent_lock', true, 60)) {
-            try {
-                $this->syncFromParent($request, true);
-            } catch (\Throwable $e) {
-                Log::warning('Auto syncFromParent failed: '.$e->getMessage());
-            }
-        }
-
         $query = User::query()->where('role', 'user');
 
         if ($search = $request->get('search')) {
